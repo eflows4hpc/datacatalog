@@ -28,8 +28,8 @@ Main features:
 |===
 | **ID** | **Requirement** | **Explanation**
 
-| R1 | some | what
-| R2 | requirements | ww
+| R1 | View data sources | View the list of data sources and details on particular ones (web page + api)
+| R2 | Register data sets | Authenticated users should be able register/change data sets with additional metadata
 |===
 
 === Quality Goals
@@ -58,7 +58,7 @@ Main features:
 
 === Business Context
 
-image:business_context.png["Business view"]
+image:datacat.png["Business view"]
 
 === Technical Context
 
