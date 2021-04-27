@@ -1,0 +1,65 @@
+:toc-title: Table of Contents
+
+// configure EN settings for asciidoc
+include::src/config.adoc[]
+
+
+
+
+// numbering from here on
+:numbered:
+
+[[section-introduction-and-goals]]
+== Introduction and Goals
+
+Following describes the architecture of eFLows4HPC Data Catalog. The service
+will provide information about data sets used in the project. The catalog will
+store info about locations, schemas, and additional metadata.
+
+Main features:
+
+* keep track of data sources
+* enable registration of new data sources
+* provide user-view as well as simple API to access the information
+
+=== Requirements Overview
+
+[cols="1,2,4"]
+|===
+| **ID** | **Requirement** | **Explanation**
+
+| R1 | some | what
+| R2 | requirements | ww
+|===
+
+=== Quality Goals
+
+[cols="1,1,1,4"]
+|===
+| **ID** | **Prio**| **Quality**| **Explanation**
+
+| Q1 | 1 | Data Quality | Metadata
+|===
+
+[[section-architecture-constraints]]
+== Architecture Constraints
+
+
+[cols="1,4"]
+|===
+| **Constraint** | **Explanation**
+
+| Local orientation | Oor
+|===
+
+
+[[section-system-scope-and-context]]
+== System Scope and Context
+
+=== Business Context
+
+image:business_context.png["Business view"]
+
+=== Technical Context
+
+image:technical_context.png["Technical L1 view"]
