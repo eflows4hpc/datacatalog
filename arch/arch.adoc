@@ -30,6 +30,8 @@ Main features:
 
 | R1 | View data sources | View the list of data sources and details on particular ones (web page + api)
 | R2 | Register data sets | Authenticated users should be able register/change data sets with additional metadata
+| R3 | No schema MD | We don't impose a schema for the metadata (not know what is relevant)
+| R4 | Documented API | Swagger/OpenAPI
 |===
 
 === Quality Goals
@@ -38,8 +40,11 @@ Main features:
 |===
 | **ID** | **Prio**| **Quality**| **Explanation**
 
-| Q1 | 1 | Data Quality | Metadata
+| Q1 | 1 | Extensibility | Possibility to add new metadata to existing rows
+| Q2 | 2 | Interoperability | The service should work with Data Logistics
+| Q3 | 2 | Deployability | Quick/automatic deployment
 |===
+
 
 [[section-architecture-constraints]]
 == Architecture Constraints
@@ -49,7 +54,10 @@ Main features:
 |===
 | **Constraint** | **Explanation**
 
-| Local orientation | Oor
+| Authentication | There is no solution for that in the project yet, local authenticator?
+| Deployment | We shall use CI/CD, the project will also be a playing field to setup this and test before the Data Logistics
+| github vs. gitlab | Not sure if we can use our local gitlab
+| Docker-based Deployment | This technology will be used in the project anyways
 |===
 
 
@@ -62,4 +70,25 @@ image:datacat.png["Business view"]
 
 === Technical Context
 
-image:technical_context.png["Technical L1 view"]
+// image:technical_context.png["Technical L1 view"]
+
+**Mapping Input/Output to Channels**
+
+User -> Data Catalog: simple (static?) web page view
+
+Data Logistics -> Data catalog HTTP/API read-only
+
+Admin -> Data Catalog: either a web page or CLI
+
+[[section-solution-strategy]]
+== Solution Strategy
+
+=== Speed and flexibility
+This product will not be very mission critical, we want to keep it simple. A solution even without a backend database would be possible. Probably we
+will use some noSQL database for maximal flexibility. API with Swagger/OpenAPI (e.g. fastAPI). Frontend static page with JavaScript calls to the API. 
+
+=== Deployment with Jenkins
+
+1. Jenkins instance in HDF Cloud to setup Pipelines,
+2. Code in Github/Gitlab
+3. Automatic deployment with Docker? Docker-compose
