@@ -23,11 +23,11 @@ pip install uvicorn[standard]
 
 To start the server, run
 ```bash
-uvicorn main:app --reload
+uvicorn apiserver:app --reload --reload-dir apiserver
 ```
 
-Withour any other options, this starts your server on `<localhost:8000>`.
-The `--reload` option ensures, that any changes to the `api-server.py` will cause an immediate reload of the server, which es especially interesting during development. If this is not required, just don't include the option.
+Without any other options, this starts your server on `<localhost:8000>`.
+The `--reload --reload-dir apiserver` options ensure, that any changes to files in the `apiserver`-directory will cause an immediate reload of the server, which is especially useful during development. If this is not required, just don't include the options.
 
 More information about uvicorn settings (including information about how to bind to other network interfaces or ports) can be found [here](https://www.uvicorn.org/settings/).
 
@@ -49,7 +49,7 @@ while in the same directory as the Dockerfile.
 
 To run the docker image in a local container, run 
 ```bash
-docker run -d --name <container name> -p localhost:<local_port>:80 datacalog-apiserver
+docker run -d --name <container name> -p 127.0.0.1:<local_port>:80 datacalog-apiserver
 ```
 
 `<container name>` is the name of your container, that can be used to refer to it with other docker commands.
