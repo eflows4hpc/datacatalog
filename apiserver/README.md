@@ -23,7 +23,7 @@ pip install uvicorn[standard]
 
 To start the server, run
 ```bash
-uvicorn api-server:app --reload
+uvicorn main:app --reload
 ```
 
 Withour any other options, this starts your server on `<localhost:8000>`.
@@ -43,7 +43,7 @@ docker built -t datacatalog-apiserver .
 ```
 while in the same directory as the Dockerfile.
 
- `datacatalog-apiserver` is a local tag to identify the built docker image.
+`datacatalog-apiserver` is a local tag to identify the built docker image.
 
 ### Running the docker image
 

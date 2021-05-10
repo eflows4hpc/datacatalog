@@ -4,9 +4,19 @@ import uuid
 
 from LocationStorage import AbstractLocationDataStorageAdapter, LocationData, LocationDataType
 
+from typing import List
 
 DEFAULT_JSON_FILEPATH: str = "./app/data"
 
+class StoredData:
+    actualData: LocationData
+    users: List[str]
+
+
+# This stores LocationData via the StoredData Object as json files
+# These Jsonfiles then contain the actualData, as well as the users with permissions for this LocationData
+# all users have full permission to to anything with this dataobject, uncluding removing their own access (this might trigger a confirmation via the frontend, but this is not enforced via the api)
+# IMPORTANT: The adapter does not check for authentication or authorization, it should only be invoked if the permissions have been checked
 class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
     data_dir: str
 
@@ -29,10 +39,10 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
             for f in allFiles:
                 with open(os.path.join(localpath, f)) as file:
                     data = json.load(file)
-                    retList.append({data['name'] : f})
+                    retList.append({data['actualData']['name'] : f})
             return retList
 
-    def addNew(self, type: LocationDataType, data: LocationData):
+    def addNew(self, type: LocationDataType, data: LocationData, usr: str):
         localpath = os.path.join(self.data_dir, type.value)
         if not (os.path.isdir(localpath)):
             # This type has apparently not yet been used at all, therefore we need to create its directory
@@ -41,8 +51,11 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         id = str(uuid.uuid4())
         while (os.path.exists(os.path.join(localpath, id))):
             id = str(uuid.uuid4())
+        toStore = StoredData()
+        toStore.users = [usr]
+        toStore.actualData = data
         with open(os.path.join(localpath, id), 'w') as json_file:
-            json.dump(data.__dict__, json_file)
+            json.dump(toStore.__dict__, json_file)
         return {id : data}
 
     def getDetails(self, type: LocationDataType, id: str):
@@ -52,13 +65,34 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
             raise FileNotFoundError('The requested Object does not exist.')
         with open(fullpath) as file:
             data = json.load(file)
-        return data
+        return data['actualData']
 
-    def updateDetails(self, type:LocationDataType, id:str, data: LocationData):
+    def updateDetails(self, type:LocationDataType, id:str, data: LocationData, usr: str):
         localpath = os.path.join(self.data_dir, type.value)
         fullpath = os.path.join(localpath, id)
         if not os.path.isfile(fullpath):
             raise FileNotFoundError('The requested Object does not exist.')
+        
+        toStore = StoredData()
+
+        # get permissions from old file
+        with open(fullpath) as file:
+            data = json.load(file)
+            toStore.users = data['users']
+
+        toStore.actualData = data
         with open(fullpath, 'w') as file:
             json.dump(data.__dict__, file)
         return {id : data}
+
+    def getOwner(self, type: LocationDataType(), id: str):
+        raise NotImplementedError()
+
+    def checkPerm(self, type: LocationDataType, id: str, usr: str):
+        raise NotImplementedError()
+
+    def addPerm(self, type: LocationDataType, id: str, authUsr: str, newUser: str):
+        raise NotImplementedError()
+
+    def rmPerm(self, type: LocationDataType, id: str, usr: str, rmUser: str):
+        raise NotImplementedError()
