@@ -6,11 +6,11 @@ from fastapi import HTTPException
 
 from pydantic import BaseModel
 
-from LocationStorage import LocationDataType
-from LocationStorage import LocationData
-from LocationStorage import AbstractLocationDataStorageAdapter
+from .storage import JsonFileStorageAdapter
 
-from JsonFileStorageAdapter import JsonFileStorageAdapter
+from .storage import AbstractLocationDataStorageAdapter
+from .storage import LocationData
+from .storage import LocationDataType
 
 from enum import Enum
 
@@ -39,7 +39,8 @@ def list_datasets(location_data_type : LocationDataType):
 # register a new dataset, the response will contain the new dataset and its id
 @app.put("/{location_data_type}")
 def add_dataset(location_data_type : LocationDataType, dataset : LocationData):
-    return adapter.addNew(location_data_type, dataset)
+    usr: str = "testuser"
+    return adapter.addNew(location_data_type, dataset, usr)
 
 # returns all information about a specific dataset, identified by id
 @app.get("/{location_data_type}/{dataset_id}")
@@ -53,6 +54,6 @@ def get_specific_dataset(location_data_type : LocationDataType, dataset_id: str)
 @app.put("/{location_data_type}/{dataset_id}")
 def update_specific_dataset(location_data_type : LocationDataType, dataset_id: str, dataset : LocationData):
     try:
-        return adapter.updateDetails(location_data_type, dataset_id, dataset)
+        return adapter.updateDetails(location_data_type, dataset_id, dataset, usr)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail='The provided id does not exist for this datatype.')

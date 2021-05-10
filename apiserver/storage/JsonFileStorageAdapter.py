@@ -2,7 +2,7 @@ import os
 import json
 import uuid
 
-from LocationStorage import AbstractLocationDataStorageAdapter, LocationData, LocationDataType
+from .LocationStorage import AbstractLocationDataStorageAdapter, LocationData, LocationDataType
 
 from typing import List
 
@@ -85,7 +85,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
             json.dump(data.__dict__, file)
         return {id : data}
 
-    def getOwner(self, type: LocationDataType(), id: str):
+    def getOwner(self, type: LocationDataType, id: str):
         raise NotImplementedError()
 
     def checkPerm(self, type: LocationDataType, id: str, usr: str):
