@@ -12,6 +12,9 @@ class StoredData:
     actualData: LocationData
     users: List[str]
 
+    def toDict(self):
+        return {'actualData' : self.actualData.__dict__, 'users' : self.users}
+
 
 # This stores LocationData via the StoredData Object as json files
 # These Jsonfiles then contain the actualData, as well as the users with permissions for this LocationData
@@ -55,7 +58,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         toStore.users = [usr]
         toStore.actualData = data
         with open(os.path.join(localpath, id), 'w') as json_file:
-            json.dump(toStore.__dict__, json_file)
+            json.dump(toStore.toDict(), json_file)
         return {id : data}
 
     def getDetails(self, type: LocationDataType, id: str):
@@ -82,7 +85,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
 
         toStore.actualData = data
         with open(fullpath, 'w') as file:
-            json.dump(data.__dict__, file)
+            json.dump(toStore.toDict(), file)
         return {id : data}
 
     def getOwner(self, type: LocationDataType, id: str):
