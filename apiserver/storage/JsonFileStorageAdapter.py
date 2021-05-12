@@ -4,9 +4,9 @@ import uuid
 
 from .LocationStorage import AbstractLocationDataStorageAdapter, LocationData, LocationDataType
 
-from typing import List
+from apiserver.config import Settings
 
-DEFAULT_JSON_FILEPATH: str = "./app/data"
+from typing import List
 
 class StoredData:
     actualData: LocationData
@@ -23,9 +23,9 @@ class StoredData:
 class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
     data_dir: str
 
-    def __init__(self, data_directory: str = DEFAULT_JSON_FILEPATH):
+    def __init__(self, settings: Settings):
         AbstractLocationDataStorageAdapter.__init__(self)
-        self.data_dir = data_directory
+        self.data_dir = settings.datacatalog_apiserver_json_storage_path
         if not (os.path.exists(self.data_dir) and os.path.isdir(self.data_dir)):
             raise Exception('Data Directory \"' + self.data_dir + '\" does not exist.')
 
@@ -77,16 +77,19 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
             raise FileNotFoundError('The requested Object does not exist.')
         
         toStore = StoredData()
+        toStore.actualData = data
 
         # get permissions from old file
         with open(fullpath) as file:
-            data = json.load(file)
-            toStore.users = data['users']
+            old_data = json.load(file)
+            toStore.users = old_data['users']
 
-        toStore.actualData = data
         with open(fullpath, 'w') as file:
             json.dump(toStore.toDict(), file)
         return {id : data}
+
+    def delete(self, type:LocationDataType, id:str, usr: str):
+        pass
 
     def getOwner(self, type: LocationDataType, id: str):
         raise NotImplementedError()

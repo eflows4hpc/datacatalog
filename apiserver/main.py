@@ -7,18 +7,22 @@ from fastapi import HTTPException
 from pydantic import BaseModel
 
 from .storage import JsonFileStorageAdapter
-
 from .storage import AbstractLocationDataStorageAdapter
 from .storage import LocationData
 from .storage import LocationDataType
 
+from .config import Settings
+
 from enum import Enum
+
+
+settings = Settings()
 
 app = FastAPI(
     title="API-Server for the Data Catalogue"
 )
 
-adapter: AbstractLocationDataStorageAdapter = JsonFileStorageAdapter()
+adapter: AbstractLocationDataStorageAdapter = JsonFileStorageAdapter(settings)
 
 #### A NOTE ON IDS
 # the id of a dataset is not yet defined, it could be simply generated, it could be based on some hash of the metadata or simple be the name, which would then need to be enforced to be unique
@@ -53,7 +57,17 @@ def get_specific_dataset(location_data_type : LocationDataType, dataset_id: str)
 # update the information about a specific dataset, identified by id
 @app.put("/{location_data_type}/{dataset_id}")
 def update_specific_dataset(location_data_type : LocationDataType, dataset_id: str, dataset : LocationData):
+    usr: str = "testuser"
     try:
         return adapter.updateDetails(location_data_type, dataset_id, dataset, usr)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail='The provided id does not exist for this datatype.')
+
+# delete a specific dataset
+@app.delete("/{location_data_type}/{dataset_id}")
+def delete_specific_dataset(location_data_type : LocationDataType, dataset_id: str):
+    usr: str = "testuser"
+    try:
+        return adapter.delete(location_data_type, dataset_id, usr)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail='The provided id does not exist for this datatype.')

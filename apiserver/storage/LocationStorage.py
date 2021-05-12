@@ -43,6 +43,9 @@ class AbstractLocationDataStorageAdapter:
     def updateDetails(self, type:LocationDataType, id:str, data: LocationData, usr: str):
         raise NotImplementedError()
 
+    def delete(self, type:LocationDataType, id:str, usr: str):
+        raise NotImplementedError()
+
     # return the owner of the requested object; if multiple owners are set, return them is a list
     def getOwner(self, type: LocationDataType, id: str):
         raise NotImplementedError()
