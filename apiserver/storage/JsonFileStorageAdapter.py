@@ -89,7 +89,13 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         return {id : data}
 
     def delete(self, type:LocationDataType, id:str, usr: str):
-        pass
+        localpath = os.path.join(self.data_dir, type.value)
+        fullpath = os.path.join(localpath, id)
+        
+        if not os.path.isfile(fullpath):
+            raise FileNotFoundError('The requested Object does not exist.')
+        
+        os.remove(fullpath)
 
     def getOwner(self, type: LocationDataType, id: str):
         raise NotImplementedError()
