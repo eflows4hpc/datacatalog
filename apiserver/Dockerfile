@@ -14,5 +14,3 @@ COPY ./main.py /app/app/
 COPY ./storage/JsonFileStorageAdapter.py /app/app/storage/
 COPY ./storage/LocationStorage.py /app/app/storage/
 COPY ./storage/__init__.py /app/app/storage/
-
-RUN ls -laR /app
