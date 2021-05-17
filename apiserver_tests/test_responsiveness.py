@@ -6,7 +6,6 @@ from fastapi.testclient import TestClient
 from context import apiserver
 from context import storage
 
-
 client = TestClient(apiserver.app)
 
 # get root

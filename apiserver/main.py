@@ -11,12 +11,12 @@ from .storage import AbstractLocationDataStorageAdapter
 from .storage import LocationData
 from .storage import LocationDataType
 
-from .config import Settings
+from .config import ApiserverSettings
 
 from enum import Enum
 
 
-settings = Settings()
+settings = ApiserverSettings()
 
 app = FastAPI(
     title="API-Server for the Data Catalogue"

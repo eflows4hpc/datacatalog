@@ -4,7 +4,7 @@ import uuid
 
 from .LocationStorage import AbstractLocationDataStorageAdapter, LocationData, LocationDataType
 
-from apiserver.config import Settings
+from apiserver.config import ApiserverSettings
 
 from typing import List
 
@@ -23,9 +23,9 @@ class StoredData:
 class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
     data_dir: str
 
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: ApiserverSettings):
         AbstractLocationDataStorageAdapter.__init__(self)
-        self.data_dir = settings.datacatalog_apiserver_json_storage_path
+        self.data_dir = settings.json_storage_path
         if not (os.path.exists(self.data_dir) and os.path.isdir(self.data_dir)):
             raise Exception('Data Directory \"' + self.data_dir + '\" does not exist.')
 
