@@ -7,7 +7,7 @@ Find architecture in [arch](arch/arch.adoc) folder.
 
 ## API-Server for the Data Catalog
 
-This is the API-server for the Data Catalog, which will provide the backend functionality.
+[This](apiserver/) part is the the API-server for the Data Catalog, which will provide the backend functionality.
 
 It is implemented via [fastAPI](https://fastapi.tiangolo.com/) and provides an api documentation via openAPI.
 
@@ -21,11 +21,10 @@ If the api-server is running, you can see the documentation at `<server-url>/doc
 ### Running without docker
 First ensure that your python version is 3.6 or newer.
 
-Then, if they are not yet installed on your machine, install the following two packages via pip:
+Then, if they are not yet installed on your machine, install the requirements via pip:
 
 ```bash
-pip install fastapi
-pip install uvicorn[standard]
+pip install -r requirements.txt
 ```
 
 To start the server, run
@@ -41,7 +40,7 @@ More information about uvicorn settings (including information about how to bind
 
 ### Testing
 
-First ensure that the `pytest` package is installed.
+First ensure that the `pytest` package is installed (It is included in the `requirements.txt`).
 
 Tests are located in the `apiserver_tests` directory. They can be executed by simply running `pytest` while in the project folder.
 
@@ -63,7 +62,7 @@ docker build -t datacatalog-apiserver ./apiserver
 ```
 while in the project root directory.
 
-`datacatalog-apiserver` is a local tag to identify the built docker image.
+`datacatalog-apiserver` is a local tag to identify the built docker image. You can change it if you want.
 
 #### Running the docker image
 
