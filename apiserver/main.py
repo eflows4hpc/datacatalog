@@ -19,7 +19,7 @@ from enum import Enum
 settings = ApiserverSettings()
 
 app = FastAPI(
-    title="API-Server for the Data Catalogue"
+    title="API-Server for the Data Catalog"
 )
 
 adapter: AbstractLocationDataStorageAdapter = JsonFileStorageAdapter(settings)

@@ -10,4 +10,4 @@ class ApiserverSettings(BaseSettings):
 
     class Config:
         env_prefix: str = "datacatalog_apiserver_"
-        env_file: str = "config.env"
+        env_file: str = "apiserver/config.env"

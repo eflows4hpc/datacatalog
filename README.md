@@ -59,7 +59,7 @@ The `context.py` file helps with importing the apiserver-packages, so that the t
 To build the docker image of the current version, simply run
 
 ```bash
-docker built -t datacatalog-apiserver ./apiserver
+docker build -t datacatalog-apiserver ./apiserver
 ```
 while in the project root directory.
 
