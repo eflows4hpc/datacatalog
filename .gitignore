@@ -1,0 +1,4 @@
+**__pycache__/
+
+# contains data for local tests
+app/
