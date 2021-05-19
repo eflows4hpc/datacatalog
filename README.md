@@ -13,9 +13,19 @@ It is implemented via [fastAPI](https://fastapi.tiangolo.com/) and provides an a
 
 For deployment via [docker](https://www.docker.com/), a docker image is included. 
 
+### Security
+
+Certain operations will only be possible, if the request is authenticated. The API has an endpoint at `/token` where a username/password login is possible. The endpoint will return a token, which is valid for 1 hour. This token ahs to be provided with every api call that requires authentication. Currently, these calls are `GET /me` - `PUT /dataset` - `PUT /dataset/dataset-id` - `DELETE /dataset/dataset-id`. The passwords are stored as bcrypt hashes and are not visible to anyone.
+
+A CLI is provided for server admins to add new users. It will soon be extended to allow direct hash entry, so that the user does not have to provide their password in clear text.
+
+For testing, a default userdb.json is provided with a single user "testuser" with the password "test".
+
 ### API Documentation
 
 If the api-server is running, you can see the documentation at `<server-url>/docs` or `<server-url>/redoc`.
+
+These pages can also be used as a clunky frontend, allowing the authentication and execution of all api functions.
 
 
 ### Running without docker
