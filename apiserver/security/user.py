@@ -11,7 +11,10 @@ from datetime import datetime, timedelta
 
 from passlib.context import CryptContext
 
-from jose import JWTError, jwt
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings('ignore', message='int_from_bytes is deprecated')
+    from jose import JWTError, jwt
 
 from apiserver.config import ApiserverSettings
 
