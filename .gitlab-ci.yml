@@ -9,5 +9,5 @@ job 1:
   script:
    - echo "Logging in"
    - docker --version
-   - docker login $CI_REGISTRY -u $CI_JOB_USER -p $CI_JOB_TOKEN
+   - docker login gitlab.version.fz-juelich.de:5555 -u rybicki1 -p ldalda
    - docker image ls
