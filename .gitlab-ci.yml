@@ -1,6 +1,11 @@
 default:
   image: python:3-slim
-test:
+
+job 1:
+  stage: test
+  tags:
+   - public-docker
   script:
-   - pip install -r requirements.txt
-   - pytest 
+   - echo "Logging in"
+   - docker login $CI_REGISTRY -u $CI_JOB_USER -p $CI_JOB_TOKEN
+   - docker image ls
