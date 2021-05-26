@@ -1,0 +1,28 @@
+{% extends "base.html.jinja"%}
+
+{% block title %}Storage{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-sm-8">
+        <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuType" data-bs-toggle="dropdown" aria-expanded="false">
+            Select Storage Type
+          </button> <label id="typetext">TYPENAME</label>
+          <ul class="dropdown-menu" aria-labelledby="dropdownMenuType">
+            <li><a class="dropdown-item" href="?type=dataset">Dataset</a></li>
+            <li><a class="dropdown-item" href="?type=storagetarget">Storage Target</a></li>
+          </ul>
+        </div>
+      <h2>Basic information about this service</h2>
+      <h5>Documentation of the data format</h5>
+      <div class="fakeimg">Maybe the Logo again</div>
+      <hr class="hidden-sm hidden-md hidden-lg">
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="js/choose_storage.js"></script>
+{% endblock %}

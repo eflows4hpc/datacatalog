@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>eFlows4HPC Data Catalog - {% block title %}{% endblock %}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <style>
+  .fakeimg {
+    height: 200px;
+    background: #aaa;
+  }
+  </style>
+</head>
+<body>
+    <!--BIG TITLE WITH LOGO-->
+    <div class="jumbotron text-center" style="margin-bottom:0">
+      <h1><a href="https://www.eFlows4HPC.eu">eFlows4HPC Data Catalog</a></h1>
+    </div>
+      
+    <!--NAVBAR-->
+    <nav class="navbar navbar-inverse">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>                        
+          </button>
+          <a class="navbar-brand" href="#">Data Catalog</a>
+        </div>
+        <div class="collapse navbar-collapse" id="myNavbar">
+          <ul class="nav navbar-nav">
+            <li {% if home is true %} class="active"{% endif %}><a href="./index.html">Home</a></li>
+            <li {% if storage is true %} class="active"{% endif %}><a href="./storage.html?type=dataset">Storage</a></li>
+            <li {% if impressum is true %} class="active"{% endif %}><a href="./impressum.html">Impressum</a></li>
+            <li {% if login is true %} class="active"{% endif %}><a href="./login.html" id="loginText">Log In</a></li> <!--If token is found in local storage, replace with logged in username and log-out option (i.e. delete local token)-->
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!--SPECIFIC PAGE CONTENT-->
+    {% block content%} 
+    {% endblock %}
+
+    <!--FOOTER-->
+    <div class="jumbotron text-center" style="margin-bottom:0">
+        <p>Information about server admin and impressum</p>
+    </div>
+
+    <!--EXTRA JAVASCRIPT-->
+    {% block scripts %}
+    {% endblock %}
+
+    <!--SHARED JAVASCRIPT-->
+    <script src="js/auth.js"></script>
+</body>
