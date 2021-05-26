@@ -18,3 +18,9 @@ def test_types():
     for location_type in storage.LocationDataType:
         rsp = client.get('/' + location_type.value)
         assert rsp.status_code >= 200 and rsp.status_code < 300 # any 200 response is fine, as a get to the datatypes should not return any error
+
+# PUT a new dataset, store the id in global variable
+
+# GET the specific dataset
+
+# DELETE the specific dataset
