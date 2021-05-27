@@ -2,7 +2,7 @@ from jinja2 import Environment, FileSystemLoader
 import os
 import shutil
 
-def main():
+def render_template_to_site():
     ## copy javascript files to site folder
     src_files = os.listdir('frontend/js')
     dest = 'site/js'
@@ -43,4 +43,4 @@ def main():
             f.write(html[file])
 
 if __name__ == "__main__":
-    main()
+    render_template_to_site()
