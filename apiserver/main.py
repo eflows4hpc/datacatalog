@@ -74,7 +74,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 @app.get("/{location_data_type}")
 async def list_datasets(location_data_type: LocationDataType):
     # list id and name of every registered dataset for the specified type
-    return adapter.getList(location_data_type)
+    return adapter.get_list(location_data_type)
 
 
 @app.put("/{location_data_type}")
@@ -82,14 +82,14 @@ async def add_dataset(location_data_type: LocationDataType, dataset: LocationDat
                       token: str = Depends(oauth2_scheme)):
     # register a new dataset, the response will contain the new dataset and its id
     usr = "testuser"
-    return adapter.addNew(location_data_type, dataset, usr)
+    return adapter.add_new(location_data_type, dataset, usr)
 
 
 @app.get("/{location_data_type}/{dataset_id}")
 async def get_specific_dataset(location_data_type: LocationDataType, dataset_id: str):
     # returns all information about a specific dataset, identified by id
     try:
-        return adapter.getDetails(location_data_type, dataset_id)
+        return adapter.get_details(location_data_type, dataset_id)
     except FileNotFoundError:
         raise HTTPException(
             status_code=404, detail='The provided id does not exist for this datatype.')
@@ -102,7 +102,7 @@ async def update_specific_dataset(location_data_type: LocationDataType,
     # update the information about a specific dataset, identified by id
     usr = "testuser"
     try:
-        return adapter.updateDetails(location_data_type, dataset_id, dataset, usr)
+        return adapter.update_details(location_data_type, dataset_id, dataset, usr)
     except FileNotFoundError:
         raise HTTPException(
             status_code=404, detail='The provided id does not exist for this datatype.')
