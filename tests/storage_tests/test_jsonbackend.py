@@ -25,5 +25,5 @@ class SomeTests(unittest.TestCase):
     def test_getList(self):
         test_type = LocationDataType.DATASET
         lst = self.store.getList(type=test_type)
-        self.assertEqual(lst, {}, 'Id should not be none')
+        self.assertEqual(lst, [],  'Id should not be none')
         

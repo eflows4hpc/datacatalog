@@ -29,12 +29,12 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         if not (os.path.exists(self.data_dir) and os.path.isdir(self.data_dir)):
             raise Exception('Data Directory \"' + self.data_dir + '\" does not exist.')
 
-    def getList(self, type: LocationDataType):
+    def getList(self, type: LocationDataType) -> List:
         localpath = os.path.join(self.data_dir, type.value)
         if not (os.path.isdir(localpath)):
             # This type has apparently not yet been used at all, create its directory and return an empty json file
             os.mkdir(localpath)
-            return {}
+            return []
         else:
             allFiles = [f for f in os.listdir(localpath) if os.path.isfile(os.path.join(localpath, f))]
             # now each file has to be checked for its filename (= id) and the LocationData name (which is inside the json)
