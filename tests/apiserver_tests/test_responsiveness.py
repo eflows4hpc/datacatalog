@@ -5,19 +5,22 @@ from fastapi.testclient import TestClient
 
 from context import apiserver
 from context import storage
+import unittest
 
-client = TestClient(apiserver.app)
 
-# get root
-def test_root():
-    rsp = client.get('/')
-    assert rsp.status_code >= 200 and rsp.status_code < 300 # any 200 response is fine, as a get to the root should not return any error
+class SomeTests(unittest.TestCase):
+    def setUp(self):
+        self.client = TestClient(apiserver.app)
 
-# get every type in type enum
-def test_types():
-    for location_type in storage.LocationDataType:
-        rsp = client.get('/' + location_type.value)
-        assert rsp.status_code >= 200 and rsp.status_code < 300 # any 200 response is fine, as a get to the datatypes should not return any error
+    
+    def test_root(self):
+        rsp = self.client.get('/')
+        assert rsp.status_code >= 200 and rsp.status_code < 300 # any 200 response is fine, as a get to the root should not return any error
+
+    def test_types(self):
+        for location_type in storage.LocationDataType:
+            rsp = self.client.get('/' + location_type.value)
+            assert rsp.status_code >= 200 and rsp.status_code < 300 # any 200 response is fine, as a get to the datatypes should not return any error
 
 # PUT a new dataset, store the id in global variable
 
