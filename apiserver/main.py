@@ -18,11 +18,12 @@ from .security import User, AbstractDBInterface, JsonDBInterface, get_current_us
 
 from enum import Enum
 
-class ReservedPaths(Enum):
-    TOKEN: str = 'token'
-    HASH: str = 'hash'
-    AUTH: str = "auth"
-    ME: str = "me"
+
+class ReservedPaths(str, Enum):
+    TOKEN = 'token'
+    HASH = 'hash'
+    AUTH = "auth"
+    ME = "me"
 
 
 app = FastAPI(
@@ -30,29 +31,32 @@ app = FastAPI(
 )
 
 
-settings: ApiserverSettings = ApiserverSettings()
-adapter: AbstractLocationDataStorageAdapter = JsonFileStorageAdapter(settings)
-userdb: AbstractDBInterface = JsonDBInterface(settings)
-oauth2_scheme: OAuth2PasswordBearer = OAuth2PasswordBearer(tokenUrl="token")
+settings = ApiserverSettings()
+adapter = JsonFileStorageAdapter(settings)
+userdb = JsonDBInterface(settings)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-#### A NOTE ON IDS
+# A NOTE ON IDS
 # the id of a dataset is not yet defined, it could be simply generated, it could be based on some hash of the metadata or simple be the name, which would then need to be enforced to be unique
 # this might change some outputs of the GET functions that list reistered elements, but will very likely not change any part of the actual API
 
 
-# list types of data locations, currently datasets (will be provided by the pillars) and targets (possible storage locations for worklfow results or similar)
 @app.get("/")
 async def get_types():
-    return [{element.value : "/" + element.value} for element in LocationDataType]
+    # list types of data locations, currently datasets (will be provided by the pillars) and targets (possible storage locations for worklfow results or similar)
+    return [{element.value: "/" + element.value} for element in LocationDataType]
 
-# return information about the currently logged in user
+
 @app.get("/me", response_model=User)
 async def read_users_me(token: str = Depends(oauth2_scheme)):
+    # return information about the currently logged in user
     user = get_current_user(token, userdb)
     return user
-# authenticate with username/ password, return an auth-token
+
+
 @app.post("/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    # authenticate with username/ password, return an auth-token
     user = authenticate_user(userdb, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -66,39 +70,52 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-# list id and name of every registered dataset for the specified type
+
 @app.get("/{location_data_type}")
-async def list_datasets(location_data_type : LocationDataType):
+async def list_datasets(location_data_type: LocationDataType):
+    # list id and name of every registered dataset for the specified type
     return adapter.getList(location_data_type)
 
-# register a new dataset, the response will contain the new dataset and its id
+
 @app.put("/{location_data_type}")
-async def add_dataset(location_data_type : LocationDataType, dataset : LocationData, token: str = Depends(oauth2_scheme)):
-    usr: str = "testuser"
+async def add_dataset(location_data_type: LocationDataType, dataset: LocationData,
+                      token: str = Depends(oauth2_scheme)):
+    # register a new dataset, the response will contain the new dataset and its id
+    usr = "testuser"
     return adapter.addNew(location_data_type, dataset, usr)
 
-# returns all information about a specific dataset, identified by id
+
 @app.get("/{location_data_type}/{dataset_id}")
-async def get_specific_dataset(location_data_type : LocationDataType, dataset_id: str):
+async def get_specific_dataset(location_data_type: LocationDataType, dataset_id: str):
+    # returns all information about a specific dataset, identified by id
     try:
         return adapter.getDetails(location_data_type, dataset_id)
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail='The provided id does not exist for this datatype.')
+        raise HTTPException(
+            status_code=404, detail='The provided id does not exist for this datatype.')
 
-# update the information about a specific dataset, identified by id
+
 @app.put("/{location_data_type}/{dataset_id}")
-async def update_specific_dataset(location_data_type : LocationDataType, dataset_id: str, dataset : LocationData, token: str = Depends(oauth2_scheme)):
-    usr: str = "testuser"
+async def update_specific_dataset(location_data_type: LocationDataType,
+                                  dataset_id: str, dataset: LocationData,
+                                  token: str = Depends(oauth2_scheme)):
+    # update the information about a specific dataset, identified by id
+    usr = "testuser"
     try:
         return adapter.updateDetails(location_data_type, dataset_id, dataset, usr)
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail='The provided id does not exist for this datatype.')
+        raise HTTPException(
+            status_code=404, detail='The provided id does not exist for this datatype.')
 
-# delete a specific dataset
+
 @app.delete("/{location_data_type}/{dataset_id}")
-async def delete_specific_dataset(location_data_type : LocationDataType, dataset_id: str, token: str = Depends(oauth2_scheme)):
-    usr: str = "testuser"
+async def delete_specific_dataset(location_data_type: LocationDataType,
+                                  dataset_id: str,
+                                  token: str = Depends(oauth2_scheme)):
+    # delete a specific dataset
+    usr = "testuser"
     try:
         return adapter.delete(location_data_type, dataset_id, usr)
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail='The provided id does not exist for this datatype.')
+        raise HTTPException(
+            status_code=404, detail='The provided id does not exist for this datatype.')
