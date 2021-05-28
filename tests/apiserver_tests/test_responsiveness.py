@@ -12,15 +12,30 @@ class SomeTests(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(apiserver.app)
 
-    
     def test_root(self):
         rsp = self.client.get('/')
-        assert rsp.status_code >= 200 and rsp.status_code < 300 # any 200 response is fine, as a get to the root should not return any error
+        self.assertEqual(rsp.status_code, 200, 'Should return 200')
+        self.assertEqual(
+            rsp.json(), [{'dataset': '/dataset'}, {'storage_target': '/storage_target'}])
 
     def test_types(self):
         for location_type in storage.LocationDataType:
             rsp = self.client.get('/' + location_type.value)
-            assert rsp.status_code >= 200 and rsp.status_code < 300 # any 200 response is fine, as a get to the datatypes should not return any error
+            self.assertEqual(rsp.status_code, 200)
+
+    def test_get_datasets(self):
+        rsp = self.client.get('/dataset/')
+        self.assertEqual(rsp.status_code, 200)
+        self.assertEqual(rsp.json(), [])
+
+    def test_create_ds(self):
+        rsp = self.client.put('/dataset/3', json={"id": "foobar"})
+        self.assertEqual(rsp.status_code, 401)
+
+    def test_me(self):
+        rsp = self.client.get('/me')
+        self.assertEqual(rsp.status_code, 401, 'Auth required')
+
 
 # PUT a new dataset, store the id in global variable
 
