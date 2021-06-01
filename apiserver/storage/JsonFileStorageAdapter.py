@@ -8,14 +8,16 @@ from apiserver.config import ApiserverSettings
 from .LocationStorage import (AbstractLocationDataStorageAdapter, LocationData,
                               LocationDataType)
 
+#from dataclasses import dataclass, asdict
+#perhaps even that: 
+#from dataclasses_json import dataclass_json
 
-class StoredData:
+from pydantic import BaseModel
+
+#@dataclass
+class StoredData(BaseModel):
     actualData: LocationData
     users: List[str]
-
-    def toDict(self):
-        return {'actualData': self.actualData.__dict__, 'users': self.users}
-
 
 class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
     """ This stores LocationData via the StoredData Object as json files
@@ -35,14 +37,24 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         if not (os.path.exists(self.data_dir) and os.path.isdir(self.data_dir)):
             raise Exception(f"Data Directory {self.data_dir} does not exist.")
 
-    def __setup_path(self, value):
+    def __setup_path(self, value: str) -> str:
         localpath = os.path.join(self.data_dir, value)
         if not (os.path.isdir(localpath)):
-            # This type has apparently not yet been used at all, 
-            # create its directory and return an empty json file
             os.mkdir(localpath)
         return localpath
 
+    def __get_object_path(self, value: str, oid: str) -> str:
+        localpath = os.path.join(self.data_dir, value)
+        fullpath = os.path.join(localpath, oid)
+        if not os.path.isfile(fullpath):
+            raise FileNotFoundError(f"The requested object ({oid}) does not exist.")
+        return fullpath
+
+    def __get_unique_id(self, path: str) -> str:
+        oid = str(uuid.uuid4())
+        while (os.path.exists(os.path.join(path, oid))):
+            oid = str(uuid.uuid4())
+        return oid
 
     def get_list(self, n_type: LocationDataType) -> List:
         local_path = self.__setup_path(n_type.value)
@@ -52,59 +64,46 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         # and the LocationData name (which is inside the json)
         retList = []
         for f in allFiles:
-            with open(os.path.join(local_path, f)) as file:
-                data = json.load(file)
-                retList.append({data['actualData']['name']: f})
+            data = StoredData.parse_file(os.path.join(local_path, f))
+            #with open(os.path.join(local_path, f)) as file:
+            #    data = json.load(file)
+            retList.append({data.actualData.name: f})
         return retList
 
     def add_new(self, n_type: LocationDataType, data: LocationData, usr: str):
         localpath = self.__setup_path(value=n_type.value)
-        # create a unique oid, by randomly generating one, 
-        # and re-choosing if it is already taken
-        oid = str(uuid.uuid4())
-        while (os.path.exists(os.path.join(localpath, oid))):
-            oid = str(uuid.uuid4())
-        toStore = StoredData()
-        toStore.users = [usr]
-        toStore.actualData = data
+        oid = self.__get_unique_id(path=localpath)
+        toStore = StoredData(users=[usr], actualData=data)
         with open(os.path.join(localpath, oid), 'w') as json_file:
-            json.dump(toStore.toDict(), json_file)
-        return {oid: data}
+            json.dump(toStore.dict(), json_file)
+        return (oid, data)
 
-    def get_details(self, type: LocationDataType, oid: str):
-        localpath = os.path.join(self.data_dir, type.value)
-        fullpath = os.path.join(localpath, oid)
-        if not os.path.isfile(fullpath):
-            raise FileNotFoundError(f"The requested object ({oid}) does not exist.")
-        with open(fullpath) as file:
-            data = json.load(file)
-        return data['actualData']
+    def __load_object(self, path):
+        # move to data class? 
+        with open(path, 'r') as f:
+            data = json.load(f)
+        return data
 
-    def update_details(self, type: LocationDataType, oid: str, data: LocationData, usr: str):
-        localpath = os.path.join(self.data_dir, type.value)
-        fullpath = os.path.join(localpath, oid)
-        if not os.path.isfile(fullpath):
-            raise FileNotFoundError(f"The requested object ({oid}) does not exist.")
 
-        toStore = StoredData()
-        toStore.actualData = data
+    def get_details(self, n_type: LocationDataType, oid: str):
+        full_path = self.__get_object_path(value=n_type.value, oid=oid)
+        obj = self.__load_object(path=full_path)
+        return obj['actualData']
+        
 
-        # get permissions from old file
-        with open(fullpath) as file:
-            old_data = json.load(file)
-            toStore.users = old_data['users']
+    def update_details(self, n_type: LocationDataType, oid: str, data: LocationData, usr: str):
+        full_path = self.__get_object_path(value=n_type.value, oid=oid)
+        old_data = self.__load_object(path=full_path)
+        old_data['actualData']=data
 
-        with open(fullpath, 'w') as file:
-            json.dump(toStore.toDict(), file)
-        return {oid: data}
+        full_path = self.__get_object_path(value=n_type.value, oid=oid)
+        with open(full_path, 'w') as file:
+            json.dump(old_data.json(), file)
 
-    def delete(self, type: LocationDataType, oid: str, usr: str):
-        localpath = os.path.join(self.data_dir, type.value)
-        fullpath = os.path.join(localpath, oid)
+        return (oid, data)
 
-        if not os.path.isfile(fullpath):
-            raise FileNotFoundError(f"The requested object {oid} does not exist.")
-
+    def delete(self, n_type: LocationDataType, oid: str, usr: str):
+        fullpath = self.__get_object_path(value=n_type.value, oid=oid)
         os.remove(fullpath)
 
     def get_owner(self, type: LocationDataType, oid: str):

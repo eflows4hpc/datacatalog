@@ -1,7 +1,7 @@
 import unittest
 
-from apiserver.storage.JsonFileStorageAdapter import JsonFileStorageAdapter
-from apiserver.storage import LocationDataType
+from apiserver.storage.JsonFileStorageAdapter import JsonFileStorageAdapter, StoredData
+from apiserver.storage import LocationDataType, LocationData
 from collections import namedtuple 
 import os
 import pathlib
@@ -31,9 +31,27 @@ class SomeTests(unittest.TestCase):
         test_config = Settings('/tmp/json_test/blah/')
         self.assertRaises(Exception, JsonFileStorageAdapter, test_config)
 
-    
+    def test_add_new(self):
+        d = LocationData(name='bla', url='local')
+        (oid, data) = self.store.add_new(n_type=LocationDataType.DATASET, data=d, usr='test_user')
+        self.assertEquals(d, data, "Data should be equal")
+        self.assertIsNotNone(oid)
 
-    
-        
+    def test_add_and_read(self):
+        l_data = LocationData(name='test1', url='http://n.go', metadata=[])
+        (oid, data) = self.store.add_new(n_type=LocationDataType.DATASET, data=l_data, usr='test_user')
+        self.assertEquals(l_data, data, "Data should be equal")
+        self.assertIsNotNone(oid)
+        print(data)
+
+        lst = self.store.get_list(n_type=LocationDataType.DATASET)
+        self.assertEqual(len(lst), 1,  'One should be there')
+
+
+
+
+
+
+
 
         
