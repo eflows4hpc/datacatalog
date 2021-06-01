@@ -8,13 +8,8 @@ from apiserver.config import ApiserverSettings
 from .LocationStorage import (AbstractLocationDataStorageAdapter, LocationData,
                               LocationDataType)
 
-#from dataclasses import dataclass, asdict
-#perhaps even that: 
-#from dataclasses_json import dataclass_json
-
 from pydantic import BaseModel
 
-#@dataclass
 class StoredData(BaseModel):
     actualData: LocationData
     users: List[str]
@@ -49,6 +44,9 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         if not os.path.isfile(fullpath):
             raise FileNotFoundError(f"The requested object ({oid}) does not exist.")
         return fullpath
+    
+    def __load_object(self, path):
+        return StoredData.parse_file(path)
 
     def __get_unique_id(self, path: str) -> str:
         oid = str(uuid.uuid4())
@@ -58,15 +56,12 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
 
     def get_list(self, n_type: LocationDataType) -> List:
         local_path = self.__setup_path(n_type.value)
-        allFiles = [f for f in os.listdir(
-            local_path) if os.path.isfile(os.path.join(local_path, f))]
-        # now each file has to be checked for its filename (= oid) 
-        # and the LocationData name (which is inside the json)
         retList = []
-        for f in allFiles:
-            data = StoredData.parse_file(os.path.join(local_path, f))
-            #with open(os.path.join(local_path, f)) as file:
-            #    data = json.load(file)
+        for f in os.listdir(local_path):
+            p = os.path.join(local_path, f)
+            if not os.path.isfile(p):
+                continue
+            data = self.__load_object(p)
             retList.append({data.actualData.name: f})
         return retList
 
@@ -78,27 +73,20 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
             json.dump(toStore.dict(), json_file)
         return (oid, data)
 
-    def __load_object(self, path):
-        # move to data class? 
-        with open(path, 'r') as f:
-            data = json.load(f)
-        return data
-
-
     def get_details(self, n_type: LocationDataType, oid: str):
         full_path = self.__get_object_path(value=n_type.value, oid=oid)
         obj = self.__load_object(path=full_path)
-        return obj['actualData']
+        return obj.actualData
         
 
     def update_details(self, n_type: LocationDataType, oid: str, data: LocationData, usr: str):
+        # TODO: usr is ignored here? 
         full_path = self.__get_object_path(value=n_type.value, oid=oid)
-        old_data = self.__load_object(path=full_path)
-        old_data['actualData']=data
+        obj = self.__load_object(path=full_path)
+        obj.actualData = data
 
-        full_path = self.__get_object_path(value=n_type.value, oid=oid)
-        with open(full_path, 'w') as file:
-            json.dump(old_data.json(), file)
+        with open(full_path, 'w') as f:
+            json.dump(obj.dict(), f)
 
         return (oid, data)
 
