@@ -1,12 +1,12 @@
-import os
 import json
+import os
 import uuid
-
-from .LocationStorage import AbstractLocationDataStorageAdapter, LocationData, LocationDataType
+from typing import List
 
 from apiserver.config import ApiserverSettings
 
-from typing import List
+from .LocationStorage import (AbstractLocationDataStorageAdapter, LocationData,
+                              LocationDataType)
 
 
 class StoredData:
@@ -35,31 +35,30 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         if not (os.path.exists(self.data_dir) and os.path.isdir(self.data_dir)):
             raise Exception(f"Data Directory {self.data_dir} does not exist.")
 
-    def get_list(self, type: LocationDataType) -> List:
-        localpath = os.path.join(self.data_dir, type.value)
+    def __setup_path(self, value):
+        localpath = os.path.join(self.data_dir, value)
         if not (os.path.isdir(localpath)):
             # This type has apparently not yet been used at all, 
             # create its directory and return an empty json file
             os.mkdir(localpath)
-            return []
-        else:
-            allFiles = [f for f in os.listdir(
-                localpath) if os.path.isfile(os.path.join(localpath, f))]
-            # now each file has to be checked for its filename (= oid) 
-            # and the LocationData name (which is inside the json)
-            retList = []
-            for f in allFiles:
-                with open(os.path.join(localpath, f)) as file:
-                    data = json.load(file)
-                    retList.append({data['actualData']['name']: f})
-            return retList
+        return localpath
 
-    def add_new(self, type: LocationDataType, data: LocationData, usr: str):
-        localpath = os.path.join(self.data_dir, type.value)
-        if not (os.path.isdir(localpath)):
-            # This type has apparently not yet been used at all, 
-            # therefore we need to create its directory
-            os.mkdir(localpath)
+
+    def get_list(self, n_type: LocationDataType) -> List:
+        local_path = self.__setup_path(n_type.value)
+        allFiles = [f for f in os.listdir(
+            local_path) if os.path.isfile(os.path.join(local_path, f))]
+        # now each file has to be checked for its filename (= oid) 
+        # and the LocationData name (which is inside the json)
+        retList = []
+        for f in allFiles:
+            with open(os.path.join(local_path, f)) as file:
+                data = json.load(file)
+                retList.append({data['actualData']['name']: f})
+        return retList
+
+    def add_new(self, n_type: LocationDataType, data: LocationData, usr: str):
+        localpath = self.__setup_path(value=n_type.value)
         # create a unique oid, by randomly generating one, 
         # and re-choosing if it is already taken
         oid = str(uuid.uuid4())

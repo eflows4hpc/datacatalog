@@ -1,9 +1,8 @@
 
-from pydantic import BaseModel
-
-from typing import Optional
-from typing import Dict
 from enum import Enum
+from typing import Dict, Optional, List
+
+from pydantic import BaseModel
 
 
 class LocationDataType(Enum):
@@ -36,38 +35,40 @@ class AbstractLocationDataStorageAdapter:
     done by the caller, this adapter assumes that the user id fulfills the criteria.
     Permissions are stored as a list of user ids, and every id is authorized for full access.
     '''
-    # get a list of all LocationData Elements with the provided type, as pairs of {name : id}
 
-    def get_list(self, type: LocationDataType):
+    def get_list(self, n_type: LocationDataType) -> List:
+        # get a list of all LocationData Elements with the provided type, as pairs of {name : id}
         raise NotImplementedError()
 
-    # add a new element of the provided type, assign and return the id and the new data as {id : LocationData}
-    def add_new(self, type: LocationDataType, data: LocationData, usr: str):
+    def add_new(self, n_type: LocationDataType, data: LocationData, usr: str):
+        # add a new element of the provided type, assign and return the id and 
+        # the new data as {id : LocationData}
         raise NotImplementedError()
 
-    # return the LocationData of the requested object (identified by oid and type)
-    def get_details(self, type: LocationDataType, oid: str):
+    def get_details(self, n_type: LocationDataType, oid: str):
+        # return the LocationData of the requested object (identified by oid and type)
         raise NotImplementedError()
 
-    # change the details of the requested object, return {oid : newData}
-    def update_details(self, type: LocationDataType, oid: str, data: LocationData, usr: str):
+    def update_details(self, n_type: LocationDataType, oid: str, data: LocationData, usr: str):
+        # change the details of the requested object, return {oid : newData}
         raise NotImplementedError()
 
-    def delete(self, type: LocationDataType, oid: str, usr: str):
+    def delete(self, n_type: LocationDataType, oid: str, usr: str):
         raise NotImplementedError()
 
-    # return the owner of the requested object; if multiple owners are set, return them is a list
-    def get_owner(self, type: LocationDataType, oid: str):
+    def get_owner(self, n_type: LocationDataType, oid: str):
+        # return the owner of the requested object; if multiple owners are set, 
+        # return them is a list
         raise NotImplementedError()
 
-    # check if the given user has permission to change the given object
-    def check_perm(self, type: LocationDataType, oid: str, usr: str):
+    def check_perm(self, n_type: LocationDataType, oid: str, usr: str):
+        # check if the given user has permission to change the given object
         raise NotImplementedError()
 
-    # add user to file perm
-    def add_perm(self, type: LocationDataType, oid: str, usr: str):
+    def add_perm(self, n_type: LocationDataType, oid: str, usr: str):
+        # add user to file perm
         raise NotImplementedError()
 
-    # remove user from file perm
-    def rm_perm(self, type: LocationDataType, oid: str, usr: str):
+    def rm_perm(self, n_type: LocationDataType, oid: str, usr: str):
+        # remove user from file perm
         raise NotImplementedError()
