@@ -24,7 +24,7 @@ class UserTests(unittest.TestCase):
             shutil.rmtree(self.path)
 
     def test_init(self):
-        self.assertEquals(0,0)
+        self.assertEqual(0,0)
 
     def test_list(self):
         lst = self.userdb.list()
@@ -38,7 +38,7 @@ class UserTests(unittest.TestCase):
         self.userdb.add(user=self.a_user)
 
         lst = self.userdb.list()
-        self.assertEquals(len(lst), 1, 'Should not be empty')
+        self.assertEqual(len(lst), 1, 'Should not be empty')
 
         g_user = self.userdb.get(username='test7')
         self.assertEqual(g_user.username, self.a_user.username)
@@ -51,15 +51,15 @@ class UserTests(unittest.TestCase):
     def test_delete(self):
         self.userdb.add(user=self.a_user)
         lst = self.userdb.list()
-        self.assertEquals(len(lst), 1, 'Should not be empty')
+        self.assertEqual(len(lst), 1, 'Should not be empty')
 
         self.userdb.delete(username='test7')
         lst = self.userdb.list()
-        self.assertEquals(len(lst), 0, 'Should be empty')
+        self.assertEqual(len(lst), 0, 'Should be empty')
 
         self.userdb.add(user=self.a_user)
         self.userdb.add(user=self.b_user)
-        self.assertEquals(len(self.userdb.list()), 2, 'Should not be empty')
+        self.assertEqual(len(self.userdb.list()), 2, 'Should not be empty')
         self.assertListEqual(self.userdb.list(), [self.a_user.username, self.b_user.username])
         
         self.userdb.delete(username='test7')
