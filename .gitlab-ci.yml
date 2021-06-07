@@ -2,5 +2,5 @@ default:
   image: python:3-slim
 test:
   script:
-   - pip install -r requirements.txt
-   - pytest 
+   - pip install -r testing_requirements.txt
+   - nosetests --with-coverage --cover-package=apiserver
