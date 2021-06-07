@@ -48,9 +48,9 @@ class SomeTests(unittest.TestCase):
 
         lst = self.store.get_list(n_type=LocationDataType.DATASET)
         self.assertEqual(len(lst), 1,  'One should be there')
-        m_o = lst[0]
-        self.assertEqual(list(m_o.keys())[0], l_data.name)
-        self.assertEqual(list(m_o.values())[0], oid)
+        (n_name, n_o) = lst[0]
+        self.assertEqual(n_name, l_data.name)
+        self.assertEqual(n_o, oid)
 
     def test_get_details(self):
         # get_details(self, n_type: LocationDataType, oid: str):

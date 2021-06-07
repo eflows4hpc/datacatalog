@@ -18,6 +18,7 @@ class UserTests(TestCase):
         
     def tearDown(self):
         apiserver.app.dependency_overrides={}
+
     
     def test_me(self):
        
@@ -44,4 +45,25 @@ class UserTests(TestCase):
         self.assertIsNotNone(oid)
         self.assertEqual(dty, my_data)
 
-        self.client.delete(f'/dataset/{oid}')
+        self.client.delete(f"/dataset/{oid}")
+
+
+    def test_create_and_get(self):
+        dss = [{'name': f"ds_{i}", 'url': f"http://www.o.com/{i}"} for i in range(5)]
+        for d in dss:
+            rsp = self.client.post('/dataset', json=d)
+            self.assertEqual(rsp.status_code, 200)
+            (oid, dty) = rsp.json()
+            d['id'] = oid
+
+        
+
+        for d in dss:
+            i = d['id']
+            rsp = self.client.get(f"/dataset/{i}")
+            self.assertEqual(rsp.status_code, 200)
+            dty = rsp.json()
+            self.assertEqual(d['name'], dty['name'])
+            self.assertEqual(d['url'], dty['url'])
+
+            self.client.delete(f"/dataset/{i}")

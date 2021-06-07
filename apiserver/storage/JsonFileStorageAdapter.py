@@ -65,7 +65,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
             if not os.path.isfile(p):
                 continue
             data = self.__load_object(p)
-            retList.append({data.actualData.name: f})
+            retList.append((data.actualData.name, f))
         return retList
 
     def add_new(self, n_type: LocationDataType, data: LocationData, user_name: str):
@@ -94,6 +94,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
 
     def delete(self, n_type: LocationDataType, oid: str, usr: str):
         fullpath = self.__get_object_path(value=n_type.value, oid=oid)
+        print(f"Removing {fullpath}")
         os.remove(fullpath)
 
     def get_owner(self, type: LocationDataType, oid: str):
