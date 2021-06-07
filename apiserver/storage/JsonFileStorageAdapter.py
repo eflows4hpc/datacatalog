@@ -94,7 +94,6 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
 
     def delete(self, n_type: LocationDataType, oid: str, usr: str):
         fullpath = self.__get_object_path(value=n_type.value, oid=oid)
-        print(f"Removing {fullpath}")
         os.remove(fullpath)
 
     def get_owner(self, type: LocationDataType, oid: str):

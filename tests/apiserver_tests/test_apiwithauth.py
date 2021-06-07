@@ -56,8 +56,6 @@ class UserTests(TestCase):
             (oid, dty) = rsp.json()
             d['id'] = oid
 
-        
-
         for d in dss:
             i = d['id']
             rsp = self.client.get(f"/dataset/{i}")
@@ -67,3 +65,53 @@ class UserTests(TestCase):
             self.assertEqual(d['url'], dty['url'])
 
             self.client.delete(f"/dataset/{i}")
+
+    def test_create_and_delete(self):
+        lst = self.client.get('/dataset').json()
+        self.assertEqual(len(lst), 0)
+
+        self.client.post('/dataset', json={
+            'name': 'new_obj',
+            'url': 'some_url'
+        })
+
+        lst = self.client.get('/dataset').json()
+        self.assertEqual(len(lst), 1, 'Should be 1 now')
+
+        for r in lst:
+            (name, oid) = r
+            rsp = self.client.delete(f"/dataset/{oid}")
+            self.assertEqual(rsp.status_code, 200)
+
+        lst = self.client.get('/dataset').json()
+        self.assertEqual(len(lst), 0, 'Should be empty now')
+
+    def test_update(self):
+
+        rsp = self.client.post('/dataset', 
+        json={
+                'name': 'new_obj',
+                'url': 'some_url'
+            }
+            )
+        (oid, name) = rsp.json()
+
+        rsp = self.client.put(f"/dataset/{oid}", json={
+            'name': 'new_name',
+            'url': 'new_url',
+            'metadata': {
+                'key': 'value'
+            }
+        }
+        )
+        self.assertEqual(rsp.status_code, 200)
+
+        rsp2 = self.client.get(f"/dataset/{oid}")
+        self.assertEqual(rsp2.status_code, 200)
+        dd = rsp2.json()
+        self.assertEqual(dd['name'], 'new_name')
+        self.assertEqual(dd['url'], 'new_url')
+        self.assertEqual(dd['metadata'], {'key': 'value'})
+
+        self.client.delete(f"/dataset/{oid}")
+
