@@ -1,13 +1,13 @@
+import abc
 import json
 import os
 import warnings
 from datetime import datetime, timedelta
-from typing import Optional, List
+from typing import List, Optional
 
 from fastapi import Depends, HTTPException, status
 from passlib.context import CryptContext
 from pydantic import BaseModel
-import abc
 
 from apiserver.config import ApiserverSettings
 
@@ -62,6 +62,7 @@ class AbstractDBInterface(metaclass=abc.ABCMeta):
 class JsonDBInterface(AbstractDBInterface):
     
     def __init__(self, settings: ApiserverSettings):
+        print(f"Recreating userdb {settings}")
         self.filePath = settings.userdb_path
         if not (os.path.exists(self.filePath) and os.path.isfile(self.filePath)):
             # create empty json
@@ -85,7 +86,7 @@ class JsonDBInterface(AbstractDBInterface):
     def get(self, username: str):
         data = self.__read_all()
         if username not in data:
-            raise Exception(f"User {username} not in database")
+            raise Exception(f"User {username} not in database {self.filePath}")
         
         return UserInDB(**data[username])
 

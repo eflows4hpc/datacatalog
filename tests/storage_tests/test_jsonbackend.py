@@ -35,14 +35,14 @@ class SomeTests(unittest.TestCase):
     def test_add_new(self):
         d = LocationData(name='bla', url='local')
         (oid, data) = self.store.add_new(
-            n_type=LocationDataType.DATASET, data=d, usr='test_user')
+            n_type=LocationDataType.DATASET, data=d, user_name='test_user')
         self.assertEqual(d, data, "Data should be equal")
         self.assertIsNotNone(oid)
 
     def test_add_and_read(self):
         l_data = LocationData(name='test1', url='http://n.go', metadata=[])
         (oid, data) = self.store.add_new(
-            n_type=LocationDataType.DATASET, data=l_data, usr='test_user')
+            n_type=LocationDataType.DATASET, data=l_data, user_name='test_user')
         self.assertEqual(l_data, data, "Data should be equal")
         self.assertIsNotNone(oid)
 
@@ -56,7 +56,7 @@ class SomeTests(unittest.TestCase):
         # get_details(self, n_type: LocationDataType, oid: str):
         l_data = LocationData(name='test1', url='http://n.go', metadata=[])
         (oid, data) = self.store.add_new(
-            n_type=LocationDataType.DATASET, data=l_data, usr='test_user')
+            n_type=LocationDataType.DATASET, data=l_data, user_name='test_user')
         self.assertEqual(l_data, data, "Data should be equal")
         self.assertIsNotNone(oid)
 
@@ -73,7 +73,7 @@ class SomeTests(unittest.TestCase):
         new_data = LocationData(
             name='test2', url='http://go.n', metadata={'key': 'value'})
         (oid, data) = self.store.add_new(
-            n_type=LocationDataType.DATASET, data=l_data, usr='test_user')
+            n_type=LocationDataType.DATASET, data=l_data, user_name='test_user')
         self.assertEqual(l_data, data, "Data should be equal")
         self.assertIsNotNone(oid)
 

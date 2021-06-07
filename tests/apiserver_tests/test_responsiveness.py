@@ -1,12 +1,12 @@
 from fastapi.testclient import TestClient
 
-from context import apiserver
-from context import storage
+from context import apiserver, storage
 import unittest
 
 
-class SomeTests(unittest.TestCase):
+class NonAuthTests(unittest.TestCase):
     def setUp(self):
+        #TODO: we should do better here (cleanup or use some testing dir)
         self.client = TestClient(apiserver.app)
 
     def test_root(self):
@@ -33,9 +33,6 @@ class SomeTests(unittest.TestCase):
         rsp = self.client.get('/me')
         self.assertEqual(rsp.status_code, 401, 'Auth required')
 
-
-# PUT a new dataset, store the id in global variable
-
-# GET the specific dataset
-
-# DELETE the specific dataset
+    def test_token(self):
+        rsp = self.client.post('/token', data={'username': 'foo', 'password': 'bar'})
+        self.assertEqual(rsp.status_code, 401, 'Ath')

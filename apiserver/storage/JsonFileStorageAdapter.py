@@ -3,16 +3,18 @@ import os
 import uuid
 from typing import List
 
+from pydantic import BaseModel
+
 from apiserver.config import ApiserverSettings
 
 from .LocationStorage import (AbstractLocationDataStorageAdapter, LocationData,
                               LocationDataType)
 
-from pydantic import BaseModel
 
 class StoredData(BaseModel):
     actualData: LocationData
     users: List[str]
+
 
 class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
     """ This stores LocationData via the StoredData Object as json files
@@ -42,9 +44,10 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         localpath = os.path.join(self.data_dir, value)
         fullpath = os.path.join(localpath, oid)
         if not os.path.isfile(fullpath):
-            raise FileNotFoundError(f"The requested object ({oid}) does not exist.")
+            raise FileNotFoundError(
+                f"The requested object ({oid}) does not exist.")
         return fullpath
-    
+
     def __load_object(self, path):
         return StoredData.parse_file(path)
 
@@ -65,10 +68,10 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
             retList.append({data.actualData.name: f})
         return retList
 
-    def add_new(self, n_type: LocationDataType, data: LocationData, usr: str):
+    def add_new(self, n_type: LocationDataType, data: LocationData, user_name: str):
         localpath = self.__setup_path(value=n_type.value)
         oid = self.__get_unique_id(path=localpath)
-        toStore = StoredData(users=[usr], actualData=data)
+        toStore = StoredData(users=[user_name], actualData=data)
         with open(os.path.join(localpath, oid), 'w') as json_file:
             json.dump(toStore.dict(), json_file)
         return (oid, data)
@@ -77,10 +80,9 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         full_path = self.__get_object_path(value=n_type.value, oid=oid)
         obj = self.__load_object(path=full_path)
         return obj.actualData
-        
 
     def update_details(self, n_type: LocationDataType, oid: str, data: LocationData, usr: str):
-        # TODO: usr is ignored here? 
+        # TODO: usr is ignored here?
         full_path = self.__get_object_path(value=n_type.value, oid=oid)
         obj = self.__load_object(path=full_path)
         obj.actualData = data
