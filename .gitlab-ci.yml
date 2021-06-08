@@ -1,9 +1,9 @@
-default:
-  image: python:3-slim
-test:
-  script:
-   - pip install -r requirements.txt
-   - pytest 
+# default:
+#   image: python:3-slim
+# test:
+#   script:
+#    - pip install -r requirements.txt
+#    - pytest 
 
 pages:
   cache: {}
