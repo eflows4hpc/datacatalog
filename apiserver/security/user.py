@@ -1,3 +1,4 @@
+import logging
 import abc
 import json
 import os
@@ -5,7 +6,7 @@ import warnings
 from datetime import datetime, timedelta
 from typing import List, Optional
 
-from fastapi import Depends, HTTPException, status
+from fastapi import HTTPException, status
 from passlib.context import CryptContext
 from pydantic import BaseModel
 
@@ -56,11 +57,11 @@ class AbstractDBInterface(metaclass=abc.ABCMeta):
 
 
 class JsonDBInterface(AbstractDBInterface):
-    
+
     def __init__(self, settings: ApiserverSettings):
-        print(f"Recreating userdb {settings}")
-        self.filePath = settings.userdb_path
-        if not (os.path.exists(self.filePath) and os.path.isfile(self.filePath)):
+        logging.info("Recreating userdb %s", settings)
+        self.file_path = settings.userdb_path
+        if not (os.path.exists(self.file_path) and os.path.isfile(self.file_path)):
             # create empty json
             self.__save_all({})
         else:
@@ -68,11 +69,11 @@ class JsonDBInterface(AbstractDBInterface):
             _ = self.__read_all()
 
     def __read_all(self):
-        with open(self.filePath, 'r') as f:
+        with open(self.file_path, 'r') as f:
             return json.load(f)
-        
+
     def __save_all(self, data):
-        with open(self.filePath, 'w') as f:
+        with open(self.file_path, 'w') as f:
             json.dump(data, f)
 
     def list(self):
@@ -83,15 +84,15 @@ class JsonDBInterface(AbstractDBInterface):
         data = self.__read_all()
         if username not in data:
             return None
-        
+
         return UserInDB(**data[username])
 
     def add(self, user: UserInDB):
         data = self.__read_all()
-        if  user.username in data:
+        if user.username in data:
             raise Exception(f"User {user.username} already exists!")
-        
-        data[user.username] = user.dict()    
+
+        data[user.username] = user.dict()
         self.__save_all(data=data)
 
     def delete(self, username: str):
@@ -125,21 +126,22 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = timedel
     expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    
+
 
 credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Could not validate credentials",
+    headers={"WWW-Authenticate": "Bearer"},
+)
+
+
 def get_current_user(token: str, userdb: AbstractDBInterface):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
-        if (username is None) or ((user:=userdb.get(username)) is None):
+        if (username is None) or ((user := userdb.get(username)) is None):
             raise credentials_exception
-        
+
         return user
     except JWTError:
-        raise credentials_exception
+        raise credentials_exception from JWTError

@@ -15,16 +15,24 @@ class StoredData(BaseModel):
     actualData: LocationData
     users: List[str]
 
+def load_object(path):
+    return StoredData.parse_file(path)
+
+def get_unique_id(path: str) -> str:
+    oid = str(uuid.uuid4())
+    while os.path.exists(os.path.join(path, oid)):
+        oid = str(uuid.uuid4())
+    return oid
 
 class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
     """ This stores LocationData via the StoredData Object as json files
 
-    These Jsonfiles then contain the actualData, as well as the users with permissions 
-    for this LocationData all users have full permission to to anything with 
-    this dataobject, uncluding removing their own access (this might trigger a 
+    These Jsonfiles then contain the actualData, as well as the users with permissions
+    for this LocationData all users have full permission to to anything with
+    this dataobject, uncluding removing their own access (this might trigger a
     confirmation via the frontend, but this is not enforced via the api)
 
-    IMPORTANT: The adapter does not check for authentication or authorization, 
+    IMPORTANT: The adapter does not check for authentication or authorization,
     it should only be invoked if the permissions have been checked
     """
 
@@ -36,7 +44,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
 
     def __setup_path(self, value: str) -> str:
         localpath = os.path.join(self.data_dir, value)
-        if not (os.path.isdir(localpath)):
+        if not os.path.isdir(localpath):
             os.mkdir(localpath)
         return localpath
 
@@ -48,43 +56,34 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
                 f"The requested object ({oid}) does not exist.")
         return fullpath
 
-    def __load_object(self, path):
-        return StoredData.parse_file(path)
-
-    def __get_unique_id(self, path: str) -> str:
-        oid = str(uuid.uuid4())
-        while (os.path.exists(os.path.join(path, oid))):
-            oid = str(uuid.uuid4())
-        return oid
-
     def get_list(self, n_type: LocationDataType) -> List:
         local_path = self.__setup_path(n_type.value)
-        retList = []
+        ret = []
         for f in os.listdir(local_path):
             p = os.path.join(local_path, f)
             if not os.path.isfile(p):
                 continue
-            data = self.__load_object(p)
-            retList.append((data.actualData.name, f))
-        return retList
+            data = load_object(p)
+            ret.append((data.actualData.name, f))
+        return ret
 
     def add_new(self, n_type: LocationDataType, data: LocationData, user_name: str):
         localpath = self.__setup_path(value=n_type.value)
-        oid = self.__get_unique_id(path=localpath)
-        toStore = StoredData(users=[user_name], actualData=data)
+        oid = get_unique_id(path=localpath)
+        to_store = StoredData(users=[user_name], actualData=data)
         with open(os.path.join(localpath, oid), 'w') as json_file:
-            json.dump(toStore.dict(), json_file)
+            json.dump(to_store.dict(), json_file)
         return (oid, data)
 
     def get_details(self, n_type: LocationDataType, oid: str):
         full_path = self.__get_object_path(value=n_type.value, oid=oid)
-        obj = self.__load_object(path=full_path)
+        obj = load_object(path=full_path)
         return obj.actualData
 
     def update_details(self, n_type: LocationDataType, oid: str, data: LocationData, usr: str):
         # TODO: usr is ignored here?
         full_path = self.__get_object_path(value=n_type.value, oid=oid)
-        obj = self.__load_object(path=full_path)
+        obj = load_object(path=full_path)
         obj.actualData = data
 
         with open(full_path, 'w') as f:
@@ -93,17 +92,19 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         return (oid, data)
 
     def delete(self, n_type: LocationDataType, oid: str, usr: str):
-        fullpath = self.__get_object_path(value=n_type.value, oid=oid)
-        os.remove(fullpath)
+        full_path = self.__get_object_path(value=n_type.value, oid=oid)
+        os.remove(full_path)
 
-    def get_owner(self, type: LocationDataType, oid: str):
+    def get_owner(self, n_type: LocationDataType, oid: str):
         raise NotImplementedError()
 
-    def check_perm(self, type: LocationDataType, oid: str, usr: str):
+    def check_perm(self, n_type: LocationDataType, oid: str, usr: str):
         raise NotImplementedError()
 
-    def add_perm(self, type: LocationDataType, oid: str, authUsr: str, newUser: str):
+    def add_perm(self, n_type: LocationDataType, oid: str, usr: str):
+        """add user to file perm"""
         raise NotImplementedError()
 
-    def rm_perm(self, type: LocationDataType, oid: str, usr: str, rmUser: str):
+    def rm_perm(self, n_type: LocationDataType, oid: str, usr: str):
+        """remove user from file perm"""
         raise NotImplementedError()

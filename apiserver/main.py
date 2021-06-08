@@ -1,18 +1,17 @@
+import logging
 from datetime import timedelta
 from enum import Enum
-from typing import Dict, Optional
 
-from fastapi import FastAPI, HTTPException, status, Request
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.param_functions import Depends
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from .config import ApiserverSettings
-from .security import (ACCESS_TOKEN_EXPIRES_MINUTES, AbstractDBInterface,
-                       JsonDBInterface, Token, User, authenticate_user,
-                       create_access_token, get_current_user)
-from .storage import (AbstractLocationDataStorageAdapter,
-                      JsonFileStorageAdapter, LocationData, LocationDataType)
+from .security import (ACCESS_TOKEN_EXPIRES_MINUTES, JsonDBInterface, Token,
+                       User, authenticate_user, create_access_token,
+                       get_current_user)
+from .storage import JsonFileStorageAdapter, LocationData, LocationDataType
 
 
 class ReservedPaths(str, Enum):
@@ -46,7 +45,7 @@ def my_user(token=Depends(oauth2_scheme)):
 
 def my_auth(form_data: OAuth2PasswordRequestForm = Depends()):
     return authenticate_user(userdb, form_data.username, form_data.password)
-    
+
 @app.get("/")
 async def get_types():
     # list types of data locations, currently datasets
@@ -95,16 +94,15 @@ async def add_dataset(location_data_type: LocationDataType,
 async def get_specific_dataset(location_data_type: LocationDataType, dataset_id: str):
     # returns all information about a specific dataset, identified by id
     return adapter.get_details(location_data_type, dataset_id)
-    
+
 
 @app.put("/{location_data_type}/{dataset_id}")
 async def update_specific_dataset(location_data_type: LocationDataType,
                                   dataset_id: str, dataset: LocationData,
                                   user: User = Depends(my_user)):
     # update the information about a specific dataset, identified by id
-   
     return adapter.update_details(location_data_type, dataset_id, dataset, user.username)
-    
+
 
 @app.delete("/{location_data_type}/{dataset_id}")
 async def delete_specific_dataset(location_data_type: LocationDataType,
@@ -113,10 +111,11 @@ async def delete_specific_dataset(location_data_type: LocationDataType,
     # delete a specific dataset
     # TODO: 404 is the right answer? 204 could also be the right one
     return adapter.delete(location_data_type, dataset_id, user.username)
-    
+
 
 @app.exception_handler(FileNotFoundError)
-async def not_found_handler(request: Request, exc: FileNotFoundError):
+async def not_found_handler(request: Request, ex: FileNotFoundError):
     oid=request.path_params.get('dataset_id', '')
-    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND, 
+    logging.error("File not found translated %s", ex)
+    return JSONResponse(status_code=status.HTTP_404_NOT_FOUND,
                         content={'message':f"Object {oid} does not exist"})
