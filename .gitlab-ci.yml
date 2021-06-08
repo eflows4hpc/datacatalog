@@ -1,15 +1,17 @@
 default:
   image: python:3-slim
 
-stages:
-  - test
-  - build
-  - deploy
+# stages:
+#   - test
+#   - build
+#   - deploy
+
+before_script:
+  - pip install -r requirements.txt
 
 test:
   stage: test
-  script:
-   - pip install -r requirements.txt
+  script: 
    - pytest 
 
 build:
