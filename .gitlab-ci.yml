@@ -1,26 +1,35 @@
 default:
   image: python:3-slim
 
-# stages:
-#   - test
-#   - pages
-# test:
-#   script:
-#    - pip install -r requirements.txt
-#    - pytest 
+stages:
+  - test
+  - build
+  - pages
+
+test:
+  stage: test
+  script:
+   - pip install -r requirements.txt
+   - pytest 
+
+build:
+  stage: build
+  scripts:
+    - python frontend/createStatic.py
+    - echo "static web content has been built"
 
 pages:
   cache: {}
   stage: deploy
   script:
   - echo "Deployment starting..."
-  - pip install -r requirements.txt
-  - python frontend/createStatic.py
+  # - pip install -r requirements.txt
+  # - python frontend/createStatic.py
   # - docker build -t datacatalog-apiserver ./apiserver
   # - docker run -d --name my_container -p 127.0.0.1:8080:80 datacalog-apiserver
   - mkdir public
   - cp -r site/* public/
-  - echo "Deployment finished"
+  - echo "Deployment finished. Missing API server"
   artifacts:
     paths:
     - public
