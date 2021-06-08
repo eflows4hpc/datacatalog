@@ -98,7 +98,7 @@ while in the project root directory.
 
 To run the docker image in a local container, run 
 ```bash
-docker run -d --name <container name> -p 127.0.0.1:<local_port>:80 datacalog-apiserver
+docker run -d --name <container name> -p 127.0.0.1:<local_port>:8000 datacalog-apiserver
 ```
 
 `<container name>` is the name of your container, that can be used to refer to it with other docker commands.
