@@ -19,7 +19,7 @@ pages:
   # - docker build -t datacatalog-apiserver ./apiserver
   # - docker run -d --name my_container -p 127.0.0.1:8080:80 datacalog-apiserver
   - mkdir public
-  - cp site/* public/
+  - cp -r site/* public/
   - echo "Deployment finished"
   artifacts:
     paths:
