@@ -31,7 +31,8 @@ class UserTests(unittest.TestCase):
         self.assertListEqual(lst, [], 'Should be empty')
 
     def test_empty_get(self):
-        self.assertRaises(Exception, self.userdb.get, 'foo')
+        #self.assertRaises(Exception, self.userdb.get, 'foo')
+        self.assertIsNone(self.userdb.get('foo'))
         
     def test_adding(self):
         

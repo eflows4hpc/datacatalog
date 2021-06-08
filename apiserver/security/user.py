@@ -28,10 +28,6 @@ class Token(BaseModel):
     token_type: str
 
 
-class TokenData(BaseModel):
-    username: Optional[str] = None
-
-
 class User(BaseModel):
     username: str
     email: str = None
@@ -86,7 +82,7 @@ class JsonDBInterface(AbstractDBInterface):
     def get(self, username: str):
         data = self.__read_all()
         if username not in data:
-            raise Exception(f"User {username} not in database {self.filePath}")
+            return None
         
         return UserInDB(**data[username])
 
@@ -119,11 +115,9 @@ def get_password_hash(password):
 
 def authenticate_user(userdb: AbstractDBInterface, username: str, password: str):
     user: UserInDB = get_user(userdb, username)
-    if not user:
-        return False
-    if not verify_password(password, user.hashed_password):
-        return False
-    return user
+    if user and verify_password(password, user.hashed_password):
+        return user
+    return None
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -140,22 +134,19 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 def get_user(db: AbstractDBInterface, username: str):
     return db.get(username)
 
-
-def get_current_user(token: str, userdb: AbstractDBInterface):
-    credentials_exception = HTTPException(
+credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    
+def get_current_user(token: str, userdb: AbstractDBInterface):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
-        if username is None:
+        if (username is None) or ((user:=get_user(userdb, username)) is None):
             raise credentials_exception
-        token_data = TokenData(username=username)
+        
+        return user
     except JWTError:
         raise credentials_exception
-    user = get_user(userdb, token_data.username)
-    if user is None:
-        raise credentials_exception
-    return user
