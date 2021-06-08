@@ -1,3 +1,6 @@
+"""
+Main module of data catalog api
+"""
 import logging
 from datetime import timedelta
 from enum import Enum
@@ -31,13 +34,6 @@ adapter = JsonFileStorageAdapter(settings)
 userdb = JsonDBInterface(settings)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=ReservedPaths.TOKEN)
 
-# A NOTE ON IDS
-# the id of a dataset is not yet defined, it could be simply generated,
-# it could be based on some hash of the metadata or simple be the name,
-# which would then need to be enforced to be unique
-#
-# this might change some outputs of the GET functions that list
-# reistered elements, but will very likely not change any part of the actual API
 
 
 def my_user(token=Depends(oauth2_scheme)):
@@ -48,21 +44,23 @@ def my_auth(form_data: OAuth2PasswordRequestForm = Depends()):
 
 @app.get("/")
 async def get_types():
-    # list types of data locations, currently datasets
-    # (will be provided by the pillars) and targets (possible storage
-    #  locations for worklfow results or similar)
+    """
+    list types of data locations, currently datasets
+    (will be provided by the pillars) and targets (possible storage
+    locations for worklfow results or similar)
+    """
     return [{element.value: "/" + element.value} for element in LocationDataType]
 
 
 @app.get("/me", response_model=User)
 async def read_users_me(user=Depends(my_user)):
-    # return information about the currently logged in user
+    """return information about the currently logged in user"""
     return user
 
 
 @app.post("/token", response_model=Token)
 async def login_for_access_token(user=Depends(my_auth)):
-    # authenticate with username/ password, return an auth-token
+    """authenticate with username/ password, return an auth-token"""
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -78,7 +76,7 @@ async def login_for_access_token(user=Depends(my_auth)):
 
 @app.get("/{location_data_type}")
 async def list_datasets(location_data_type: LocationDataType):
-    # list id and name of every registered dataset for the specified type
+    """list id and name of every registered dataset for the specified type"""
     return adapter.get_list(location_data_type)
 
 
@@ -86,13 +84,13 @@ async def list_datasets(location_data_type: LocationDataType):
 async def add_dataset(location_data_type: LocationDataType,
                       dataset: LocationData,
                       user: User = Depends(my_user)):
-    # register a new dataset, the response will contain the new dataset and its id
+    """register a new dataset, the response will contain the new dataset and its id"""
     return adapter.add_new(location_data_type, dataset, user.username)
 
 
 @app.get("/{location_data_type}/{dataset_id}")
 async def get_specific_dataset(location_data_type: LocationDataType, dataset_id: str):
-    # returns all information about a specific dataset, identified by id
+    """returns all information about a specific dataset, identified by id"""
     return adapter.get_details(location_data_type, dataset_id)
 
 
@@ -100,7 +98,7 @@ async def get_specific_dataset(location_data_type: LocationDataType, dataset_id:
 async def update_specific_dataset(location_data_type: LocationDataType,
                                   dataset_id: str, dataset: LocationData,
                                   user: User = Depends(my_user)):
-    # update the information about a specific dataset, identified by id
+    """update the information about a specific dataset, identified by id"""
     return adapter.update_details(location_data_type, dataset_id, dataset, user.username)
 
 
@@ -108,7 +106,7 @@ async def update_specific_dataset(location_data_type: LocationDataType,
 async def delete_specific_dataset(location_data_type: LocationDataType,
                                   dataset_id: str,
                                   user: str = Depends(my_user)):
-    # delete a specific dataset
+    """delete a specific dataset"""
     # TODO: 404 is the right answer? 204 could also be the right one
     return adapter.delete(location_data_type, dataset_id, user.username)
 
