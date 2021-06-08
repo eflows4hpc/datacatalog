@@ -37,15 +37,29 @@ class UserTests(TestCase):
             'metadata': {'key': 'value'}
         }
         rsp = self.client.post('/dataset', json=my_data)
-        print(rsp.content)
         self.assertEqual(rsp.status_code, 200)
-        print(rsp.content)
         (oid, dty) = rsp.json()
         
         self.assertIsNotNone(oid)
         self.assertEqual(dty, my_data)
 
         self.client.delete(f"/dataset/{oid}")
+
+
+    def test_delete(self):
+        rsp = self.client.delete("/dataset/foo")
+        self.assertEqual(rsp.status_code, 404, 'deleted called on non-existing')
+
+        rsp = self.client.post('/dataset', json={
+            'name': 'some dataset', 
+            'url': 'http://loc.me/1'}
+            )
+        self.assertEqual(rsp.status_code, 200)
+        (oid, dty) = rsp.json()
+        
+        rsp = self.client.delete(f"/dataset/{oid}")
+        self.assertEqual(rsp.status_code, 200)
+
 
 
     def test_create_and_get(self):

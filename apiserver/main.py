@@ -4,6 +4,7 @@ Main module of data catalog api
 import logging
 from datetime import timedelta
 from enum import Enum
+from typing import List, Tuple
 
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.param_functions import Depends
@@ -42,16 +43,6 @@ def my_user(token=Depends(oauth2_scheme)):
 def my_auth(form_data: OAuth2PasswordRequestForm = Depends()):
     return authenticate_user(userdb, form_data.username, form_data.password)
 
-@app.get("/")
-async def get_types():
-    """
-    list types of data locations, currently datasets
-    (will be provided by the pillars) and targets (possible storage
-    locations for worklfow results or similar)
-    """
-    return [{element.value: "/" + element.value} for element in LocationDataType]
-
-
 @app.get("/me", response_model=User)
 async def read_users_me(user=Depends(my_user)):
     """return information about the currently logged in user"""
@@ -73,14 +64,27 @@ async def login_for_access_token(user=Depends(my_auth)):
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+@app.get("/", response_model=List[dict[str, str]])
+async def get_types():
+    """
+    list types of data locations, currently datasets
+    (will be provided by the pillars) and targets (possible storage
+    locations for worklfow results or similar)
+    """
+    return [{element.value: "/" + element.value} for element in LocationDataType]
 
-@app.get("/{location_data_type}")
+@app.get("/{location_data_type}", response_model=List[Tuple[str, str]])
 async def list_datasets(location_data_type: LocationDataType):
     """list id and name of every registered dataset for the specified type"""
     return adapter.get_list(location_data_type)
 
 
-@app.post("/{location_data_type}")
+@app.get("/{location_data_type}/{dataset_id}", response_model=LocationData)
+async def get_specific_dataset(location_data_type: LocationDataType, dataset_id: str):
+    """returns all information about a specific dataset, identified by id"""
+    return adapter.get_details(location_data_type, dataset_id)
+
+@app.post("/{location_data_type}", response_model=Tuple[str, LocationData])
 async def add_dataset(location_data_type: LocationDataType,
                       dataset: LocationData,
                       user: User = Depends(my_user)):
@@ -88,13 +92,7 @@ async def add_dataset(location_data_type: LocationDataType,
     return adapter.add_new(location_data_type, dataset, user.username)
 
 
-@app.get("/{location_data_type}/{dataset_id}")
-async def get_specific_dataset(location_data_type: LocationDataType, dataset_id: str):
-    """returns all information about a specific dataset, identified by id"""
-    return adapter.get_details(location_data_type, dataset_id)
-
-
-@app.put("/{location_data_type}/{dataset_id}")
+@app.put("/{location_data_type}/{dataset_id}", response_model=Tuple[str, LocationData])
 async def update_specific_dataset(location_data_type: LocationDataType,
                                   dataset_id: str, dataset: LocationData,
                                   user: User = Depends(my_user)):
@@ -109,6 +107,7 @@ async def delete_specific_dataset(location_data_type: LocationDataType,
     """delete a specific dataset"""
     # TODO: 404 is the right answer? 204 could also be the right one
     return adapter.delete(location_data_type, dataset_id, user.username)
+
 
 
 @app.exception_handler(FileNotFoundError)
