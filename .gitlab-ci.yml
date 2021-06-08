@@ -1,5 +1,9 @@
-# default:
-#   image: python:3-slim
+default:
+  image: python:3-slim
+
+# stages:
+#   - test
+#   - pages
 # test:
 #   script:
 #    - pip install -r requirements.txt
@@ -7,9 +11,6 @@
 
 pages:
   cache: {}
-  image: python:3-slim
-  # tags:     
-  #   - public-docker   
   stage: deploy
   script:
   - echo "Deployment starting..."
@@ -18,7 +19,7 @@ pages:
   # - docker build -t datacatalog-apiserver ./apiserver
   # - docker run -d --name my_container -p 127.0.0.1:8080:80 datacalog-apiserver
   - mkdir public
-  - cp site/index.html public/
+  - cp site/* public/
   - echo "Deployment finished"
   artifacts:
     paths:
