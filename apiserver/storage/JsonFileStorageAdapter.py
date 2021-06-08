@@ -73,7 +73,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         to_store = StoredData(users=[user_name], actualData=data)
         with open(os.path.join(localpath, oid), 'w') as json_file:
             json.dump(to_store.dict(), json_file)
-        return (oid, data)
+        return {oid : data}
 
     def get_details(self, n_type: LocationDataType, oid: str):
         full_path = self.__get_object_path(value=n_type.value, oid=oid)
@@ -89,7 +89,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         with open(full_path, 'w') as f:
             json.dump(obj.dict(), f)
 
-        return (oid, data)
+        return {oid : data}
 
     def delete(self, n_type: LocationDataType, oid: str, usr: str):
         full_path = self.__get_object_path(value=n_type.value, oid=oid)

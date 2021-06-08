@@ -4,7 +4,7 @@ Main module of data catalog api
 import logging
 from datetime import timedelta
 from enum import Enum
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.param_functions import Depends
@@ -84,7 +84,7 @@ async def get_specific_dataset(location_data_type: LocationDataType, dataset_id:
     """returns all information about a specific dataset, identified by id"""
     return adapter.get_details(location_data_type, dataset_id)
 
-@app.post("/{location_data_type}", response_model=Tuple[str, LocationData])
+@app.post("/{location_data_type}", response_model=Dict[str, LocationData])
 async def add_dataset(location_data_type: LocationDataType,
                       dataset: LocationData,
                       user: User = Depends(my_user)):
@@ -92,7 +92,7 @@ async def add_dataset(location_data_type: LocationDataType,
     return adapter.add_new(location_data_type, dataset, user.username)
 
 
-@app.put("/{location_data_type}/{dataset_id}", response_model=Tuple[str, LocationData])
+@app.put("/{location_data_type}/{dataset_id}", response_model=Dict[str, LocationData])
 async def update_specific_dataset(location_data_type: LocationDataType,
                                   dataset_id: str, dataset: LocationData,
                                   user: User = Depends(my_user)):
