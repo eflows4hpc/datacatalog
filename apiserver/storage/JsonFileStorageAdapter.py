@@ -50,11 +50,16 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
 
     def __get_object_path(self, value: str, oid: str) -> str:
         localpath = os.path.join(self.data_dir, value)
-        fullpath = os.path.join(localpath, oid)
-        if not os.path.isfile(fullpath):
+        full_path = os.path.join(localpath, oid)
+        common = os.path.commonprefix((os.path.realpath(full_path),os.path.realpath(self.data_dir)))
+        if common != os.path.realpath(self.data_dir):
+            print(f"Escaping the data dir! {common} {full_path}")
+            raise FileNotFoundError()
+            
+        if not os.path.isfile(full_path):
             raise FileNotFoundError(
-                f"The requested object ({oid}) does not exist.")
-        return fullpath
+                f"The requested object ({oid}) {full_path} does not exist.")
+        return full_path
 
     def get_list(self, n_type: LocationDataType) -> List:
         local_path = self.__setup_path(n_type.value)

@@ -6,6 +6,7 @@ from collections import namedtuple
 import os
 import pathlib
 import shutil
+import json
 
 
 class SomeTests(unittest.TestCase):
@@ -81,3 +82,21 @@ class SomeTests(unittest.TestCase):
                                               data=new_data, usr='tst2')
         self.assertEqual(new_data, r)
         self.assertEqual(oid, oid2)
+
+
+    def test_path_traversal(self):
+        l_data = LocationData(name='test1', url='http://n.go', metadata=[])
+
+        with open('/tmp/hackme', 'w+') as f:
+            json.dump({'secret': 'data', 'users': [], 'actualData': {'name': 'some', 'url': 'oo'}}, f)
+
+        (oid, data) = self.store.add_new(n_type=LocationDataType.DATASET, data=l_data, user_name='test_user')
+        details = None
+        try: 
+            details = self.store.get_details(n_type=LocationDataType.DATASET, oid='../../../tmp/hackme')
+        except:
+            pass 
+        print(details)
+        self.assertIsNone(details)
+
+
