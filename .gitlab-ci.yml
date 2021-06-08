@@ -7,39 +7,21 @@
 
 pages:
   cache: {}
-  image: alpine:latest
-  tags:
-    - public-docker
+  image: python:3-slim
+  # tags:     
+  #   - public-docker   
   stage: deploy
   script:
-    - pip install -r requirements.txt
-    - python frontend/createStatic.py
-    - echo "Genereted site"
-    - mkdir public
-    - cp site/index.html public/index.html
+  - echo "Deployment starting..."
+  - pip install -r requirements.txt
+  - python frontend/createStatic.py
+  # - docker build -t datacatalog-apiserver ./apiserver
+  # - docker run -d --name my_container -p 127.0.0.1:8080:80 datacalog-apiserver
+  - mkdir public
+  - cp site/index.html public/
+  - echo "Deployment finished"
   artifacts:
     paths:
     - public
   only:
-  - mptest
-
-# pages:
-#   cache: {}
-#   image: alpine:latest
-#   tags:     
-#     - public-docker   
-#   stage: deploy
-#   script:
-#   - echo "Deployment starting..."
-#   - mkdir public
-#   - pip install -r requirements.txt
-#   - python frontend/createStatic.py
-#   # - docker build -t datacatalog-apiserver ./apiserver
-#   # - docker run -d --name my_container -p 127.0.0.1:8080:80 datacalog-apiserver
-#   - cp site/index.html public/
-#   - echo "Deployment finished"
-#   artifacts:
-#     paths:
-#     - public
-#   only:
-#     - mptest
+    - mptest
