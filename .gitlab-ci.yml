@@ -16,7 +16,7 @@ test:
 
 build:
   stage: build
-  scripts:
+  script:
     - python frontend/createStatic.py
     - echo "static web content has been built"
 
