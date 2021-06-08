@@ -1,12 +1,14 @@
 import unittest
 
-from apiserver.security import User, JsonDBInterface, UserInDB
+from apiserver.security import User, JsonDBInterface, UserInDB, authenticate_user, get_current_user
 from apiserver.config import ApiserverSettings
+from fastapi import HTTPException
 from collections import namedtuple
 import os
 import pathlib
 import shutil
 import random
+from unittest.mock import Mock, patch
 
 
 class UserTests(unittest.TestCase):
@@ -77,7 +79,22 @@ class UserTests(unittest.TestCase):
             self.userdb.add(UserInDB(username=f"user_{n}", email='jo@go.com', hashed_password=f"{random.randint(0,200)}"))
         self.assertEqual(len(self.userdb.list()), 25)
 
+    def test_not_authenticate_user(self):
+        mock = Mock(spec=JsonDBInterface)
+        mock.get.return_value = None
+        user = authenticate_user(userdb=mock, username='foo', password='pass')
+        self.assertIsNone(user)
+        mock.get.assert_called_with('foo')
 
+    def test_authenticate_user(self):
+        mock = Mock(spec=JsonDBInterface)
+        mock.get.return_value(UserInDB(username='foo', email='bar@o.w', hashed_password='passed'))
+        with patch('apiserver.security.user.verify_password') as vp:
+            user = authenticate_user(userdb=mock, username='foo', password='passed')
+            self.assertIsNotNone(user)
+            vp.assert_called_once()
+            mock.get.assert_called_once()
+            mock.get.assert_called_with('foo')
 
-        
-
+    def test_current_user(self):
+        self.assertRaises(HTTPException, get_current_user, 'falsetoken', Mock(spec=JsonDBInterface))

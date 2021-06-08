@@ -36,3 +36,11 @@ class NonAuthTests(unittest.TestCase):
     def test_token(self):
         rsp = self.client.post('/token', data={'username': 'foo', 'password': 'bar'})
         self.assertEqual(rsp.status_code, 401, 'Ath')
+
+    def test_get_non_existing(self):
+        rsp = self.client.get('/dataset/foo')
+        self.assertEqual(404, rsp.status_code)
+        j = rsp.json()
+        self.assertTrue('message' in j, f"{j} should contain message")
+        self.assertTrue('foo' in j['message'], f"{j} should contain object id (foo)")
+
