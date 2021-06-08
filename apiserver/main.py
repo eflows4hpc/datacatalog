@@ -73,7 +73,7 @@ async def get_types():
     """
     return [{element.value: "/" + element.value} for element in LocationDataType]
 
-@app.get("/{location_data_type}", response_model=List[Tuple[str, str]])
+@app.get("/{location_data_type}") 
 async def list_datasets(location_data_type: LocationDataType):
     """list id and name of every registered dataset for the specified type"""
     return adapter.get_list(location_data_type)
@@ -84,7 +84,7 @@ async def get_specific_dataset(location_data_type: LocationDataType, dataset_id:
     """returns all information about a specific dataset, identified by id"""
     return adapter.get_details(location_data_type, dataset_id)
 
-@app.post("/{location_data_type}", response_model=Tuple[str, LocationData])
+@app.post("/{location_data_type}") 
 async def add_dataset(location_data_type: LocationDataType,
                       dataset: LocationData,
                       user: User = Depends(my_user)):
@@ -92,7 +92,7 @@ async def add_dataset(location_data_type: LocationDataType,
     return adapter.add_new(location_data_type, dataset, user.username)
 
 
-@app.put("/{location_data_type}/{dataset_id}", response_model=Tuple[str, LocationData])
+@app.put("/{location_data_type}/{dataset_id}")
 async def update_specific_dataset(location_data_type: LocationDataType,
                                   dataset_id: str, dataset: LocationData,
                                   user: User = Depends(my_user)):
