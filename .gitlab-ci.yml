@@ -19,11 +19,13 @@ build:sites:
   cache: {}
   stage: build
   script:
+    - ls -al
     - python frontend/createStatic.py
+    - ls -al
     - echo "static web content has been created"
-  artifacts:
-    paths:
-      - sites/*
+  # artifacts:
+  #   paths:
+  #     - sites/*
 
 pages:
   cache: {}
