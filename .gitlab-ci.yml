@@ -23,7 +23,7 @@ build:sites:
     - echo "static web content has been created"
   artifacts:
     paths:
-      - sites
+      - sites/*
 
 pages:
   cache: {}
