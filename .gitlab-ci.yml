@@ -1,10 +1,10 @@
 default:
   image: python:3-slim
 
-# stages:
-#   - test
-#   - build
-#   - deploy
+stages:
+  - test
+  - build
+  - deploy
 
 before_script:
   - pip install -r requirements.txt
@@ -12,8 +12,8 @@ before_script:
 test:
   stage: test
   script: 
-   - pip install -r requirements.txt
-   - pytest 
+   - pip install -r testing_requirements.txt
+   - nosetests --with-coverage --cover-package=apiserver
 
 build:
   stage: build
@@ -26,8 +26,6 @@ pages:
   stage: deploy
   script:
   - echo "Deployment starting..."
-  # - pip install -r requirements.txt
-  # - python frontend/createStatic.py
   # - docker build -t datacatalog-apiserver ./apiserver
   # - docker run -d --name my_container -p 127.0.0.1:8080:80 datacalog-apiserver
   - mkdir public
