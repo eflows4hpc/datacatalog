@@ -28,7 +28,7 @@ build:sites:
 pages:
   cache: {}
   stage: deploy
-  depedencies:
+  dependencies:
     - build:sites
   script:
   - echo "Deployment starting..."
