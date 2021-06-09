@@ -15,15 +15,21 @@ test:
    - pip install -r testing_requirements.txt
    - nosetests --with-coverage --cover-package=apiserver
 
-build:
+build:sites:
+  cache: {}
   stage: build
   script:
     - python frontend/createStatic.py
-    - echo "static web content has been built"
+    - echo "static web content has been created"
+  artifacts:
+    paths:
+      - sites
 
 pages:
   cache: {}
   stage: deploy
+  depedencies:
+    - build:sites
   script:
   - echo "Deployment starting..."
   # - docker build -t datacatalog-apiserver ./apiserver
