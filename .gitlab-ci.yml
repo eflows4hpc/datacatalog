@@ -28,6 +28,9 @@ build:sites:
 pages:
   cache: {}
   stage: deploy
+  image: alpine:latest
+  tags:
+    - public-docker
   dependencies:
     - build:sites
   script:
