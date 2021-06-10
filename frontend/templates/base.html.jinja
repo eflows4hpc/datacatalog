@@ -13,6 +13,7 @@
     background: #aaa;
   }
   </style>
+  {% block extraheader %}{% endblock %}
 </head>
 <body>
     <!--BIG TITLE WITH LOGO-->
@@ -51,10 +52,11 @@
         <p>Information about server admin and impressum</p>
     </div>
 
+    <!--SHARED JAVASCRIPT-->
+    <script src="js/auth.js"></script>
+    <script src="js/apicalls.js"></script>
+
     <!--EXTRA JAVASCRIPT-->
     {% block scripts %}
     {% endblock %}
-
-    <!--SHARED JAVASCRIPT-->
-    <script src="js/auth.js"></script>
 </body>
