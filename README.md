@@ -91,7 +91,7 @@ The `context.py` file helps with importing the apiserver-packages, so that the t
 To build the docker image of the current version, simply run
 
 ```bash
-docker build -t datacatalog-apiserver ./apiserver
+docker build -t datacatalog-apiserver -f ./apiserver/Dockerfile .
 ```
 while in the project root directory.
 
@@ -101,12 +101,17 @@ while in the project root directory.
 
 To run the docker image in a local container, run 
 ```bash
-docker run -d --name <container name> -p 127.0.0.1:<local_port>:8000 datacalog-apiserver
+docker run -d --name <container_name> -p <local_port>:8000 datacatalog-apiserver
 ```
 
-`<container name>` is the name of your container, that can be used to refer to it with other docker commands.
+`<container_name>` is the name of your container, that can be used to refer to it with other docker commands.
 
 `<local_port>` is the port of your local machine, which will be forwarded to the docker container. For example, if it is set to `8080`, you will be able to reach the api-server at http://localhost:8080.
+
+For more production ready deployments consider using `--restart=always` flag, as well as inject path for data:
+```bash
+docker run -d --name <container_name> --restart=always -v /localvol/:/app/data/ -p <local_port>:8000 datacatalog-apiserver
+```
 
 #### Stopping the docker image
 
