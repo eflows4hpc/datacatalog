@@ -7,10 +7,19 @@ def render_template_to_site():
     src_files = os.listdir('frontend/js')
     dest = 'site/js'
     os.makedirs(dest, exist_ok=True)
-    #os.mkdir(dest)
 
     for file_name in src_files:
         full_name = os.path.join('frontend/js', file_name)
+        if os.path.isfile(full_name):
+            shutil.copy(full_name, dest)
+    
+    ## copy css files to site folder
+    src_files = os.listdir('frontend/css')
+    dest = 'site/css'
+    os.makedirs(dest, exist_ok=True)
+
+    for file_name in src_files:
+        full_name = os.path.join('frontend/css', file_name)
         if os.path.isfile(full_name):
             shutil.copy(full_name, dest)
 
