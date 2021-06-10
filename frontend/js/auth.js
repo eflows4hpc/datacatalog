@@ -8,7 +8,7 @@
 /*
 makes a post call for the token and stores it in localstorage
 */
-function login(isername, password) {
+function login(username, password) {
 
 }
 
