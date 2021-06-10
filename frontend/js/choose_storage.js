@@ -23,5 +23,3 @@ function getType() {
 function setTypeText() {
     $('#typetext').text(getType())
 }
-
-setTypeText()

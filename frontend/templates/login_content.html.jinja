@@ -1,9 +1,52 @@
 {% extends "base.html.jinja"%}
 
 {% block title %}Login{% endblock %}
+{% block extraheader %}
+<link rel="stylesheet" href="css/loginform.css">
+{% endblock %}
 {% block content %}
-<p>INSERT Login Stuff HERE!!</p>
+
+<div class="container">
+  <div class="row">
+    <div class="col-sm-8">
+        <div id="loginForm">
+            <!-- Tabs Titles -->
+
+            <!-- Icon -->
+            <!--
+            <div class="fadeIn first">
+            <img src="http://danielzawadzki.com/codepen/01/icon.svg" id="icon" alt="User Icon" />
+            </div>
+            -->
+
+            <!-- Login Form -->
+            <form>
+            <input type="text" id="login" class="fadeIn second" name="login" placeholder="username" required='required'>
+            <input type="password" id="password" class="fadeIn third" name="login" placeholder="password" required='required'>
+            <button type="submit" class="fadeIn fourth" value="Log In">Log In</button>
+            </form>
+
+            <!-- Remind Passowrd -->
+            <!--
+            <div id="formFooter">
+            <a class="underlineHover" href="#">Forgot Password?</a>
+            </div>
+            -->
+        </div>
+
+        <hr class="hidden-sm hidden-md hidden-lg">
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
+<script>
+$("form").on('submit',function(e){
+    e.preventDefault();
+    //call actual submission here
+    // TODO
+    alert("Tried to Log in, but the function is not yet implemented!");
+});
+</script>
 {% endblock %}
