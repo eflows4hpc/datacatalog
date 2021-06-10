@@ -70,14 +70,17 @@ More information about uvicorn settings (including information about how to bind
 
 ### Testing
 
-First ensure that the `pytest` package is installed (It is included in the `requirements.txt`).
+First ensure that the `pytest` package is installed (It is included in the `testing_requirements.txt`).
 
-Tests are located in the `apiserver_tests` directory. They can be executed by simply running `pytest` while in the project folder.
+Tests are located in the `apiserver_tests` directory. They can be executed by simply running `pytest` while in the project folder. You can also use
+nose for test (also included in `testing_requirements.txt`), for instance for tests with coverage report in html format run following:
+```bash
+nosetests --with-coverage --cover-package=apiserver --cover-html
+```
 
 If more test-files should be added, they should be named with a `test_` prefix and put into a similarily named folder, so that they can be auto-detected.
 
 The `context.py` file helps with importing the apiserver-packages, so that the tests function independent of the local python path setup.
-
 
 
 
