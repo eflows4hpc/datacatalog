@@ -6,8 +6,8 @@ stages:
   - build
   - deploy
 
-before_script:
-  - pip install -r requirements.txt
+# before_script:
+#   - pip install -r requirements.txt
 
 test:
   stage: test
@@ -19,6 +19,7 @@ build:sites:
   cache: {}
   stage: build
   script:
+    - pip install -r requirements.txt
     - python frontend/createStatic.py
     - echo "static web content has been created"
   artifacts:
