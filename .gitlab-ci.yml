@@ -34,7 +34,7 @@ pages:
     - build:sites
   script:
   - echo "Deployment starting..."
-  - docker build -t datacatalog-apiserver ./apiserver
+  - docker build -t datacatalog-apiserver -f ./apiserver/Dockerfile .
   - docker run -d --name my_container -p 127.0.0.1:8080:80 datacalog-apiserver
   # - mkdir public
   # - cp -r site/* public/
