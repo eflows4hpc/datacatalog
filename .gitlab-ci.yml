@@ -4,3 +4,13 @@ test:
   script:
    - pip install -r testing_requirements.txt
    - nosetests --with-coverage --cover-package=apiserver
+publishgit-do:
+  image: python:3-slim
+  stage: build
+  tags: [stable]
+  script:
+  - apt-get update 
+  - apt-get install -y git
+  - git remote set-url gith "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/eflows4hpc/datacatalog.git"
+  - git remote -v
+  - git push -u gith master
