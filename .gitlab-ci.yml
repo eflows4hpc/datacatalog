@@ -33,14 +33,17 @@ pages:
   variables:
     DOCKER_DRIVER: overlay2
     DOCKER_TLS_CERTDIR: ""
+    APP_VERSION: "0.0.1"
+    MOUNT_POINT: /builds/$CI_PROJECT_PATH/mnt
   services:
-  - docker:19.03.5-dind
+  - docker:20.10.7
   dependencies:
     - build:sites
   script:
   - echo "Deployment starting..."
-  - docker build -t datacatalog-apiserver -f ./apiserver/Dockerfile .
-  - docker run -d --name my_container -p https://rybicki1.pages.jsc.fz-juelich.de/datacatalog/ datacalog-apiserver
+  - mkdir -p "$MOUNT_POINT"
+  - docker build -f ./apiserver/Dockerfile -t $CI_REGISTRY_IMAGE:$APP_VERSION .
+  - docker run -d --name my_container -p https://rybicki1.pages.jsc.fz-juelich.de/datacatalog/ -d $CI_REGISTRY_IMAGE:$APP_VERSION
   # - mkdir public
   # - cp -r site/* public/
   - echo "Deployment finished. Missing API server"
