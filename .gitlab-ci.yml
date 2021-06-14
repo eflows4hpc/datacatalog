@@ -14,4 +14,4 @@ publishgit-do:
   - git remote set-url gith "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/eflows4hpc/datacatalog.git"
   - git remote -v
   - git branch --show-current
-  - git push -u gith master
+  - git push -u gith stable
