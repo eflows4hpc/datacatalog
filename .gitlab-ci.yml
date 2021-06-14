@@ -30,12 +30,17 @@ pages:
   cache: {}
   stage: deploy
   image: docker:latest
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+  services:
+  - docker:19.03.5-dind
   dependencies:
     - build:sites
   script:
   - echo "Deployment starting..."
   - docker build -t datacatalog-apiserver -f ./apiserver/Dockerfile .
-  - docker run -d --name my_container -p 127.0.0.1:8080:80 datacalog-apiserver
+  - docker run -d --name my_container -p https://rybicki1.pages.jsc.fz-juelich.de/datacatalog/ datacalog-apiserver
   # - mkdir public
   # - cp -r site/* public/
   - echo "Deployment finished. Missing API server"
