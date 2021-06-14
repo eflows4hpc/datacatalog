@@ -8,7 +8,7 @@
 
 <div class="container">
   <div class="row">
-    <div class="col-sm-8">
+    <div class="mt-5 col-sm-12  mb-5">
         <div id="loginForm">
             <!-- Tabs Titles -->
 
@@ -21,9 +21,11 @@
 
             <!-- Login Form -->
             <form>
-            <input type="text" id="login" class="fadeIn second" name="login" placeholder="username" required='required'>
-            <input type="password" id="password" class="fadeIn third" name="login" placeholder="password" required='required'>
-            <button type="submit" class="fadeIn fourth" value="Log In">Log In</button>
+            <input type="text" id="usernameField" class="fadeIn second" name="login" placeholder="username" required='required'>
+            <input type="password" id="passwordField" class="fadeIn third" name="login" placeholder="password" required='required'>
+            <button type="submit" class="fadeIn fourth" value="Log In" id="loginButton">
+            Log In
+            </button>
             </form>
 
             <!-- Remind Passowrd -->
@@ -34,7 +36,23 @@
             -->
         </div>
 
-        <hr class="hidden-sm hidden-md hidden-lg">
+        <div id="userinfoViewer">
+          <table class="table table-hover">
+            <tbody>
+              </tr>
+                <th scope="col">Username</th>
+                <td scope="col" id="usernameLabel"></td>
+              </tr>
+              </tr>
+                <th scope="col">e-mail</th>
+                <td scope="col" id="emailLabel"></td>
+              </tr>
+              </tr>
+                <th scope="row" colspan="2"><button type="button" class="btn btn-danger btn-lg btn-block" onclick="logout()">Log Out</button></th>
+              </tr>
+            </tbody>
+          </table>
+        </div>
     </div>
   </div>
 </div>
@@ -42,11 +60,13 @@
 
 {% block scripts %}
 <script>
+// replace default submit with login function | this enables the browser automatic submit functionality, as submit on enter and check if fields are filled, but prevents the automatic query 
 $("form").on('submit',function(e){
     e.preventDefault();
-    //call actual submission here
-    // TODO
-    alert("Tried to Log in, but the function is not yet implemented!");
+    login();
 });
+</script>
+<script>
+showElementsDependingOnLoginStatus(getInfo(true));
 </script>
 {% endblock %}

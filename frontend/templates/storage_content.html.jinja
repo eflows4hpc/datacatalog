@@ -4,7 +4,7 @@
 {% block content %}
 <div class="container">
   <div class="row">
-    <div class="col-sm-8">
+    <div class="mt-5 col-sm-12 mb-5">
         <div class="dropdown" id="storageTypeChooser">
           <button class="btn btn-primary dropdown-toggle" type="button" id="dropdownType" data-toggle="dropdown" aria-expanded="false">
             Select Storage Type
@@ -12,6 +12,8 @@
           <ul class="dropdown-menu" aria-labelledby="dropdownType" id="dropdownOptions">
           </ul>
         </div>
+
+        <a role="button" class="btn btn-secondary" id="addNewDatasetButton">Add New</a>
       
       <table class="table table-hover" id="datasetListTable">
         <thead>
@@ -24,6 +26,12 @@
         </tbody>
       </table>
 
+      <div class="btn-group" role="group" id="modifyDatasetButtonGroup">
+        <button type="button" class="btn btn-success" disabled>Save</button>
+        <button type="button" class="btn btn-primary">Edit</button>
+        <button type="button" class="btn btn-danger">Delete</button>
+      </div>  
+
       <table class="table table-hover" id="datasetViewTable">
         <thead>
           <tr>
@@ -34,20 +42,21 @@
         <tbody id="datasetViewTableBody">
         </tbody>
       </table>
-
-      <hr class="hidden-sm hidden-md hidden-lg">
     </div>
   </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-    <script src="js/choose_storage.js"></script>
     <script>
     setTypeText();
     getTypes();
     $('#datasetViewTable').hide();
     $('#submitButton').hide();
+    $('#addNewDatasetButton').attr("href", "?type=" + getType() + "&oid=new");
+    $('#modifyDatasetButtonGroup').hide();
+    $('#addNewDatasetButton').hide();
     showListingOrSingleDataset();
+    showElementsDependingOnLoginStatus(getInfo(false));
     </script>
 {% endblock %}
