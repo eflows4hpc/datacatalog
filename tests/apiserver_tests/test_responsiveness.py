@@ -42,5 +42,5 @@ class NonAuthTests(unittest.TestCase):
         self.assertEqual(404, rsp.status_code)
         j = rsp.json()
         self.assertTrue('message' in j, f"{j} should contain message")
-        self.assertTrue('foo' in j['message'], f"{j} should contain object id (foo)")
+        self.assertFalse('foo' in j['message'], f"error message should contain object id (foo)")
 

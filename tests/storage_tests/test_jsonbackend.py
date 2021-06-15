@@ -96,6 +96,7 @@ class SomeTests(unittest.TestCase):
             details = self.store.get_details(n_type=LocationDataType.DATASET, oid='../../../tmp/hackme')
         except:
             pass 
+        
         print(details)
         self.assertIsNone(details)
 
