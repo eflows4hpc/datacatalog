@@ -15,6 +15,7 @@ function setLoginToken() {
     } else {
         var tokenData = JSON.parse(this.responseText);
         window.sessionStorage.auth_token = tokenData.access_token;
+        getInfo(true);
         location.reload();
     }
 }
@@ -116,5 +117,6 @@ function showElementsDependingOnLoginStatus(loggedIn = true) {
         $('#loginOutText').text("Log In");
         $('#modifyDatasetButtonGroup').hide();
         $('#addNewDatasetButton').hide();
+        $('.dynamic-metadata-button').hide();
     }
 }

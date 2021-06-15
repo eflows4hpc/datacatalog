@@ -27,16 +27,16 @@
       </table>
 
       <div class="btn-group" role="group" id="modifyDatasetButtonGroup">
-        <button type="button" class="btn btn-success" disabled>Save</button>
-        <button type="button" class="btn btn-primary">Edit</button>
-        <button type="button" class="btn btn-danger">Delete</button>
+        <button type="button" class="btn btn-success" disabled id="button-save" onclick="saveButtonPressed()">Save</button>
+        <button type="button" class="btn btn-primary" id="button-edit" onclick="editButtonPressed()">Edit</button>
+        <button type="button" class="btn btn-danger" id="button-delete" onclick="deleteButtonPressed()">Delete</button>
       </div>  
 
       <table class="table table-hover" id="datasetViewTable">
         <thead>
           <tr>
             <th scope="col">Property</th>
-            <th scope="col">Value</th>
+            <th scope="col" colspan="2">Value</th>
           </tr>
         </thead>
         <tbody id="datasetViewTableBody">
@@ -56,6 +56,7 @@
     $('#addNewDatasetButton').attr("href", "?type=" + getType() + "&oid=new");
     $('#modifyDatasetButtonGroup').hide();
     $('#addNewDatasetButton').hide();
+    $('.dynamic-metadata-button').hide();
     showListingOrSingleDataset();
     showElementsDependingOnLoginStatus(getInfo(false));
     </script>
