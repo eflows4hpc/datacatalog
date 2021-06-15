@@ -109,10 +109,9 @@ async def delete_specific_dataset(location_data_type: LocationDataType,
     return adapter.delete(location_data_type, dataset_id, user.username)
 
 
-
 @app.exception_handler(FileNotFoundError)
 async def not_found_handler(request: Request, ex: FileNotFoundError):
-    oid=request.path_params.get('dataset_id', '')
+    _ =request.path_params.get('dataset_id', '')
     logging.error("File not found translated %s", ex)
     return JSONResponse(status_code=status.HTTP_404_NOT_FOUND,
-                        content={'message':f"Object {oid} does not exist"})
+                        content={'message':f"Object does not exist"})
