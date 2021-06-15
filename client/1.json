@@ -1,0 +1,34 @@
+[
+  {
+  "name": "ibtracs: Tropical Storm KOGUMA (2021163N18110)",
+  "url": "http://ibtracs.unca.edu/index.php?name=v04r00-2021163N18110#sources",
+  "metadata": {
+    "id": "2021163N18110",
+    "start": "Jun 12 00Z"
+  }
+ },
+ {
+  "name": "Australian Tropical Cyclone Database",
+  "url": "http://www.bom.gov.au/clim_data/IDCKMSTM0S.csv",
+  "metadata": {
+    "Last updated": "2021-06-15",
+    "author": "Australian Bureau of Meteorology"
+  }
+ },
+ {
+  "name": "ibtracs: IBTrACS version 4",
+  "url": "https://www.ncei.noaa.gov/data/international-best-track-archive-for-climate-stewardship-ibtracs/v04r00/access/csv/",
+  "metadata": {
+    "format": "csv",
+    "author": "World Datacenter for Meterology"
+  }
+ },
+ {
+  "name": "3D-CMCC FEM",
+  "url": "https://www.cmcc.it/models/3d-cmcc-fem-three-dimension-forest-ecosystem-model",
+  "metadata": {
+    "Division": "IAFES - Impacts on Agriculture, Forests and Ecosystem Services.",
+    "author": "CMCC Foundation"
+  }
+ }
+]
