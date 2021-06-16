@@ -9,7 +9,10 @@ test:
   stage: test
   script:
    - pip install -r testing_requirements.txt
-   - nosetests --with-coverage --cover-package=apiserver
+   - nosetests --with-coverage --cover-package=apiserver --cover-xml
+  artifacts:
+    reports:
+      cobertura: coverage.xml
 
 deploy:
   stage: deploy
