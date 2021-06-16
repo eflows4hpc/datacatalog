@@ -1,12 +1,24 @@
 default:
   image: python:3-slim
+stages:
+  - test
+  - publish
+  - deploy
+
 test:
+  stage: test
   script:
    - pip install -r testing_requirements.txt
    - nosetests --with-coverage --cover-package=apiserver
+
+deploy:
+  stage: deploy
+  script:
+    - echo "Doing nothing for now"
+
 publishgit-do:
   image: python:3-slim
-  stage: build
+  stage: publish
   tags: [stable]
   script:
   - apt-get update 
@@ -14,3 +26,4 @@ publishgit-do:
   - git remote set-url gith "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/eflows4hpc/datacatalog.git"
   - git remote -v
   - git push -u gith stable
+
