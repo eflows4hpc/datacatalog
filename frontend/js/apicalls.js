@@ -169,11 +169,13 @@ function showSuccessfullyDeletedDataset() {
 }
 
 // XMLHttpRequest EVENTLISTENER: show dataset in table
-function setDatasetView() {
+async function setDatasetView() {
     console.log("Response to show dataset GET: " + this.responseText);
     var dataset = JSON.parse(this.responseText);
     if (this.status >= 300) {
-        alert(getId() + " does not exists for this storage type!");
+        var alertHTML = '<div class="alert alert-danger" role="alert">Invalid id was requested. Redirecting to list of elements with the same type.<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div></div>';
+        $('#storageTypeChooser').before(alertHTML);
+        await new Promise(resolve => setTimeout(resolve, 3000));
         window.location.href = "?type=" + getType();
         return;
     }
@@ -226,8 +228,10 @@ async function showListingOrSingleDataset() {
     }
     if (!getType() || !allowedTypesList.includes(getType())) {
         if (getType) {
-            // an invalid tyoe was provided, give some alert
-            alert("An invalid type was given, redirecting to default type.");
+            // an invalid type was provided, give some alert
+            var alertHTML = '<div class="alert alert-danger" role="alert">Invalid type was requested. Redirecting to default type.<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div></div>';
+            $('#storageTypeChooser').before(alertHTML);
+            await new Promise(resolve => setTimeout(resolve, 3000));
         }
         window.location.href = "?type=" + allowedTypesList[0];
     }
