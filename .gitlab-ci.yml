@@ -19,6 +19,8 @@ deploy:
 publishgit-do:
   image: python:3-slim
   stage: publish
+  only:
+    - tags
   tags: [stable]
   script:
   - apt-get update 
