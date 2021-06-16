@@ -30,7 +30,6 @@ function setTypeText() {
 // return the dataset id
 function getId() {
     var id = getUrlVars()["oid"];
-    console.log("ID: " + id);
     return id;
 }
 
@@ -117,14 +116,14 @@ function fillDatasetTable(table, dataset, readonly=true, id=getId()) {
 
 // XMLHttpRequest EVENTLISTENER: if a dropdown-menu (a <ul> element) with the dropdownOptions id is present, update it with the available types
 function setTypeData() {
-    console.log("GET " + this.responseUrl + ": " + this.responseText);
+    console.log("Response to list available types GET: " + this.responseText);
     var types = JSON.parse(this.responseText);
     allowedTypesList = [];
     // types is now a list of {name : url} elements, where url starts with a slash, and is relative to the root
     var keyName = "";
     types.forEach(element => {
         keyName = Object.keys(element)[0];
-        console.log("Detected location type: " + keyName);
+        console.debug("Detected location type: " + keyName);
         allowedTypesList.push(keyName);
         $('#dropdownOptions').append(getTypeHTMLString(keyName));
     });
@@ -132,17 +131,17 @@ function setTypeData() {
 
 // XMLHttpRequest EVENTLISTENER: append to the list of datasets
 function setDatasetList() {
-    console.log("GET " + this.responseUrl + ": " + this.responseText);
+    console.log("Response to list datasets GET: " + this.responseText);
     var datasets = JSON.parse(this.responseText);
     datasets.forEach(element => {
-        console.log("Found Dataset: " + element)
+        console.debug("Found Dataset: " + element)
         $('#datasetTableBody').append(getDatasetHTMLString(element));
     });
 }
 
 // XMLHttpRequest EVENTLISTENER: show banner with new dataset id
 function showNewDatasetID() {
-    console.log("POST " + this.responseUrl + ": " + this.responseText);
+    console.log("Response to create new Dataset POST: " + this.responseText);
     // TODO http status check
     var data = JSON.parse(this.responseText);
     var id = data[0];
@@ -153,7 +152,7 @@ function showNewDatasetID() {
 
 // XMLHttpRequest EVENTLISTENER: show banner with success message for change
 function showSuccessfullyChangedDataset() {
-    console.log("PUT " + this.responseUrl + ": " + this.responseText);
+    console.log("Response to modify dataset PUT: " + this.responseText);
     // TODO http status check
     var alertHTML = '<div class="alert alert-success" role="alert">Dataset was successfully changed!</div>';
     $('#storageTypeChooser').after(alertHTML);
@@ -162,7 +161,7 @@ function showSuccessfullyChangedDataset() {
 
 // XMLHttpRequest EVENTLISTENER: show banner with success message for deletion
 function showSuccessfullyDeletedDataset() {
-    console.log("DELETE " + this.responseUrl + ": " + this.responseText);
+    console.log("Response to DELETE dataset: " + this.responseText);
     // TODO http status check
     var alertHTML = '<div class="alert alert-danger" role="alert">Dataset was successfully deleted!</div>';
     $('#storageTypeChooser').after(alertHTML);
@@ -171,7 +170,7 @@ function showSuccessfullyDeletedDataset() {
 
 // XMLHttpRequest EVENTLISTENER: show dataset in table
 function setDatasetView() {
-    console.log("GET " + this.responseUrl + ": " + this.responseText);
+    console.log("Response to show dataset GET: " + this.responseText);
     var dataset = JSON.parse(this.responseText);
     if (this.status >= 300) {
         alert(getId() + " does not exists for this storage type!");
@@ -203,7 +202,7 @@ function getTypes() {
 // get listing of datasets of the given type, put them in the list element (via listener)
 function listDatasets(datatype) {
     var fullUrl = apiUrl + datatype;
-    console.log("Full url for listing request is " + fullUrl)
+    console.log("Sending GET request to  " + fullUrl + " for listing datasets.")
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.addEventListener("loadend", setDatasetList);
     xmlhttp.open("GET", fullUrl);
@@ -213,7 +212,7 @@ function listDatasets(datatype) {
 // get details about given dataset, put them in the view element (via listener)
 function showDataset(datatype, dataset_id) {
     var fullUrl = apiUrl + datatype + "/" + dataset_id;
-    console.log("Full url for showing request is " + fullUrl)
+    console.log("Sending GET request to  " + fullUrl + " for showing dataset.")
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.addEventListener("loadend", setDatasetView);
     xmlhttp.open("GET", fullUrl);
@@ -225,8 +224,11 @@ async function showListingOrSingleDataset() {
     while (allowedTypesList.length == 0) {
         await new Promise(resolve => setTimeout(resolve, 10));
     }
-    if (!getType() ||!allowedTypesList.includes(getType())) {
-        // no type or invalid type: reload page with first allowed type TODO add some alert?
+    if (!getType() || !allowedTypesList.includes(getType())) {
+        if (getType) {
+            // an invalid tyoe was provided, give some alert
+            alert("An invalid type was given, redirecting to default type.");
+        }
         window.location.href = "?type=" + allowedTypesList[0];
     }
     if (!getId()) { // no id given, so list all elements
@@ -259,8 +261,8 @@ async function showListingOrSingleDataset() {
 function createNewDataset(datatype, name, url, metadata) {
     var dataset = {"name" : name, "url" : url, "metadata" : metadata};
     var fullUrl = apiUrl + datatype;
-    console.log("Full url for creating new dataset is " + fullUrl)
-    console.log("New Dataset is " + dataset)
+    console.log("Sending POST request to  " + fullUrl + " for creating dataset.")
+    console.debug("New Dataset is " + dataset)
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.addEventListener("loadend", showNewDatasetID);
     xmlhttp.open("POST", fullUrl);
@@ -276,8 +278,8 @@ function createNewDataset(datatype, name, url, metadata) {
 function updateDataset(oid, datatype, name, url, metadata) {
     var dataset = {"name" : name, "url" : url, "metadata" : metadata};
     var fullUrl = apiUrl + datatype + "/" + oid;
-    console.log("Full url for editing dataset is " + fullUrl)
-    console.log("New Dataset data is " + dataset)
+    console.log("Sending PUT request to  " + fullUrl + " for editing dataset.")
+    console.debug("New Dataset data is " + dataset)
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.addEventListener("loadend", showSuccessfullyChangedDataset);
     xmlhttp.open("PUT", fullUrl);
@@ -292,7 +294,7 @@ function updateDataset(oid, datatype, name, url, metadata) {
 // DELETE existing Dataset (get bearer token from session storage)
 function deleteDataset(oid, datatype) {
     var fullUrl = apiUrl + datatype + "/" + oid;
-    console.log("Full url for deleting dataset is " + fullUrl)
+    console.log("Sending DELETE request to  " + fullUrl + " for deleting dataset.")
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.addEventListener("loadend", showSuccessfullyDeletedDataset);
     xmlhttp.open("DELETE", fullUrl);
