@@ -16,8 +16,17 @@ test:
 
 deploy:
   stage: deploy
+  variables:
+    OS_AUTH_TYPE: v3applicationcredential
+    OS_AUTH_URL: https://hdf-cloud.fz-juelich.de:5000
+    OS_IDENTITY_API_VERSION: 3
+    OS_REGION_NAME: "HDFCloud"
+    OS_INTERFACE: public
   script:
     - echo "Doing nothing for now"
+    - pip install python-openstackclient
+    - openstack image list
+    - openstack server create --flavor s1 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 pipeline-inst
 
 publishgit-do:
   image: python:3-slim
