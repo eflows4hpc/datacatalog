@@ -1,23 +1,29 @@
 default:
   image: python:3-slim
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_TLS_CERTDIR: ""
+    APP_VERSION: "0.0.1"
+    MOUNT_POINT: /builds/$CI_PROJECT_PATH/mnt
+  services:
+  - docker:20.10.7
 
 stages:
-  - test
-  - build
-  - deploy
-
-# before_script:
-#   - pip install -r requirements.txt
+  - test_api
+  - build_frontend
+  - deploy_frontend
+  - image
+  - transfer
 
 test:
-  stage: test
+  stage: test_api
   script: 
    - pip install -r testing_requirements.txt
    - nosetests --with-coverage --cover-package=apiserver
 
 build:sites:
   cache: {}
-  stage: build
+  stage: build_frontend
   script:
     - pip install -r requirements.txt
     - python frontend/createStatic.py
@@ -27,29 +33,39 @@ build:sites:
       - site
 
 pages:
-  cache: {}
-  stage: deploy
-  image: docker:latest
-  variables:
-    DOCKER_DRIVER: overlay2
-    DOCKER_TLS_CERTDIR: ""
-    APP_VERSION: "0.0.1"
-    MOUNT_POINT: /builds/$CI_PROJECT_PATH/mnt
-  services:
-  - docker:20.10.7
+  stage: deploy_frontend
+  image: alpine:latest
   dependencies:
     - build:sites
   script:
-  - echo "Deployment starting..."
-  - mkdir -p "$MOUNT_POINT"
-  - docker build -f ./apiserver/Dockerfile -t $CI_REGISTRY_IMAGE:$APP_VERSION .
-  - docker run -d --name my_container -p https://rybicki1.pages.jsc.fz-juelich.de/datacatalog/ -d $CI_REGISTRY_IMAGE:$APP_VERSION
-  # - mkdir public
-  # - cp -r site/* public/
+  # - docker run -d --name my_container -p https://rybicki1.pages.jsc.fz-juelich.de/datacatalog/ -d $CI_REGISTRY_IMAGE:$APP_VERSION
+  - mkdir public
+  - cp -r site/* public/
   - echo "Deployment finished. Missing API server"
-  # - uvicorn apiserver:app --reload --reload-dir apiserver
   artifacts:
     paths:
     - public
   only:
     - mptest
+
+
+build:image:
+  cache: {}
+  stage: image
+  image: docker:latest
+  only:
+  - master
+  # dependencies:
+  #   - build:sites
+  script:
+  - echo "Deployment starting..."
+  # - mkdir -p "$MOUNT_POINT"
+  - docker build --no-cache=true --pull -f ./apiserver/Dockerfile -t $CI_REGISTRY_IMAGE:$APP_VERSION .
+
+transfer_image:
+  stage: transfer
+  script:
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE:$APP_VERSION
+  only:
+    - master
