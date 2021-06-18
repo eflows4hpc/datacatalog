@@ -33,6 +33,15 @@ function getId() {
     return id;
 }
 
+function escapeHtml(unsafe) {
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;");
+ }
+
 // get option-html string from typename suffix
 function getTypeHTMLString(name) {
     return '<li><a class="dropdown-item" href="?type=' + name + '">' + name + '</a></li>';
@@ -40,7 +49,8 @@ function getTypeHTMLString(name) {
 
 // get tableentry-html for a dataset
 function getDatasetHTMLString(dataset) {
-    return '<tr><th scope="row">'+ dataset[0] + '</th><td><a href="?type=' + getType() + "&oid=" + dataset[1] + '">' + dataset[1] + '</a></td></tr>'
+    var safename = escapeHtml(dataset[0]);
+    return '<tr><th scope="row">'+ safename + '</th><td><a href="?type=' + getType() + "&oid=" + dataset[1] + '">' + dataset[1] + '</a></td></tr>'
 }
 
 /*
@@ -49,7 +59,9 @@ The value field is editable, but the edit is blocked by default
 authenticated users should be able to edit and submit
 */ 
 function getPropertyHTMLString(property, value, readonly=true) {
-    return '<tr><th scope="row">' + property + '</th><td colspan="2"><input class="form-control" type="text" id="' + property + 'Input" value="' + value + (readonly ? '" readonly' : '"') + '></td></tr>';
+    var safekey = escapeHtml(property);
+    var safeval = escapeHtml(value);
+    return '<tr><th scope="row">' + safekey + '</th><td colspan="2"><input class="form-control" type="text" id="' + safekey + 'Input" value="' + safeval + (readonly ? '" readonly' : '"') + '></td></tr>';
 }
 
 /*
@@ -70,7 +82,9 @@ authenticated users should be able to edit and submit
 */ 
 function getMetadataPropertyHTMLString(property, value, readonly=true) {
     var randID = getRandomID();
-    return '<tr id="' + randID + 'Row"><th scope="row"><input class="form-control dynamic-metadata" type="text" id="' + randID + '" value="' + property + (readonly ? '" readonly' : '"') + '></th><td><input class="form-control" type="text" id="' + randID + 'Input" value="' + value + (readonly ? '" readonly' : '"') + '></td><th><button type="button" class="btn btn-danger dynamic-metadata-button" onclick="removeMetadataRow(\'' + randID + '\')" id="' + randID + 'Button">-</button></th></tr>';
+    var safekey = escapeHtml(property);
+    var safeval = escapeHtml(value);
+    return '<tr id="' + randID + 'Row"><th scope="row"><input class="form-control dynamic-metadata" type="text" id="' + randID + '" value="' + safekey + (readonly ? '" readonly' : '"') + '></th><td><input class="form-control" type="text" id="' + randID + 'Input" value="' + safeval + (readonly ? '" readonly' : '"') + '></td><th><button type="button" class="btn btn-danger dynamic-metadata-button" onclick="removeMetadataRow(\'' + randID + '\')" id="' + randID + 'Button">-</button></th></tr>';
 }
 
 /**
@@ -142,7 +156,13 @@ function setDatasetList() {
 // XMLHttpRequest EVENTLISTENER: show banner with new dataset id
 function showNewDatasetID() {
     console.log("Response to create new Dataset POST: " + this.responseText);
-    // TODO http status check
+    if (this.status >= 400) {
+        // some error occured while getting the data
+        // show an alert and don't do anything else
+        var alertHTML = '<div class="alert alert-danger" role="alert">Invalid response from server! Either the API server is down, or the dataset creation failed. Response code: ' + this.status + '<hr>Please try agagin later, and if the error persists, contact the server administrator.</div>';
+        $('#storageTypeChooser').after(alertHTML);
+        return;
+    }
     var data = JSON.parse(this.responseText);
     var id = data[0];
     var alertHTML = '<div class="alert alert-success" role="alert">Dataset created! OID is: <a href="?type=' + getType() + '&oid=' + id + '">' + id + '</a></div>';
@@ -153,7 +173,13 @@ function showNewDatasetID() {
 // XMLHttpRequest EVENTLISTENER: show banner with success message for change
 function showSuccessfullyChangedDataset() {
     console.log("Response to modify dataset PUT: " + this.responseText);
-    // TODO http status check
+    if (this.status >= 400) {
+        // some error occured while getting the data
+        // show an alert and don't do anything else
+        var alertHTML = '<div class="alert alert-danger" role="alert">Invalid response from server! Either the API server is down, or the dataset modification failed. Response code: ' + this.status + '<hr>Please try agagin later, and if the error persists, contact the server administrator.</div>';
+        $('#storageTypeChooser').after(alertHTML);
+        return;
+    }
     var alertHTML = '<div class="alert alert-success" role="alert">Dataset was successfully changed!</div>';
     $('#storageTypeChooser').after(alertHTML);
     $('#spinner').remove();
@@ -162,7 +188,13 @@ function showSuccessfullyChangedDataset() {
 // XMLHttpRequest EVENTLISTENER: show banner with success message for deletion
 function showSuccessfullyDeletedDataset() {
     console.log("Response to DELETE dataset: " + this.responseText);
-    // TODO http status check
+    if (this.status >= 400) {
+        // some error occured while getting the data
+        // show an alert and don't do anything else
+        var alertHTML = '<div class="alert alert-danger" role="alert">Invalid response from server! Either the API server is down, or the dataset deletion failed. Response code: ' + this.status + '<hr>Please try agagin later, and if the error persists, contact the server administrator.</div>';
+        $('#storageTypeChooser').after(alertHTML);
+        return;
+    }
     var alertHTML = '<div class="alert alert-danger" role="alert">Dataset was successfully deleted!</div>';
     $('#storageTypeChooser').after(alertHTML);
     $('#spinner').remove();
