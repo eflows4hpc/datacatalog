@@ -1,5 +1,5 @@
 // This file contains the api calls, as well as transform the data into html-text
-var apiUrl = "http://zam024.fritz.box/api/"; // TODO switch out with real url, ideally during deployment
+var apiUrl = "{{API_URL}}";
 var allowedTypesList = [];
 
 // get data from url query variables
