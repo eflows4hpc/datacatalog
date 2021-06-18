@@ -1,12 +1,35 @@
 default:
   image: python:3-slim
+stages:
+  - test
+  - publish
+  - deploy
+
 test:
+  stage: test
   script:
    - pip install -r testing_requirements.txt
-   - nosetests --with-coverage --cover-package=apiserver
+   - nosetests --with-coverage --cover-package=apiserver --cover-xml
+  artifacts:
+    reports:
+      cobertura: coverage.xml
+
+deploy:
+  stage: deploy
+  variables:
+    OS_AUTH_TYPE: v3applicationcredential
+    OS_AUTH_URL: https://hdf-cloud.fz-juelich.de:5000
+    OS_IDENTITY_API_VERSION: 3
+    OS_REGION_NAME: "HDFCloud"
+    OS_INTERFACE: public
+  script:
+    - echo "Doing nothing for now"
+    
 publishgit-do:
   image: python:3-slim
-  stage: build
+  stage: publish
+  only:
+    - tags
   tags: [stable]
   script:
   - apt-get update 
@@ -14,3 +37,4 @@ publishgit-do:
   - git remote set-url gith "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/eflows4hpc/datacatalog.git"
   - git remote -v
   - git push -u gith stable
+
