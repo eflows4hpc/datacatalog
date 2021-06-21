@@ -24,6 +24,7 @@ For development (and only for development), an easy way to deploay a local serve
 ```shell
 python -m http.server <localport> --directory site/
 ```
+The python http.server package should **not** be used for deployment, as it does not ensure that current security standards are met, and is only intended for local testing.
 
 ## API-Server for the Data Catalog
 
@@ -31,7 +32,21 @@ python -m http.server <localport> --directory site/
 
 It is implemented via [fastAPI](https://fastapi.tiangolo.com/) and provides an api documentation via openAPI.
 
-For deployment via [docker](https://www.docker.com/), a docker image is included. 
+For deployment via [docker](https://www.docker.com/), a docker image is included.
+
+### Configuration
+
+Some server settings can be changed. This can either be used during testing, so that a test api server can be launched with testing data, or for deployment, if the appdata or the userdb is not in the default location.
+
+These settings can be set either via environment variables, changed in the `apiserver/config.env` file, or a different `.env` file can be configured via the `DATACATALOG_API_DOTENV_FILE_PATH` environment variable.
+
+At the moment, the settings are considered at launch, and can not be updated while the server is running.
+
+| Variable Name                           | Default Value          | Description                                            |
+|-----------------------------------------|------------------------|--------------------------------------------------------|
+| DATACATALOG_API_DOTENV_FILE_PATH        | `apiserver/config.env` | Location of the `.env` file considered at launch       |
+| DATACATALOG_APISERVER_JSON_STORAGE_PATH | `./app/data`           | Directory where the data (i.e. dataset info) is stored |
+| DATACATALOG_APISERVER_USERDB_PATH       | `./app/userdb.json`    | Location of the `.json` file containing the accounts   |
 
 ### Security
 

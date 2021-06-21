@@ -1,7 +1,7 @@
 """
 Main module of data catalog api
 """
-import logging
+import logging, os
 from datetime import timedelta
 from enum import Enum
 from typing import List, Tuple
@@ -24,13 +24,17 @@ class ReservedPaths(str, Enum):
     AUTH = 'auth'
     ME = 'me'
 
+DOTENV_FILE_PATH_VARNAME = "DATACATALOG_API_DOTENV_FILE_PATH"
+DOTENV_FILE_PATH_DEFAULT = "apiserver/config.env"
 
 app = FastAPI(
     title="API-Server for the Data Catalog"
 )
 
+# if env variable is set, get config .env filepath from it, else use default
+dotenv_file_path = os.getenv(DOTENV_FILE_PATH_VARNAME, DOTENV_FILE_PATH_DEFAULT)
 
-settings = ApiserverSettings()
+settings = ApiserverSettings(_env_file=dotenv_file_path)
 adapter = JsonFileStorageAdapter(settings)
 userdb = JsonDBInterface(settings)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=ReservedPaths.TOKEN)
