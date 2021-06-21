@@ -1,6 +1,5 @@
 from jinja2 import Environment, FileSystemLoader
-import os
-import shutil
+import os, argparse, shutil
 
 API_URL_ENV_VARNAME = "DATACATALOG_API_URL"
 API_URL_DEFAULT_VALUE = "http://localhost:8000/"
@@ -65,7 +64,17 @@ def render_template_to_site(api_url=API_URL_DEFAULT_VALUE):
             f.write(html[file])
 
 if __name__ == "__main__":
+    # priority for setting the API URL from most to least important: commandline argument >>> environment variable >>> default value
+
     # if env variable is set, get api url from it, else use default
     api_url = os.getenv(API_URL_ENV_VARNAME, API_URL_DEFAULT_VALUE)
-    # TODO if argument is there, set api url
+    # if argument is there, set api url
+    parser = argparse.ArgumentParser("createStatic.py", description="Generates the static files for the web frontend to the site/ folder.")
+    parser.add_argument("-u", "--api-url", help="The url for the backend API. This must include protocol (usually http or https). Defaults to {} or the environment variable {} (if set).".format(API_URL_DEFAULT_VALUE, API_URL_ENV_VARNAME))
+    args = parser.parse_args()
+    if args.api_url:
+        api_url = args.api_url
+
+    print(api_url)
+
     render_template_to_site(api_url)
