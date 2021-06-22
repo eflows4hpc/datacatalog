@@ -24,6 +24,17 @@ def get_unique_id(path: str) -> str:
         oid = str(uuid.uuid4())
     return oid
 
+
+def verify_oid(oid: str, version=4):
+    """ Ensure thatthe oid is formatted as a valid oid (i.e. UUID v4).
+    If it isn't, the corresponding request could theoretically be an attempted path traversal attack (or a regular typo).
+    """
+    try:
+        uuid_obj = uuid.UUID(oid, version=version)
+    except:
+        return False
+    return str(uuid_obj) == oid
+
 class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
     """ This stores LocationData via the StoredData Object as json files
 
