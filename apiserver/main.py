@@ -12,6 +12,8 @@ from fastapi.param_functions import Depends
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
+from pydantic import UUID4
+
 from .config import ApiserverSettings
 from .security import (ACCESS_TOKEN_EXPIRES_MINUTES, JsonDBInterface, Token,
                        User, authenticate_user, create_access_token,
@@ -85,11 +87,9 @@ async def list_datasets(location_data_type: LocationDataType):
 
 
 @app.get("/{location_data_type}/{dataset_id}", response_model=LocationData)
-async def get_specific_dataset(location_data_type: LocationDataType, dataset_id: str):
+async def get_specific_dataset(location_data_type: LocationDataType, dataset_id: UUID4):
     """returns all information about a specific dataset, identified by id"""
-    if not verify_oid(dataset_id):
-        raise HTTPException(status_code=400, detail="Invalid OID format!")
-    return adapter.get_details(location_data_type, dataset_id)
+    return adapter.get_details(location_data_type, str(dataset_id))
 
 @app.post("/{location_data_type}")
 async def add_dataset(location_data_type: LocationDataType,
@@ -101,23 +101,19 @@ async def add_dataset(location_data_type: LocationDataType,
 
 @app.put("/{location_data_type}/{dataset_id}")
 async def update_specific_dataset(location_data_type: LocationDataType,
-                                  dataset_id: str, dataset: LocationData,
+                                  dataset_id: UUID4, dataset: LocationData,
                                   user: User = Depends(my_user)):
     """update the information about a specific dataset, identified by id"""
-    if not verify_oid(dataset_id):
-        raise HTTPException(status_code=400, detail="Invalid OID format!")
-    return adapter.update_details(location_data_type, dataset_id, dataset, user.username)
+    return adapter.update_details(location_data_type, str(dataset_id), dataset, user.username)
 
 
 @app.delete("/{location_data_type}/{dataset_id}")
 async def delete_specific_dataset(location_data_type: LocationDataType,
-                                  dataset_id: str,
+                                  dataset_id: UUID4,
                                   user: str = Depends(my_user)):
     """delete a specific dataset"""
-    if not verify_oid(dataset_id):
-        raise HTTPException(status_code=400, detail="Invalid OID format!")
     # TODO: 404 is the right answer? 204 could also be the right one
-    return adapter.delete(location_data_type, dataset_id, user.username)
+    return adapter.delete(location_data_type, str(dataset_id), user.username)
 
 
 @app.exception_handler(FileNotFoundError)

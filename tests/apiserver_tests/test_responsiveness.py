@@ -49,7 +49,7 @@ class NonAuthTests(unittest.TestCase):
 
     def test_get_invalid_oid(self):
         rsp = self.client.get('/dataset/invalid-uuid')
-        self.assertEqual(400, rsp.status_code)
+        self.assertEqual(422, rsp.status_code)
         j = rsp.json()
         self.assertTrue('detail' in j, f"{j} should contain message")
 
