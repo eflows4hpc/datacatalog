@@ -1,6 +1,6 @@
 import unittest
 
-from apiserver.storage.JsonFileStorageAdapter import JsonFileStorageAdapter, StoredData
+from apiserver.storage.JsonFileStorageAdapter import JsonFileStorageAdapter, StoredData, verify_oid, get_unique_id
 from apiserver.storage import LocationDataType, LocationData
 from collections import namedtuple
 import os
@@ -100,4 +100,10 @@ class SomeTests(unittest.TestCase):
         print(details)
         self.assertIsNone(details)
 
-
+    def test_oid_veirfication(self):
+        oid = get_unique_id(path='/tmp/')
+        self.assertTrue(verify_oid(oid=oid))
+        self.assertTrue(verify_oid(oid=oid.replace('5', '7')))
+        self.assertFalse(verify_oid(oid='random strawberry'))
+        self.assertFalse(verify_oid(oid=None))
+        self.assertFalse(verify_oid(oid=1))

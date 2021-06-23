@@ -2,6 +2,7 @@ import json
 import os
 import uuid
 from typing import List
+import logging
 
 from pydantic import BaseModel
 
@@ -27,13 +28,14 @@ def get_unique_id(path: str) -> str:
 
 def verify_oid(oid: str, version=4):
     """ Ensure thatthe oid is formatted as a valid oid (i.e. UUID v4).
-    If it isn't, the corresponding request could theoretically be an attempted path traversal attack (or a regular typo).
+    If it isn't, the corresponding request could theoretically be
+    an attempted path traversal attack (or a regular typo).
     """
     try:
         uuid_obj = uuid.UUID(oid, version=version)
+        return str(uuid_obj) == oid
     except:
         return False
-    return str(uuid_obj) == oid
 
 class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
     """ This stores LocationData via the StoredData Object as json files
@@ -64,9 +66,9 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         full_path = os.path.join(localpath, oid)
         common = os.path.commonprefix((os.path.realpath(full_path),os.path.realpath(self.data_dir)))
         if common != os.path.realpath(self.data_dir):
-            print(f"Escaping the data dir! {common} {full_path}")
+            logging.error(f"Escaping the data dir! {common} {full_path}")
             raise FileNotFoundError()
-            
+
         if not os.path.isfile(full_path):
             raise FileNotFoundError(
                 f"The requested object ({oid}) {full_path} does not exist.")

@@ -1,10 +1,11 @@
 """
 Main module of data catalog api
 """
-import logging, os
+import logging
+import os
 from datetime import timedelta
 from enum import Enum
-from typing import List, Tuple
+from typing import List
 
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.param_functions import Depends
@@ -77,7 +78,7 @@ async def get_types():
     """
     return [{element.value: "/" + element.value} for element in LocationDataType]
 
-@app.get("/{location_data_type}") 
+@app.get("/{location_data_type}")
 async def list_datasets(location_data_type: LocationDataType):
     """list id and name of every registered dataset for the specified type"""
     return adapter.get_list(location_data_type)
@@ -90,7 +91,7 @@ async def get_specific_dataset(location_data_type: LocationDataType, dataset_id:
         raise HTTPException(status_code=400, detail="Invalid OID format!")
     return adapter.get_details(location_data_type, dataset_id)
 
-@app.post("/{location_data_type}") 
+@app.post("/{location_data_type}")
 async def add_dataset(location_data_type: LocationDataType,
                       dataset: LocationData,
                       user: User = Depends(my_user)):
@@ -124,4 +125,4 @@ async def not_found_handler(request: Request, ex: FileNotFoundError):
     _ =request.path_params.get('dataset_id', '')
     logging.error("File not found translated %s", ex)
     return JSONResponse(status_code=status.HTTP_404_NOT_FOUND,
-                        content={'message':f"Object does not exist"})
+                        content={'message':'Object does not exist'})

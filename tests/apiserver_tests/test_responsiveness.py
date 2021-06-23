@@ -38,14 +38,14 @@ class NonAuthTests(unittest.TestCase):
 
     def test_token(self):
         rsp = self.client.post('/token', data={'username': 'foo', 'password': 'bar'})
-        self.assertEqual(rsp.status_code, 401, 'Ath')
+        self.assertEqual(rsp.status_code, 401, 'Auth required')
 
     def test_get_non_existing(self):
         rsp = self.client.get(f'/dataset/{proper_uuid}')
         self.assertEqual(404, rsp.status_code)
         j = rsp.json()
         self.assertTrue('message' in j, f"{j} should contain message")
-        self.assertFalse('foo' in j['message'], f"error message should contain object id (foo)")
+        self.assertFalse('foo' in j['message'], f"error message should not contain object id (foo)")
 
     def test_get_invalid_oid(self):
         rsp = self.client.get('/dataset/invalid-uuid')
