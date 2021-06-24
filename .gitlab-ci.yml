@@ -4,14 +4,11 @@ variables:
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: ""
   APP_VERSION: "beta"
-  MOUNT_POINT: /builds/$CI_PROJECT_PATH/mnt
 
 stages:
   - test
   - build
   - deploy
-  # - image
-  - transfer
 
 test:
   stage: test
@@ -36,7 +33,6 @@ pages:
   dependencies:
     - build:sites
   script:
-  # - docker run -d --name my_container -p https://rybicki1.pages.jsc.fz-juelich.de/datacatalog/ -d $CI_REGISTRY_IMAGE:$APP_VERSION
   - mkdir public
   - cp -r site/* public/
   - echo "Deployment finished. Missing API server"
@@ -54,34 +50,23 @@ deploy:
     OS_INTERFACE: public
   script:
     - echo "Doing nothing for now"
+    - pip install python-openstackclient
+    - openstack image list
+    - openstack server create --flavor s1 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 pipeline-inst
+    - docker build --no-cache=true --pull -f ./apiserver/Dockerfile .
+    - docker run
 
-# build:image:
-#   cache: {}
-#   stage: image
-#   image: docker:latest
-#   only:
-#   - mptest
+
+# This should be an automatic push of the docker image into gitLab container repository
+# Currently not working due to docker login failing because of firewall issues
+# transfer_image:
+#   stage: transfer
+#   image: docker:19.03.12
+#   services:
+#     - docker:19.03.12-dind
+#   variables:
+#     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
 #   script:
-#   - echo "Deployment starting..."
-  # - mkdir -p "$MOUNT_POINT"
-  # - docker build --no-cache=true --pull -f ./apiserver/Dockerfile -t $CI_REGISTRY_IMAGE:$APP_VERSION .
-
-transfer_image:
-  stage: transfer
-  image: docker:19.03.12
-  services:
-    - name: docker:19.03.12-dind
-      alias: docker
-  variables:
-    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  script:
-    - echo "Job token:" $CI_JOB_USER
-    - echo "Deploy user:" $CI_DEPLOY_USER
-    - echo $GITHUB_USER
-    - echo $CI_REGISTRY_USER
-    - echo $CI_REGISTRY
-    - docker login -u $CI_JOB_USER -p $CI_JOB_TOKEN $CI_REGISTRY
-    - docker build --no-cache=true --pull -f ./apiserver/Dockerfile -t $IMAGE_TAG .
-    - docker push $IMAGE_TAG
-  # only:
-  #   - mptest
+#     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+#     - docker build --no-cache=true --pull -f ./apiserver/Dockerfile -t $IMAGE_TAG .
+#     - docker push $IMAGE_TAG
