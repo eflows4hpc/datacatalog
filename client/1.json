@@ -30,5 +30,36 @@
     "Division": "IAFES - Impacts on Agriculture, Forests and Ecosystem Services.",
     "author": "CMCC Foundation"
   }
- }
+ },
+ {
+  "name":"ArcSWAT 2012 Global Weather Database",
+  "url":"https://swat.tamu.edu/media/99082/cfsr_world.zip",
+   "metadata": {
+     "author": "CFSR",
+     "format": "zip"
+   }
+},
+ {
+   "name":"The China Meteorological Assimilation Driving Datasets for the SWAT model (CMADS)",
+   "url": "https://pan.baidu.com/s/1OYWe7ejyZUeSKE8T5Gg4jg#list/path=%2F",
+   "metadata": {
+     "author": "Meng, X.Y.; Wang, H.; Chen, J. "
+    }
+},
+ {
+  "name": "he CMCC Eddy-permitting Global Ocean Physical Reanalysis", 
+  "url": "https://doi.pangaea.de/10.1594/PANGAEA.857995?format=textfile",
+  "metadata": {
+     "author": "Storto, Andrea; Masina, Simona",
+     "organization": "PANGAEA"
+   }
+}, 
+{
+   "name": "Multilayer-HySEA model",
+   "url": "https://drive.google.com/file/d/1DlIoWs1vmyzZz9H_5iPp4O78k2Wezg1t/view?usp=sharing",
+   "metadata": {
+     "author": "Jorge Macías"
+   }
+}
+
 ]
