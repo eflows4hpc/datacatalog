@@ -36,5 +36,5 @@ publishgit-do:
   - apt-get install -y git
   - git remote set-url gith "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/eflows4hpc/datacatalog.git"
   - git remote -v
-  - git push -u gith stable
+  - git push -u gith master
 
