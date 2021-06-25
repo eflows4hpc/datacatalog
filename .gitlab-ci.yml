@@ -55,11 +55,13 @@ deploy:
     - openstack server create --flavor s1 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 pipeline-inst
     # - reassign floating ip
     # - login on the new instance pipeline-inst
-    - sudo docker network create net #net is the docker internal network.. put it in a Variable?
-    - sudo docker-compose up -d
+    # - sudo docker network create net #net is the docker internal network.. put it in a Variable?
+    # - sudo docker-compose up -d
     # - docker build --no-cache=true --pull -f ./apiserver/Dockerfile -t api-test . #pull from $CI_REGISTRY
     # - sudo docker run --name api-test-cloud --network net -e VIRTUAL_HOST="zam10028.zam.kfa-juelich.de" -e LETSENCRYPT_HOST="zam10028.zam.kfa-juelich.de" -d api-test
     # - openstack server destroy pipeline-inst #old
+  only:
+    - mptest
 
 
 # This should be an automatic push of the docker image into gitLab container repository
