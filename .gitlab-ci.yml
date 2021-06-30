@@ -66,14 +66,14 @@ deploy:
 
 # This should be an automatic push of the docker image into gitLab container repository
 # Currently not working due to docker login failing because of firewall issues
-# transfer_image:
-#   stage: transfer
-#   image: docker:19.03.12
-#   services:
-#     - docker:19.03.12-dind
-#   variables:
-#     IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-#   script:
-#     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-#     - docker build --no-cache=true --pull -f ./apiserver/Dockerfile -t $IMAGE_TAG .
-#     - docker push $IMAGE_TAG
+transfer_image:
+  stage: transfer
+  image: docker:19.03.12
+  services:
+    - docker:19.03.12-dind
+  variables:
+    IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build --no-cache=true --pull -f ./apiserver/Dockerfile -t $IMAGE_TAG .
+    - docker push $IMAGE_TAG
