@@ -8,6 +8,7 @@ variables:
 stages:
   - test
   - build
+  - transfer
   - deploy
 
 test:
@@ -52,7 +53,7 @@ deploy:
     - echo "Doing nothing for now"
     - pip install python-openstackclient
     - openstack image list
-    - openstack server create --flavor s1 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 pipeline-inst
+    # - openstack server create --flavor s1 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 pipeline-inst
     # - reassign floating ip
     # - login on the new instance pipeline-inst
     # - sudo docker network create net #net is the docker internal network.. put it in a Variable?
