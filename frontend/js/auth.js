@@ -1,14 +1,12 @@
 // This file will contain functions to manage authentication (including the token storage and access)
 
-// TODO function to rewrite Login as username
-
 /************************************************
  * Event Listeners for XMLHttpRequests
  ************************************************/
 
 // XMLHttpRequest EVENTLISTENER: if the call was successful, store the token locally and reload login page
 function setLoginToken() {
-    console.log("POST " + this.responseUrl + ": " + this.responseText);
+    console.log("Response to login POST: " + this.responseText);
     if (this.status >= 400) {
         alert("The username and/ or the password is invalid!");
         logout();
@@ -22,12 +20,12 @@ function setLoginToken() {
 
 // To be called by an inline XMLHttpRequest EVENTLISTENER: if the call was successful, update the userdata
 function setUserdata(data, updateView) {
-    console.log("GET " + data.responseUrl + ": " + data.responseText);
-    if (this.status >= 400) {
-        logout();
+    console.log("Response to auth verification GET: " + data.responseText + " with status " + data.status);
+    if (data.status >= 400) {
+        console.log("Auth verification returned a " + data.status + " status. Reattempt login.");
+        relog();
     } else {
         var userdata = JSON.parse(data.responseText);
-        console.log("Userdata: " + userdata.username + " - " + userdata.email);
         // store username and email in sessionData (blind overwrite if exists)
         window.sessionStorage.username = userdata.username;
         window.sessionStorage.email = userdata.email;
@@ -43,12 +41,20 @@ function setUserdata(data, updateView) {
 */
 function loginPOST(username, password) {
     var fullUrl = apiUrl + "token";
-    console.log("Full url for token request is " + fullUrl)
+    console.log("Sending POST request to  " + fullUrl + " for login.")
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.addEventListener("loadend", setLoginToken);
     xmlhttp.open("POST", fullUrl);
     xmlhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
     xmlhttp.send("username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password));
+}
+
+/**
+ * logs out, and then redirects to the login page.
+ */
+function relog() {
+    logout();
+    window.location.href = "/login.html?relog=true";
 }
 
 /**
@@ -88,7 +94,7 @@ function getInfo(updateView=false) {
 
         // start GET /me, pass wether an update of the user labels is needed
         var fullUrl = apiUrl + "me";
-        console.log("Full url for /me request is " + fullUrl)
+        console.log("Sending GET request to  " + fullUrl + " for verifying authentication.")
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.open("GET", fullUrl);
         xmlhttp.setRequestHeader('Authorization', 'Bearer ' + window.sessionStorage.auth_token);

@@ -16,6 +16,10 @@ test:
   script: 
    - pip install -r testing_requirements.txt
    - nosetests --with-coverage --cover-package=apiserver
+  artifacts:
+    reports:
+      cobertura: coverage.xml
+
 
 build:sites:
   cache: {}
@@ -61,8 +65,20 @@ deploy:
     # - docker build --no-cache=true --pull -f ./apiserver/Dockerfile -t api-test . #pull from $CI_REGISTRY
     # - sudo docker run --name api-test-cloud --network net -e VIRTUAL_HOST="zam10028.zam.kfa-juelich.de" -e LETSENCRYPT_HOST="zam10028.zam.kfa-juelich.de" -d api-test
     # - openstack server destroy pipeline-inst #old
+
+publishgit-do:
+  image: python:3-slim
+  stage: publish
   only:
-    - mptest
+    - tags
+  tags: [stable]
+  script:
+    - apt-get update 
+    - apt-get install -y git
+    - git remote set-url gith "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/eflows4hpc/datacatalog.git"
+    - git remote -v
+    - git show-ref
+    - git push gith $CI_COMMIT_REF_NAME
 
 
 # This should be an automatic push of the docker image into gitLab container repository

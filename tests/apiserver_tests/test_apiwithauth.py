@@ -5,6 +5,9 @@ from context import apiserver, storage
 from unittest import TestCase
 from apiserver.security.user import User
 
+# a properly formatted uuidv4 to ensure the proper errors are returned by the api; the exact value is irrelevant
+proper_uuid = "3a33262e-276e-4de8-87bc-f2d5a0195faf"
+
 def myfunc():
     return User(username='foo', email='bar')
 
@@ -32,7 +35,7 @@ class UserTests(TestCase):
 
     def test_create(self):
         my_data = {
-            'name': 'some dataset', 
+            'name': 'some datase1t', 
             'url': 'http://loc.me/1', 
             'metadata': {'key': 'value'}
         }
@@ -47,11 +50,11 @@ class UserTests(TestCase):
 
 
     def test_delete(self):
-        rsp = self.client.delete("/dataset/foo")
+        rsp = self.client.delete(f"/dataset/{proper_uuid}")
         self.assertEqual(rsp.status_code, 404, 'deleted called on non-existing')
 
         rsp = self.client.post('/dataset', json={
-            'name': 'some dataset', 
+            'name': 'some dataset2', 
             'url': 'http://loc.me/1'}
             )
         self.assertEqual(rsp.status_code, 200)
@@ -59,6 +62,10 @@ class UserTests(TestCase):
         
         rsp = self.client.delete(f"/dataset/{oid}")
         self.assertEqual(rsp.status_code, 200)
+
+    def test_delete_invalid_uuid(self):
+        rsp = self.client.delete("/dataset/invalid-uuid")
+        self.assertEqual(rsp.status_code, 422, 'deleted called on invalid uuid')
 
 
 
@@ -82,7 +89,7 @@ class UserTests(TestCase):
 
     def test_create_and_delete(self):
         lst = self.client.get('/dataset').json()
-        self.assertEqual(len(lst), 0)
+        self.assertEqual(len(lst), 0, f"{lst}")
 
         self.client.post('/dataset', json={
             'name': 'new_obj',
@@ -129,3 +136,14 @@ class UserTests(TestCase):
 
         self.client.delete(f"/dataset/{oid}")
 
+    def test_update_invalid_uuid(self):
+        oid = "invalid_uuid"
+        rsp = self.client.put(f"/dataset/{oid}", json={
+            'name': 'new_name',
+            'url': 'new_url',
+            'metadata': {
+                'key': 'value'
+            }
+        }
+        )
+        self.assertEqual(rsp.status_code, 422)
