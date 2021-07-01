@@ -89,7 +89,7 @@ transfer_image:
     - docker:19.03.12-dind
   variables:
     IMAGE_TAG: $CI_REGISTRY_IMAGE:latest
-    IMAGE_COMMIT_TAG: $CI_REGISTRY_IMAGE:$COMMIT_SHORT_SHA
+    IMAGE_COMMIT_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build --no-cache=true --pull -f ./apiserver/Dockerfile -t $IMAGE_TAG .
@@ -105,7 +105,7 @@ tag_release:
     - docker:19.03.12-dind
   variables:
     IMAGE_STABLE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
-    IMAGE_COMMIT_TAG: $CI_REGISTRY_IMAGE:$COMMIT_SHORT_SHA
+    IMAGE_COMMIT_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
   only:
     - tags
   tags: [stable]
