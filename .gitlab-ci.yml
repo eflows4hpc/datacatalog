@@ -8,7 +8,7 @@ variables:
 stages:
   - test
   - build
-  - transfer
+  - publish
   - deploy
 
 test:
@@ -84,7 +84,7 @@ publishgit-do:
 # This should be an automatic push of the docker image into gitLab container repository
 # Currently not working due to docker login failing because of firewall issues
 transfer_image:
-  stage: transfer
+  stage: publish
   image: docker:19.03.12
   services:
     - docker:19.03.12-dind
