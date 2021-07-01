@@ -1,18 +1,49 @@
 default:
   image: python:3-slim
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  APP_VERSION: "beta"
+
 stages:
   - test
+  - build
   - publish
   - deploy
 
 test:
   stage: test
-  script:
+  script: 
    - pip install -r testing_requirements.txt
-   - nosetests --with-coverage --cover-package=apiserver --cover-xml
+   - nosetests --with-coverage --cover-package=apiserver
   artifacts:
     reports:
       cobertura: coverage.xml
+
+
+build:sites:
+  cache: {}
+  stage: build
+  script:
+    - pip install -r requirements.txt
+    - python frontend/createStatic.py
+    - echo "static web content has been created"
+  artifacts:
+    paths:
+      - site
+
+pages:
+  stage: deploy
+  image: alpine:latest
+  dependencies:
+    - build:sites
+  script:
+  - mkdir public
+  - cp -r site/* public/
+  - echo "Deployment finished. Missing API server"
+  artifacts:
+    paths:
+    - public
 
 deploy:
   stage: deploy
@@ -24,7 +55,17 @@ deploy:
     OS_INTERFACE: public
   script:
     - echo "Doing nothing for now"
-    
+    - pip install python-openstackclient
+    - openstack image list
+    # - openstack server create --flavor s1 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 pipeline-inst
+    # - reassign floating ip
+    # - login on the new instance pipeline-inst
+    # - sudo docker network create net #net is the docker internal network.. put it in a Variable?
+    # - sudo docker-compose up -d
+    # - docker build --no-cache=true --pull -f ./apiserver/Dockerfile -t api-test . #pull from $CI_REGISTRY
+    # - sudo docker run --name api-test-cloud --network net -e VIRTUAL_HOST="zam10028.zam.kfa-juelich.de" -e LETSENCRYPT_HOST="zam10028.zam.kfa-juelich.de" -d api-test
+    # - openstack server destroy pipeline-inst #old
+
 publishgit-do:
   image: python:3-slim
   stage: publish
@@ -32,10 +73,44 @@ publishgit-do:
     - tags
   tags: [stable]
   script:
-  - apt-get update 
-  - apt-get install -y git
-  - git remote set-url gith "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/eflows4hpc/datacatalog.git"
-  - git remote -v
-  - git show-ref
-  - git push gith $CI_COMMIT_REF_NAME
+    - apt-get update 
+    - apt-get install -y git
+    - git remote set-url gith "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/eflows4hpc/datacatalog.git"
+    - git remote -v
+    - git show-ref
+    - git push gith $CI_COMMIT_REF_NAME
 
+
+# This is an automatic push of the docker image into gitLab container repository
+transfer_image:
+  stage: build
+  image: docker:19.03.12
+  services:
+    - docker:19.03.12-dind
+  variables:
+    IMAGE_COMMIT_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build --no-cache=true --pull -f ./apiserver/Dockerfile -t $IMAGE_COMMIT_TAG .
+    - docker push $IMAGE_COMMIT_TAG
+
+tag_release:
+  stage: publish
+  needs: ["transfer_image"]
+  image: docker:19.03.12
+  services:
+    - docker:19.03.12-dind
+  variables:
+    IMAGE_LATEST_TAG: $CI_REGISTRY_IMAGE:latest
+    IMAGE_STABLE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+    IMAGE_COMMIT_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  only:
+    - tags
+  tags: [stable]
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker pull $IMAGE_COMMIT_TAG
+    - docker tag $IMAGE_COMMIT_TAG $IMAGE_STABLE_TAG
+    - docker tag $IMAGE_COMMIT_TAG $IMAGE_LATEST_TAG
+    - docker push $IMAGE_STABLE_TAG
+    - docker push $IMAGE_LATEST_TAG
