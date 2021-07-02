@@ -3,7 +3,7 @@ version: "3.7"
 services:
 
     reverse-proxy:
-        image: "registry.jsc.fz-juelich.de/rybicki1/datacatalog/nginx-proxy:alpine"
+        image: "jwilder/nginx-proxy:alpine"
         container_name: "reverse-proxy"
         volumes:
             - "html:/usr/share/nginx/html"
@@ -12,6 +12,7 @@ services:
             - "certs:/etc/nginx/certs"
             - "/run/docker.sock:/tmp/docker.sock:ro"
             - "./site/:/var/www/html/static/"
+            - "./proxy_image/default_location:/etc/nginx/vhost.d/default_location"
         restart: "always"
         networks: 
             - "net"
