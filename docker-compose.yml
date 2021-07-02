@@ -3,7 +3,7 @@ version: "3.7"
 services:
 
     reverse-proxy:
-        image: "registry.jsc.fz-juelich.de/rybicki1/datacatalog/nginx-proxy"
+        image: "registry.jsc.fz-juelich.de/rybicki1/datacatalog/nginx-proxy:alpine"
         container_name: "reverse-proxy"
         volumes:
             - "html:/usr/share/nginx/html"
@@ -11,7 +11,7 @@ services:
             - "vhost:/etc/nginx/vhost.d"
             - "certs:/etc/nginx/certs"
             - "/run/docker.sock:/tmp/docker.sock:ro"
-            - "static:/var/www/html/static/"
+            - "./site/:/var/www/html/static/"
         restart: "always"
         networks: 
             - "net"
@@ -40,12 +40,14 @@ services:
         image: "registry.jsc.fz-juelich.de/rybicki1/datacatalog:latest"
         container_name: "datacatalog-apiserver"
         volumes:
-            - "userdb:/app/userdb.json"
+            - "./app/userdb.json:/app/userdb.json"
             - "appdata:/app/data"
         environment:
             VIRTUAL_HOST: zam10028.zam.kfa-juelich.de
             LETSENCRYPT_HOST: zam10028.zam.kfa-juelich.de
             VIRTUAL_PORT: 8000
+        networks: 
+            - "net"
 volumes:
     certs:
     html:
