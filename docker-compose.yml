@@ -3,7 +3,7 @@ version: "3.7"
 services:
 
     reverse-proxy:
-        image: "jwilder/nginx-proxy:latest"
+        image: "registry.jsc.fz-juelich.de/rybicki1/datacatalog/nginx-proxy"
         container_name: "reverse-proxy"
         volumes:
             - "html:/usr/share/nginx/html"
@@ -11,6 +11,7 @@ services:
             - "vhost:/etc/nginx/vhost.d"
             - "certs:/etc/nginx/certs"
             - "/run/docker.sock:/tmp/docker.sock:ro"
+            - "static:/var/www/html/static/"
         restart: "always"
         networks: 
             - "net"
@@ -29,18 +30,30 @@ services:
             - "/run/docker.sock:/var/run/docker.sock:ro"
         environment:
             NGINX_PROXY_CONTAINER: "reverse-proxy"
-            DEFAULT_EMAIL: "m.petrova@fz-juelich.de"
+            DEFAULT_EMAIL: "c.boettcher@fz-juelich.de"
         restart: "always"
         depends_on:
             - "reverse-proxy"
         networks: 
             - "net"
-
+    datacatalog-apiserver:
+        image: "registry.jsc.fz-juelich.de/rybicki1/datacatalog:latest"
+        container_name: "datacatalog-apiserver"
+        volumes:
+            - "userdb:/app/userdb.json"
+            - "appdata:/app/data"
+        environment:
+            VIRTUAL_HOST: zam10028.zam.kfa-juelich.de
+            LETSENCRYPT_HOST: zam10028.zam.kfa-juelich.de
+            VIRTUAL_PORT: 8000
 volumes:
     certs:
     html:
     vhost:
     dhparam:
+    static:
+    userdb:
+    appdata:
     
 networks:
     net:
