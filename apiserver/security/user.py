@@ -3,6 +3,7 @@ import abc
 import json
 import os
 import warnings
+import random
 from datetime import datetime, timedelta
 from typing import List, Optional
 
@@ -17,11 +18,10 @@ with warnings.catch_warnings():
     from jose import JWTError, jwt
 
 
-# to get a secure secret string run:
-# openssl rand -hex 32
-SECRET_KEY = "THIS IS NOT THE FINAL KEY; JUST FOR TESTING. IF FOUND IN PRODUCTION, ALERT THE SERVER ADMIN!"
+# secret key is generated once on server startup, a server-restart therefore also invalidates all pre-existing tokens
+SECRET_KEY = hex(random.SystemRandom().getrandbits(256))
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRES_MINUTES = 60
+ACCESS_TOKEN_EXPIRES_MINUTES = 1440 # 24 hours
 
 
 class Token(BaseModel):
