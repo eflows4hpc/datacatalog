@@ -1,54 +1,142 @@
-from apiserver import settings
+#! /usr/bin/python3
+import os, json, argparse, abc
 
-from apiserver.security import JsonDBInterface, get_password_hash, UserInDB
+from pydantic import BaseModel
+from typing import List
+from passlib.context import CryptContext
 
-import getopt, sys, getpass
 
-def main(argv):
-    userdb = JsonDBInterface(settings)
-    noarg = True
-    try:
-        opts, args = getopt.getopt(argv,"hla:d:g:",["list", "add=", "delete=", "get=", "help"])
-    except getopt.GetoptError:
-      print("Run \"userdb-cli.py -h\" for help.")
-      sys.exit(2)
 
-    for opt, arg in opts:
-        noarg = False
-        if opt == '-h':
-            # print help info
-            print("The following options are supported:")
-            print("\t-l | --list \t\t\t\tLists all users in the userdb-file")
-            print("\t-a <username> | --add <username>\tAdd a user with the given username. Email and password will be queried via the terminal.")
-            print("\t-g <username> | --get <username>\tPrint all information about the given username (i.e. username, email and password hash).")
-            print("\t-d <username> | --delete <username>\tDelete the given user from the file. This also deletes email and the stored password hash. This can not be undone. A Confirmation via the Terminal is required.")
-            print("Multiple operations can be done with one call, but they can be executed in any order. Email/password entry and deletion confirmation will have a label to show which username is currently used.")
-        elif opt in ("-l", "--list"):
-            for user in userdb.list():
-                print(user)
-        elif opt in ("-a", "--add"):
-            user = UserInDB(username=arg)
-            user.email = input("Enter email for user \"" + arg + "\": ")
-            password = getpass.getpass()
-            user.hashed_password = get_password_hash(password)
-            userdb.add(user)
-        elif opt in ("-g", "--get"):
-            user = userdb.get(arg)
-            print(user)
-        elif opt in ("-d", "--delete"):
-            confirmation = input("Are you sure you want to delete user \"" + arg +"\"?(Y/default:N)")
-            if confirmation == "Y" or confirmation == "y":
-                userdb.delete(arg)
-                print("User deleted.")
-            else:
-                print("User not deleted")
+class User(BaseModel):
+    username: str
+    email: str = None
+
+
+class UserInDB(User):
+    hashed_password: str = None
+
+
+class AbstractDBInterface(metaclass=abc.ABCMeta):
+    @abc.abstractclassmethod
+    def list(self) -> List:
+        raise NotImplementedError()
+
+    @abc.abstractclassmethod
+    def get(self, username: str):
+        raise NotImplementedError()
+
+    @abc.abstractclassmethod
+    def add(self, user: UserInDB):
+        raise NotImplementedError()
+
+    @abc.abstractclassmethod
+    def delete(self, username: str):
+        raise NotImplementedError()
+
+
+class JsonDBInterface(AbstractDBInterface):
+
+    def __init__(self, filepath):
+        self.file_path = filepath
+        if not (os.path.exists(self.file_path) and os.path.isfile(self.file_path)):
+            # create empty json
+            self.__save_all({})
         else:
-            print("Wrong argument: " + opt)
-            print("Run \"userdb-cli.py -h\" for help.")
-    if noarg:
-        print("No arguments.")
-        print("Run \"userdb-cli.py -h\" for help.")
+            # if it exists, check if it is valid
+            _ = self.__read_all()
+
+    def __read_all(self):
+        with open(self.file_path, 'r') as f:
+            return json.load(f)
+
+    def __save_all(self, data):
+        with open(self.file_path, 'w') as f:
+            json.dump(data, f)
+
+    def list(self):
+        data = self.__read_all()
+        return list(data.keys())
+
+    def get(self, username: str):
+        data = self.__read_all()
+        if username not in data:
+            return None
+
+        return UserInDB(**data[username])
+
+    def add(self, user: UserInDB):
+        data = self.__read_all()
+        if user.username in data:
+            raise Exception(f"User {user.username} already exists!")
+
+        data[user.username] = user.dict()
+        self.__save_all(data=data)
+
+    def delete(self, username: str):
+        data = self.__read_all()
+        # idempotent? or return?
+        _ = data.pop(username, None)
+
+        self.__save_all(data)
+
+
+__pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def get_password_hash(password):
+    return __pwd_context.hash(password)
+
+def main(args):
+    userdb = JsonDBInterface(args.userdb_path)
+
+    if 'hash' in args.operation:
+        if not args.password:
+            raise ValueError("Password is not set!")
+        print(get_password_hash(args.password))
+    elif 'ls' in args.operation:
+        for user in userdb.list():
+            print(user)
+    elif 'add' in args.operation:
+        if not args.username:
+            raise ValueError("Username is not set!")
+        if not args.mail:
+            raise ValueError("Mail is not set!")
+        hash = args.bcrypt_hash
+        if not args.bcrypt_hash:
+            if  not args.password:
+                raise ValueError("No Password or hash given!")
+            hash = get_password_hash(args.password)
+        
+        user = UserInDB(username=args.username, email=args.mail, hashed_password=hash)
+        userdb.add(user)
+        print("new User added:")
+        print(user)
+    elif 'show' in args.operation:
+        if not args.username:
+            raise ValueError("Username is not set!")
+        user = userdb.get(args.username)
+        print(user)
+    elif 'rm' in args.operation:
+        if not args.username:
+            raise ValueError("Username is not set!")
+        user = userdb.get(args.username)
+        print("Deleting the following user:")
+        print(user)
+        userdb.delete(args.username)
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    parser = argparse.ArgumentParser("userdb-cli.py", description="CLI for a userdb.json for the datacatalog-apiserver.", formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument("operation", type=str, nargs=1, help="\
+hash \tReturn a bcrypt hash for the given password. Requires -p. \n\
+ls \tLists all Users in the userdb. \n\
+add \tAdds a new user to the userdb. Requires -u, -m and either -p or -b. \n\
+show \tShows a single user from the userdb. Requires -u. \n\
+rm \tDeletes a single user from the userdb. Requires -u. \
+")
+    parser.add_argument("-u", "--username", help="The username that should be modified")
+    parser.add_argument("-m", "--mail", help="The email of a newly created user.")
+    parser.add_argument("-p", "--password", help="The password of a newly created user.")
+    parser.add_argument("-b", "--bcrypt-hash", help="The bcrypt password-hash of a newly created user.")
+    parser.add_argument("userdb_path", type=str, nargs='?', help="The path to the userdb to be modified or created.", default="./userdb.json")
+    args = parser.parse_args()
+    main(args)
