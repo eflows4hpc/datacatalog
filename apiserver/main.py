@@ -13,6 +13,7 @@ from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from pydantic import UUID4
+from starlette.responses import RedirectResponse
 
 from .config import ApiserverSettings
 from .security import (ACCESS_TOKEN_EXPIRES_MINUTES, JsonDBInterface, Token,
@@ -72,13 +73,32 @@ async def login_for_access_token(user=Depends(my_auth)):
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.get("/", response_model=List[dict[str, str]])
-async def get_types():
+async def get_types(request: Request = None):
     """
     list types of data locations, currently datasets
     (will be provided by the pillars) and targets (possible storage
     locations for worklfow results or similar)
     """
-    return [{element.value: "/" + element.value} for element in LocationDataType]
+    accept_header = request.headers['Accept']
+    accept_json = "application/json"
+    accept_html = "text/html"
+    default_return = [{element.value: "/" + element.value} for element in LocationDataType]
+    redirect_return = RedirectResponse(url='/index.html')
+
+    # uses first of json and html that is in the accept header; returns json if neither is found
+    json_pos = accept_header.find(accept_json)
+    html_pos = accept_header.find(accept_html)
+    
+    if json_pos == -1:
+        json_pos = len(accept_header)
+    if html_pos == -1:
+        html_pos = len(accept_header)
+
+    if html_pos < json_pos:
+        return redirect_return
+    else:
+        return default_return
+
 
 @app.get("/{location_data_type}")
 async def list_datasets(location_data_type: LocationDataType):
