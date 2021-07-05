@@ -31,7 +31,7 @@ services:
             - "/run/docker.sock:/var/run/docker.sock:ro"
         environment:
             NGINX_PROXY_CONTAINER: "reverse-proxy"
-            DEFAULT_EMAIL: "c.boettcher@fz-juelich.de"
+            DEFAULT_EMAIL: "m.petrova@fz-juelich.de"
         restart: "always"
         depends_on:
             - "reverse-proxy"
