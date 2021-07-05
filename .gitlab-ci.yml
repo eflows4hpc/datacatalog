@@ -75,7 +75,7 @@ publishgit-do:
   script:
     - apt-get update 
     - apt-get install -y git
-    - git remote set-url gith "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/eflows4hpc/datacatalog.git"
+    - git remote add gith "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/eflows4hpc/datacatalog.git"
     - git remote -v
     - git show-ref
     - git push gith $CI_COMMIT_REF_NAME
