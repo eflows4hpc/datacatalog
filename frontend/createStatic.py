@@ -25,14 +25,20 @@ def render_template_to_site(api_url=API_URL_DEFAULT_VALUE):
         if os.path.isfile(full_name):
             shutil.copy(full_name, dest)
 
-    ## replace {{API_URL}} tag with actual api url from env
-    apicalls_file_path = 'site/js/apicalls.js'
-    api_tag = '{{API_URL}}'
-    with open(apicalls_file_path, 'r') as file:
-        filedata = file.read()
-    filedata = filedata.replace(api_tag, api_url)
-    with open(apicalls_file_path, 'w') as file:
-        file.write(filedata)
+    ## copy img files to site folder
+    src_files = os.listdir('frontend/img')
+    dest = 'site/img'
+    os.makedirs(dest, exist_ok=True)
+
+    for file_name in src_files:
+        full_name = os.path.join('frontend/img', file_name)
+        if os.path.isfile(full_name):
+            shutil.copy(full_name, dest)
+    
+    ## copy favicon.ico to site folder
+    src_file = 'frontend/favicon.ico'
+    dest = 'site'
+    shutil.copy(src_file, dest)    
 
 
     ## render templates to site folder
@@ -62,6 +68,20 @@ def render_template_to_site(api_url=API_URL_DEFAULT_VALUE):
     for file in files.keys():
         with open('site/'+file+'.html', 'w') as f:
             f.write(html[file])
+
+    
+    ## replace {{API_URL}} tag with actual api url from env
+    files_to_replace_tag = [
+        'site/js/apicalls.js',
+        'site/index.html'
+    ]
+    api_tag = '{{API_URL}}'
+    for apicalls_file_path in files_to_replace_tag:
+        with open(apicalls_file_path, 'r') as file:
+            filedata = file.read()
+        filedata = filedata.replace(api_tag, api_url)
+        with open(apicalls_file_path, 'w') as file:
+            file.write(filedata)
 
 if __name__ == "__main__":
     # priority for setting the API URL from most to least important: commandline argument >>> environment variable >>> default value
