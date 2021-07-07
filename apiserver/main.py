@@ -79,7 +79,10 @@ async def get_types(request: Request = None):
     (will be provided by the pillars) and targets (possible storage
     locations for worklfow results or similar)
     """
-    accept_header = request.headers['Accept']
+    try:
+        accept_header = request.headers['Accept']
+    except KeyError:
+        accept_header = "application/json"
     accept_json = "application/json"
     accept_html = "text/html"
     default_return = [{element.value: "/" + element.value} for element in LocationDataType]
