@@ -6,8 +6,44 @@
   <div class="row">
     <div class="col-sm-12 mt-5 mb-5">
       <h2>Basic information about this service</h2>
-      <h5>Documentation of the data format</h5>
-      <div class="fakeimg">Maybe the Logo again</div>
+      <p>
+        The Datacatalog contains information about the datasets used in eFlows4HPC workflows. The list of datasets can be accessed <a href="storage.html?type=dataset">here</a>.
+        <br>
+        In the future, the Datacatalog may also contain information about possible storage targets for workflow results, as well as information about where and how these results are stored.
+      </p>
+      <p>
+        It is important to note that this is a <i>catalog</i> of datasets, meaning no datasets are actually stored in the Datacatalog. The Datacatalog only contains <i>information</i> about the datasets, which is provided by the project members. 
+        However, this information usually includes a URL or some other way to access the actual data.
+      </p>
+      <h5>For more information about the eFlows4HPC project, please see the <a href="https://eflows4hpc.eu/">project website.</a></h5>
+      <div><img src="img/Colorweb.png" alt="eFlows4HPC Logo" class="img-fluid"></div>
+
+
+      <h2>API Documentation</h2>
+      <p>
+        The backend-API of the Datacatalog is compatible with the <a href="https://swagger.io/specification/">openAPI</a> specification. The API-documentation for the Datacatalog is available in the <a href="{% raw %}{{API_URL}}{% endraw %}openapi.json">openapi.json</a> file.
+        <br>
+        A nicer view of the documentation, which includes examples requests for every API-function, is available <a href="docs">here</a>.
+      </p>
+      <p>
+        If you only want to view the data (i.e. only require read access), the relevant information is the following:
+      </p>
+      <p>
+        Each dataset is identified by its <code>type</code> and <code>oid</code>. To access and view the dataset in your browser via the frontend, navigate to <code>./storage.html?type=DATASETTYPE&oid=DATASET_OID</code>.
+        The response will be a html document that will display the dataset.
+        <br>
+        For access via the API, navigate to <code>{% raw %}{{API_URL}}{% endraw %}DATASETTYPE/DATASET_OID</code>. The response will be a json document that contains all information about the dataset.
+      </p>
+      <p>
+        It is also possible to list all datasets of a specific type. To do this via your browser, navigate to <code>./storage.html?type=DATASETTYPE</code>. The response will be a html document that will display the list of datasets.
+        <br>
+        For access via the API, navigate to <code>{% raw %}{{API_URL}}{% endraw %}DATASETTYPE</code>. The response will be a json document that contains all datasets of the specified type.
+      </p>
+      <p>
+        If you are unsure which types are allowed, you can also list the available types. To do this via your browser, navigate to <code>./storage.html</code>. The response will be a html document that will display the list of the default type. It will also contain a button, which can be used to change the type.
+        <br>
+        For access via the API, navigate to <code>{% raw %}{{API_URL}}{% endraw %}</code>. The response will be a json document that contains all possible types.
+      </p>
     </div>
   </div>
 </div>
