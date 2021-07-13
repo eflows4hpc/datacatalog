@@ -12,6 +12,8 @@ from .LocationStorage import (AbstractLocationDataStorageAdapter, LocationData,
                               LocationDataType)
 
 
+log = logging.getLogger(__name__)
+
 class StoredData(BaseModel):
     actualData: LocationData
     users: List[str]
@@ -52,6 +54,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
     def __init__(self, settings: ApiserverSettings):
         AbstractLocationDataStorageAdapter.__init__(self)
         self.data_dir = settings.json_storage_path
+        log.info("Initializing JsonFileStorageAdapter.")
         if not (os.path.exists(self.data_dir) and os.path.isdir(self.data_dir)):
             raise Exception(f"Data Directory {self.data_dir} does not exist.")
 
@@ -66,10 +69,11 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         full_path = os.path.join(localpath, oid)
         common = os.path.commonprefix((os.path.realpath(full_path),os.path.realpath(self.data_dir)))
         if common != os.path.realpath(self.data_dir):
-            logging.error(f"Escaping the data dir! {common} {full_path}")
+            log.error(f"Escaping the data dir! {common} {full_path}")
             raise FileNotFoundError()
 
         if not os.path.isfile(full_path):
+            log.error("Requsted object (%s) %s does not exist.", oid, full_path)
             raise FileNotFoundError(
                 f"The requested object ({oid}) {full_path} does not exist.")
         return full_path
@@ -83,6 +87,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
                 continue
             data = load_object(p)
             ret.append((data.actualData.name, f))
+        log.debug("Listing all objects ob type %s.", n_type.value)
         return ret
 
     def add_new(self, n_type: LocationDataType, data: LocationData, user_name: str):
@@ -91,15 +96,16 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         to_store = StoredData(users=[user_name], actualData=data)
         with open(os.path.join(localpath, oid), 'w') as json_file:
             json.dump(to_store.dict(), json_file)
+        log.debug("Added new object with oid %s by user '%s'.", oid, user_name)
         return (oid, data)
 
     def get_details(self, n_type: LocationDataType, oid: str):
         full_path = self.__get_object_path(value=n_type.value, oid=oid)
         obj = load_object(path=full_path)
+        log.debug("Returned object %s.", oid)
         return obj.actualData
 
     def update_details(self, n_type: LocationDataType, oid: str, data: LocationData, usr: str):
-        # TODO: usr is ignored here?
         full_path = self.__get_object_path(value=n_type.value, oid=oid)
         obj = load_object(path=full_path)
         obj.actualData = data
@@ -107,10 +113,12 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         with open(full_path, 'w') as f:
             json.dump(obj.dict(), f)
 
+        log.debug("Updated  object with oid %s by user '%s'.", oid, usr)
         return (oid, data)
 
     def delete(self, n_type: LocationDataType, oid: str, usr: str):
         full_path = self.__get_object_path(value=n_type.value, oid=oid)
+        log.debug("Deleted object %s by user '%s'.", oid, usr)
         os.remove(full_path)
 
     def get_owner(self, n_type: LocationDataType, oid: str):

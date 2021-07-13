@@ -23,6 +23,8 @@ SECRET_KEY = hex(random.SystemRandom().getrandbits(256))
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRES_MINUTES = 1440 # 24 hours
 
+log = logging.getLogger(__name__)
+
 
 class Token(BaseModel):
     access_token: str
@@ -78,13 +80,14 @@ class JsonDBInterface(AbstractDBInterface):
 
     def list(self):
         data = self.__read_all()
+        log.debug("Listing all users in userdb.")
         return list(data.keys())
 
     def get(self, username: str):
         data = self.__read_all()
         if username not in data:
             return None
-
+        log.debug("Reading user %s from userdb.", username)
         return UserInDB(**data[username])
 
     def add(self, user: UserInDB):
@@ -94,6 +97,7 @@ class JsonDBInterface(AbstractDBInterface):
 
         data[user.username] = user.dict()
         self.__save_all(data=data)
+        log.debug("Added user %s to userdb.", user.username)
 
     def delete(self, username: str):
         data = self.__read_all()
@@ -101,6 +105,7 @@ class JsonDBInterface(AbstractDBInterface):
         _ = data.pop(username, None)
 
         self.__save_all(data)
+        log.debug("Deleted user %s from userdb.", username)
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
