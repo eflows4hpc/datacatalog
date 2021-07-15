@@ -12,7 +12,7 @@ include::src/config.adoc[]
 [[section-introduction-and-goals]]
 == Introduction and Goals
 
-Following describes the architecture of eFLows4HPC Data Catalog. The service
+Following describes the architecture of eFlows4HPC Data Catalog. The service
 will provide information about data sets used in the project. The catalog will
 store info about locations, schemas, and additional metadata.
 
@@ -54,9 +54,8 @@ Main features:
 |===
 | **Constraint** | **Explanation**
 
-| Authentication | There is no solution for that in the project yet, local authenticator?
+| Authentication | OAuth-based for admin users
 | Deployment | We shall use CI/CD, the project will also be a playing field to setup this and test before the Data Logistics
-| github vs. gitlab | Not sure if we can use our local gitlab
 | Docker-based Deployment | This technology will be used in the project anyways
 |===
 
@@ -84,11 +83,24 @@ Admin -> Data Catalog: either a web page or CLI
 == Solution Strategy
 
 === Speed and flexibility
-This product will not be very mission critical, we want to keep it simple. A solution even without a backend database would be possible. Probably we
-will use some noSQL database for maximal flexibility. API with Swagger/OpenAPI (e.g. fastAPI). Frontend static page with JavaScript calls to the API. 
+This product will not be very mission critical, we want to keep it simple. A solution even without a backend database would be possible.
+ API with Swagger/OpenAPI (e.g. fastAPI). Frontend static page with JavaScript calls to the API.
 
-=== Deployment with Jenkins
+=== Automatic Deployment
 
-1. Jenkins instance in HDF Cloud to setup Pipelines,
-2. Code in Github/Gitlab
-3. Automatic deployment with Docker? Docker-compose
+1. Code in Gitlab
+2. Resources on HDF Cloud
+3. Automatic deployment with Docker + docker-compose, OpenStack API
+
+We use docker image repository in gitlab to generate new images.
+
+=== Structure
+Main data model is based on JSON and uses pydantic. Resources in the Catalog are of two storage classes (sources and targets). The number of classes
+can change in the future.
+
+The actual storage of the information in the catalog is done through an abstract interface which in the first attempt stores the data in a file, other
+backends can be added.
+
+API uses a backend abstraction to mange the informations
+
+Web front-end are static html files generated from templates. This gives a lot of flexibility and allows for easy scalability if required.
