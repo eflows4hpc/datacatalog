@@ -48,6 +48,10 @@ At the moment, the settings are considered at launch, and can not be updated whi
 | DATACATALOG_APISERVER_JSON_STORAGE_PATH | `./app/data`           | Directory where the data (i.e. dataset info) is stored |
 | DATACATALOG_APISERVER_USERDB_PATH       | `./app/userdb.json`    | Location of the `.json` file containing the accounts   |
 
+There is also the logging configuration to consider:
+
+TODO
+
 ### Security
 
 Certain operations will only be possible, if the request is authenticated. The API has an endpoint at `/token` where a username/password login is possible. The endpoint will return a token, which is valid for 1 hour. This token has to be provided with every api call that requires authentication. Currently, these calls are `GET /me` - `PUT /dataset` - `PUT /dataset/dataset-id` - `DELETE /dataset/dataset-id`. The passwords are stored as bcrypt hashes and are not visible to anyone.
@@ -80,6 +84,9 @@ while in the project root directory.
 
 Without any other options, this starts your server on `<localhost:8000>`.
 The `--reload --reload-dir apiserver` options ensure, that any changes to files in the `apiserver`-directory will cause an immediate reload of the server, which is especially useful during development. If this is not required, just don't include the options.
+
+If you want to have more detailed logs and/ or store the logs in a file, add the `--log-level (debug|info|...) --log-config=./apiserver/log_conf.yaml` options.
+The details of the logging behavior can be changed via the `./apiserver/log_conf.yaml` file, and most logging entries will be `debug` or `info`.
 
 More information about uvicorn settings (including information about how to bind to other network interfaces or ports) can be found [here](https://www.uvicorn.org/settings/).
 

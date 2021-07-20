@@ -1,6 +1,6 @@
 fastapi==0.63.0
 requests==2.25.1
-uvicorn==0.13.4
+uvicorn[standard]==0.13.4
 python-dotenv==0.17.1
 python-multipart==0.0.5
 python-jose[cryptography]==3.2.0

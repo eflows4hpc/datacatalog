@@ -41,8 +41,7 @@ services:
         image: "registry.jsc.fz-juelich.de/rybicki1/datacatalog:latest"
         container_name: "datacatalog-apiserver"
         volumes:
-            - "./app/userdb.json:/app/userdb.json"
-            - "appdata:/app/data"
+            - "/app/mnt:/app/mnt"
         environment:
             VIRTUAL_HOST: zam10028.zam.kfa-juelich.de
             LETSENCRYPT_HOST: zam10028.zam.kfa-juelich.de
@@ -54,9 +53,6 @@ volumes:
     html:
     vhost:
     dhparam:
-    static:
-    userdb:
-    appdata:
     
 networks:
     net:
