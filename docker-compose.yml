@@ -43,8 +43,8 @@ services:
         volumes:
             - "/app/mnt:/app/mnt"
         environment:
-            VIRTUAL_HOST: zam10028.zam.kfa-juelich.de
-            LETSENCRYPT_HOST: zam10028.zam.kfa-juelich.de
+            VIRTUAL_HOST: datacatalog.fz-juelich.de
+            LETSENCRYPT_HOST: datacatalog.fz-juelich.de
             VIRTUAL_PORT: 8000
         networks: 
             - "net"
