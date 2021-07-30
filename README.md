@@ -50,7 +50,7 @@ At the moment, the settings are considered at launch, and can not be updated whi
 
 There is also the logging configuration to consider:
 
-TODO
+The `apiserver/log_conf.yaml` contains the settings for the loggers. Information on how to change these settings can be found [here](https://docs.python.org/3/library/logging.config.html).
 
 ### Security
 
