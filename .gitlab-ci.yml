@@ -109,7 +109,7 @@ test-testing:
   script:
     - "TODO: This should run tests for the testing deployment, to ensure full functionality of the deployment."
     - "For now, this will be a basic health check i.e. GET / and check for 2xx code."
-    - curl -f -H "Accept: application/json" $TESTING_URL
+    - 'curl -f -H "Accept: application/json" $TESTING_URL'
 
 test-production:
   cache: {}
@@ -124,8 +124,7 @@ test-production:
   script:
     - "TODO: This should run tests for the production deployment, to ensure full functionality of the deployment."
     - "For now, this will be a basic health check i.e. GET / and check for 2xx code."
-    - curl -f -H "Accept: application/json" $PRODUCTION_URL
-    - 
+    - 'curl -f -H "Accept: application/json" $PRODUCTION_URL' 
 
 publishgit-do:
   image: python:3-slim
