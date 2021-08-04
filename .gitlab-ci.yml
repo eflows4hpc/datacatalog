@@ -72,7 +72,7 @@ deploy-testing:
     - master
   except:
     - tags
-  needs: ["tag_release"]
+  needs: ["transfer_image"]
   environment: Testing
   variables:
     OS_AUTH_TYPE: v3applicationcredential
@@ -152,10 +152,13 @@ transfer_image:
     - docker:dind
   variables:
     IMAGE_COMMIT_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+    IMAGE_MASTER_TAG: $CI_REGISTRY_IMAGE:master
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build --no-cache=true --pull -f ./apiserver/Dockerfile -t $IMAGE_COMMIT_TAG .
     - docker push $IMAGE_COMMIT_TAG
+    - docker tag $IMAGE_COMMIT_TAG $IMAGE_MASTER_TAG
+    - docker push $IMAGE_MASTER_TAG
 
 tag_release:
   stage: publish
