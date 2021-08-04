@@ -9,6 +9,7 @@ stages:
   - build
   - publish
   - deploy
+  - test-deployment
 
 test:
   stage: test
@@ -20,40 +21,39 @@ test:
       cobertura: coverage.xml
 
 
-build:sites:
+deploy-sites:
   cache: {}
-  stage: build
+  stage: deploy
+  needs: ["test"]
   script:
     - pip install -r requirements.txt
-    - python frontend/createStatic.py
+    - python frontend/createStatic.py -u "https://datacatalog.fz-juelich.de/"
     - echo "static web content has been created"
+    - mkdir public
+    - cp -r site/* public/
+    - echo "Static content has been deployed to gitlab pages. Will not work with backend API due to CORS."
   artifacts:
     paths:
-      - site
+      - public
 
-pages:
+deploy-production:
   stage: deploy
-  image: alpine:latest
-  dependencies:
-    - build:sites
-  script:
-  - mkdir public
-  - cp -r site/* public/
-  - echo "Deployment finished. Missing API server"
-  artifacts:
-    paths:
-    - public
-
-deploy:
-  stage: deploy
+  # only run when stable tag is assigned
+  only:
+    - tags
+  tags: [stable]
+  needs: ["tag_release"]
+  environment: Production
   variables:
     OS_AUTH_TYPE: v3applicationcredential
     OS_AUTH_URL: https://hdf-cloud.fz-juelich.de:5000
     OS_IDENTITY_API_VERSION: 3
     OS_REGION_NAME: "HDFCloud"
     OS_INTERFACE: public
+    PRODUCTION_URL: https://datacatalog.fz-juelich.de/
+    PRODUCTION_DOMAIN: datacatalog.fz-juelich.de
   script:
-    - echo "Doing nothing for now"
+    - echo "Doing nothing for now. This will become a production deployment."
     - pip install python-openstackclient
     - openstack image list
     # - openstack server create --flavor s1 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 pipeline-inst
@@ -65,9 +65,72 @@ deploy:
     # - sudo docker run --name api-test-cloud --network net -e VIRTUAL_HOST="zam10028.zam.kfa-juelich.de" -e LETSENCRYPT_HOST="zam10028.zam.kfa-juelich.de" -d api-test
     # - openstack server destroy pipeline-inst #old
 
+deploy-testing:
+  stage: deploy 
+  # only run when master is updated
+  only:
+    - master
+  except:
+    - tags
+  needs: ["tag_release"]
+  environment: Testing
+  variables:
+    OS_AUTH_TYPE: v3applicationcredential
+    OS_AUTH_URL: https://hdf-cloud.fz-juelich.de:5000
+    OS_IDENTITY_API_VERSION: 3
+    OS_REGION_NAME: "HDFCloud"
+    OS_INTERFACE: public
+    TESTING_URL: https://zam10036.zam.kfa-juelich.de/
+    TESTING_DOMAIN: zam10036.zam.kfa-juelich.de
+  script:
+    - echo "Doing nothing for now. This will become a testing deployment."
+    - pip install python-openstackclient
+    - openstack image list
+    # - openstack server create --flavor s1 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 pipeline-inst
+    # - reassign floating ip
+    # - login on the new instance pipeline-inst
+    # - sudo docker network create net #net is the docker internal network.. put it in a Variable?
+    # - sudo docker-compose up -d
+    # - docker build --no-cache=true --pull -f ./apiserver/Dockerfile -t api-test . #pull from $CI_REGISTRY
+    # - sudo docker run --name api-test-cloud --network net -e VIRTUAL_HOST="zam10028.zam.kfa-juelich.de" -e LETSENCRYPT_HOST="zam10028.zam.kfa-juelich.de" -d api-test
+    # - openstack server destroy pipeline-inst #old
+
+  
+test-testing:
+  cache: {}
+  stage: test-deployment 
+  only:
+    - master
+  except:
+    - tags
+  needs: ["deploy-testing"]
+  variables:
+    TESTING_URL: https://zam10036.zam.kfa-juelich.de/
+  script:
+    - "TODO: This should run tests for the testing deployment, to ensure full functionality of the deployment."
+    - "For now, this will be a basic health check i.e. GET / and check for 2xx code."
+    - curl -f -H "Accept: application/json" $TESTING_URL
+
+test-production:
+  cache: {}
+  stage: test-deployment 
+  only:
+    - tags
+  tags: [stable]
+  needs: ["deploy-production"]
+  environment: Production
+  variables:
+    PRODUCTION_URL: https://datacatalog.fz-juelich.de/
+  script:
+    - "TODO: This should run tests for the production deployment, to ensure full functionality of the deployment."
+    - "For now, this will be a basic health check i.e. GET / and check for 2xx code."
+    - curl -f -H "Accept: application/json" $PRODUCTION_URL
+    - 
+
 publishgit-do:
   image: python:3-slim
   stage: publish
+  needs: ["test"]
   only:
     - tags
   tags: [stable]
@@ -84,6 +147,7 @@ publishgit-do:
 # This is an automatic push of the docker image into gitLab container repository
 transfer_image:
   stage: build
+  needs: ["test"]
   image: docker:latest
   services:
     - docker:dind
