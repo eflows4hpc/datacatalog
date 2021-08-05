@@ -54,6 +54,7 @@ deploy-production:
     PRODUCTION_DOMAIN: datacatalog.fz-juelich.de
   script:
     - echo "Doing nothing for now. This will become a production deployment."
+    - sed -i 's_/app/mnt/data_/app/mnt && mount /dev/vdb1 /app/mnt_g' deploy_scripts/cloudinit.yml
     - pip install python-openstackclient
     - openstack image list
     # - openstack server create --flavor s1 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 pipeline-inst
@@ -82,18 +83,20 @@ deploy-testing:
     OS_INTERFACE: public
     TESTING_URL: https://zam10036.zam.kfa-juelich.de/
     TESTING_DOMAIN: zam10036.zam.kfa-juelich.de
+    VOLUME_ID: 07a93071-5be7-4cc0-8ff3-cb34e7ed2b80
+    FLOATING_IP: 134.94.199.36
   script:
-    - echo "Doing nothing for now. This will become a testing deployment."
+    - echo "Starting the testing deployment."
+    - sed -i 's_datacatalog.fz_zam10036.zam.kfa_g' deploy_scripts/cloudinit.yml
     - pip install python-openstackclient
-    - openstack image list
-    # - openstack server create --flavor s1 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 pipeline-inst
-    # - reassign floating ip
-    # - login on the new instance pipeline-inst
-    # - sudo docker network create net #net is the docker internal network.. put it in a Variable?
-    # - sudo docker-compose up -d
-    # - docker build --no-cache=true --pull -f ./apiserver/Dockerfile -t api-test . #pull from $CI_REGISTRY
-    # - sudo docker run --name api-test-cloud --network net -e VIRTUAL_HOST="zam10028.zam.kfa-juelich.de" -e LETSENCRYPT_HOST="zam10028.zam.kfa-juelich.de" -d api-test
-    # - openstack server destroy pipeline-inst #old
+    - OLD_ID=`openstack server show testing-deployment -f value -c id`
+    # TODO create snapshot copy of old instance
+    - openstack server remove floating ip $OLD_ID $FLOATING_IP
+    # NO VOLUME IN TESTING DEPLOYMENT - openstack server remove volume $OLD_ID $VOLUME_ID
+    - INSTANCE_ID=`openstack server create -f value -c id --prefix IMAGE_ --flavor s2 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 --user-data deploy_scripts/cloudinit.yml --security-group ssh --security-group www --security-group https testing-deployment`
+    - openstack server add floating ip $INSTANCE_ID $FLOATING_IP
+    # NO VOLUME IN TESTING DEPLOYMENT - openstack server add volume $INSTANCE_ID $VOLUME_ID
+    - openstack server delete $OLD_ID
 
   
 test-testing:
