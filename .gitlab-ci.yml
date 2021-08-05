@@ -94,7 +94,7 @@ deploy-testing:
     - openstack server remove floating ip $OLD_ID $FLOATING_IP
     # NO VOLUME IN TESTING DEPLOYMENT - openstack server remove volume $OLD_ID $VOLUME_ID
     - INSTANCE_ID=`openstack server create -f value -c id --prefix IMAGE_ --flavor s2 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 --user-data deploy_scripts/cloudinit.yml --security-group ssh --security-group www --security-group https testing-deployment`
-    - while [ "`openstack server show $INSTANCE_ID -c addresses -f value`"" = "{}" ]; do sleep 5; done # wait until an address is available to attach the floating ip
+    - while [ "`openstack server show $INSTANCE_ID -c addresses -f value`" = "{}" ]; do sleep 5; done # wait until an address is available to attach the floating ip
     - openstack server add floating ip $INSTANCE_ID $FLOATING_IP
     # NO VOLUME IN TESTING DEPLOYMENT - openstack server add volume $INSTANCE_ID $VOLUME_ID
     - openstack server delete $OLD_ID
