@@ -9,7 +9,7 @@ stages:
   - build
   - publish
   - deploy
-  - test-deployment
+#  - test-deployment
 
 test:
   stage: test
@@ -100,37 +100,37 @@ deploy-testing:
     - openstack server delete $OLD_ID
 
   
-test-testing:
-  cache: {}
-  stage: test-deployment 
-  only:
-    - master
-  except:
-    - tags
-  needs: ["deploy-testing"]
-  variables:
-    TESTING_URL: https://zam10036.zam.kfa-juelich.de/
-  script:
-    - apt update && apt -y install curl
-    - echo "TODO This should run tests for the testing deployment, to ensure full functionality of the deployment."
-    - echo "For now, this will be a basic health check i.e. GET / and check for 2xx code."
-    - 'curl -f -H "Accept: application/json" $TESTING_URL'
+#test-testing:
+#  cache: {}
+#  stage: test-deployment 
+#  only:
+#    - master
+#  except:
+#    - tags
+#  needs: ["deploy-testing"]
+#  variables:
+#    TESTING_URL: https://zam10036.zam.kfa-juelich.de/
+#  script:
+#    - apt update && apt -y install curl
+#    - echo "TODO This should run tests for the testing deployment, to ensure full functionality of the deployment."
+#    - echo "For now, this will be a basic health check i.e. GET / and check for 2xx code."
+#    - 'curl -f -H "Accept: application/json" $TESTING_URL'
 
-test-production:
-  cache: {}
-  stage: test-deployment 
-  only:
-    - tags
-  tags: [stable]
-  needs: ["deploy-production"]
-  environment: Production
-  variables:
-    PRODUCTION_URL: https://datacatalog.fz-juelich.de/
-  script:
-    - apt update && apt -y install curl
-    - echo "TODO This should run tests for the production deployment, to ensure full functionality of the deployment."
-    - echo "For now, this will be a basic health check i.e. GET / and check for 2xx code."
-    - 'curl -f -H "Accept: application/json" $PRODUCTION_URL' 
+#test-production:
+#  cache: {}
+#  stage: test-deployment 
+#  only:
+#    - tags
+#  tags: [stable]
+#  needs: ["deploy-production"]
+#  environment: Production
+#  variables:
+#    PRODUCTION_URL: https://datacatalog.fz-juelich.de/
+#  script:
+#    - apt update && apt -y install curl
+#    - echo "TODO This should run tests for the production deployment, to ensure full functionality of the deployment."
+#    - echo "For now, this will be a basic health check i.e. GET / and check for 2xx code."
+#    - 'curl -f -H "Accept: application/json" $PRODUCTION_URL' 
 
 publishgit-do:
   image: python:3-slim
