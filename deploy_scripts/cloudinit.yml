@@ -1,0 +1,54 @@
+#cloud-config
+
+# This is a cloud config that install most basic packages, and clones and prepares the git repo for the datacatalog
+# This should prepare everything that is possible, so that (after assigning the ip address and generating the static files) only docker-compose needs to be run
+
+# upgrade packages
+package_update: true
+package_upgrade: true
+
+# install relevant packages
+packages:
+  - python3
+  - python3-pip
+  - docker.io
+  - docker-compose
+
+# Add users to the system. Users are added after groups are added.
+
+users:
+  - name: cboettcher
+    gecos: Christian Böttcher
+    groups: sudo
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDrgXm/3kbHrgPuHrru2LCLxKBPNnZkwTSbaadkYm6N+EzE7GwVPcXorPReC+2SHT2e8YnczcjHMcazmf7VWmHAQVV3fGrZiQtk+xTjXt3tC+Rm2zuqB4vvJcR5DXXomMMRJwG3sk/PcozvFfKFv6P7bbHxKOR090o4krM3mE2Vo43EnsBaPUS8cWI2EkhcR4gAJHhreFHbIS+nrFaJydfmzfwHNE1WjjtfIBA0U8ld2tk8eelMUjvkWrYXK+qqdaUKL0n/wVMo8D/Kl1lNGKym8LE6ZiojjEX0Aq0ajSHyyEWGscJunv/tJkrrOX2C4jd9pGEP6d0YyAunimsT1glv cboet@Desktop-CB
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCRsldcJ7kiksXTn2hivYfZ+Y9gziBWaMPpfVPNVlPi5XizbMurXAPQ3gUbBTDRp+Plf5LiXAfFNBdPTACb5ymFhIUKj/3sJhxc92uvJktLyjObAZ74ImBzDhVwGzs/cKhWc2otFgyMwrfPuIxdarCiLTjmG+dZ0a+IZbWta241kc3qBPjuqKK/LSZOK/Jx9Dl4rURs780GdcoA7Q2r6I6Bq8m0Cpfl2Otwi5Vr4d6hxWrl8D100ssLctn4FlL4SzVHPyZJVNeFJYQv1boJwldHBST8tJ0r0KC1V5CboB+Rdh1b/Qy1y6l/y9fPX+axFSGIIxSb6egRSwcE89f3kCC1 cboettcher@zam024
+
+
+  - name: maria
+    gecos: Maria Petrova-El Sayed
+    groups: sudo
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDUNFmYnaZ1raXQm04/mfdoBfn4i6xYknic2nhGDOrkhp5r6kv4F1m7wgtuL/pddRKuEoQpiXjRWciEMljFmxvVc7+9VitsAn5zBsnzY9+Sq9+si5aKe93RK8JGLX/WsfZGnPMdKPkK2GO9LFJN4TyL9hTpFdFQfxtO82NIa3WikG4RI+WQuKeQ4qr8FHNymr+gHTw/+YaM9331xnM5YqkmOC27CvVtiQx96MNMAyMQ8RJcHy1GL8donTBL+knVZdIwGt4SUy9dIF8iwTXGFkLe8V7/DIEB7RW9gvk2sG3YPo2eq56HsQKAB3yre+5QFhmH/uqUnTKVFgZLqlDUC0duFOwALCRmlEgtOeZqOzRBa6a0RveTIfccMb48ac4FpeeJdo4KId1QO1JaEZ8fYKgRVw3xRuOjDMpxCFuxELpSvx/hd1jgrK9lRizH9DXNf5/5Go2O16hj8LPufBbhX2EiChjWJEJkoRWBhQ3UHmstbqRiuNU/MsHq0FPSHMHV6BU= maria@jsc-strela
+
+
+  - name: apiserver
+    gecos: Common user for running the apiserver
+    groups: sudo
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDQMbfKUO3NoZspgWpzFY+SwY5Tx251oBT/F22pmnqKq3A0U1EcRooYVc11HzDmLrDTkoLSWAYPuv7I8weKqUPMlypXygu7I1kw1JoAZ4veV/TO8kBIb8+fUjD4VnD0EuU9/MD4rc0IazlInUu/5H2oDj4cj3XGoOFHAPRvo1YXF2eEbXgHcos5o52idZfvZPeWmk4wLqWUI+4q1C5o+c9xGxdWkA0Z6cErw5jSfaqIMu9GnsaPE8dDZ89vtNu8kRK97/Ax0qmJ8eLBfv3qm2HnqACRUv1MRLS/s9KsdB18DV6dTn8VuErJsn9rlpx/2oEMVS5lkUSLTJHf7oNVKDtILQ/rQ2tF/f3LakmiViA4ZsWxFspP0T/sXPhjuCgEqGWG8HrJwFj8DByMpoJUsGe1czAiMdoY5Tr7UeIgK7BGaGjoVUFaVrCKlDpDNhYsHopSTTNajVxsb0LkTRIRphGlQTHlD3nDYdHIrgZiLqA1XLtTTXtWNzQ4uE59tAkIzdTK7RSBduHunqx++IEO6Huj49Vvk1vcO33iqFTTZro1vhZ2kEGxAkxNMti+/eT2rvyfkhsXaUH1/7LXvRrR+pFKcXBpaWWeEt8cOiVrMWAPDi9VRh5QPZbJ1tyTq7XzxeaQuJhL22o2BO13ZSRzr1S+UNFcmfk3esruZoxDIiQ+Bw== apiserver@gitlab
+
+runcmd:
+  - mkdir -p /app/mnt
+  - 'git clone https://gitlab.jsc.fz-juelich.de/rybicki1/datacatalog.git /home/apiserver/'
+  # general startup takes long enough that no delay should bee needed - 5 to 6 minutes until these commands are executed
+  - 'export API_URL=https://zam10036.zam.kfa-juelich.de/'
+  - /bin/bash deploy_scripts/deployment.sh /home/apiserver/datacatalog
