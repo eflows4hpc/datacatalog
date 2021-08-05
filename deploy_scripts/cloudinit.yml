@@ -51,5 +51,6 @@ runcmd:
   - 'git clone https://gitlab.jsc.fz-juelich.de/rybicki1/datacatalog.git /home/apiserver/datacatalog'
   - docker network create net
   # general startup takes long enough that no delay should bee needed - 5 to 6 minutes until these commands are executed
-  - 'export API_URL=https://zam10036.zam.kfa-juelich.de/'
+  - 'export API_URL=https://datacatalog.fz-juelich.de/'
+  - 'export SERVER_DOMAIN=datacatalog.fz-juelich.de'
   - /bin/bash /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog
