@@ -47,8 +47,9 @@ users:
       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDQMbfKUO3NoZspgWpzFY+SwY5Tx251oBT/F22pmnqKq3A0U1EcRooYVc11HzDmLrDTkoLSWAYPuv7I8weKqUPMlypXygu7I1kw1JoAZ4veV/TO8kBIb8+fUjD4VnD0EuU9/MD4rc0IazlInUu/5H2oDj4cj3XGoOFHAPRvo1YXF2eEbXgHcos5o52idZfvZPeWmk4wLqWUI+4q1C5o+c9xGxdWkA0Z6cErw5jSfaqIMu9GnsaPE8dDZ89vtNu8kRK97/Ax0qmJ8eLBfv3qm2HnqACRUv1MRLS/s9KsdB18DV6dTn8VuErJsn9rlpx/2oEMVS5lkUSLTJHf7oNVKDtILQ/rQ2tF/f3LakmiViA4ZsWxFspP0T/sXPhjuCgEqGWG8HrJwFj8DByMpoJUsGe1czAiMdoY5Tr7UeIgK7BGaGjoVUFaVrCKlDpDNhYsHopSTTNajVxsb0LkTRIRphGlQTHlD3nDYdHIrgZiLqA1XLtTTXtWNzQ4uE59tAkIzdTK7RSBduHunqx++IEO6Huj49Vvk1vcO33iqFTTZro1vhZ2kEGxAkxNMti+/eT2rvyfkhsXaUH1/7LXvRrR+pFKcXBpaWWeEt8cOiVrMWAPDi9VRh5QPZbJ1tyTq7XzxeaQuJhL22o2BO13ZSRzr1S+UNFcmfk3esruZoxDIiQ+Bw== apiserver@gitlab
 
 runcmd:
-  - mkdir -p /app/mnt
-  - 'git clone https://gitlab.jsc.fz-juelich.de/rybicki1/datacatalog.git /home/apiserver/'
+  - mkdir -p /app/mnt/data
+  - 'git clone https://gitlab.jsc.fz-juelich.de/rybicki1/datacatalog.git /home/apiserver/datacatalog'
+  - docker network create net
   # general startup takes long enough that no delay should bee needed - 5 to 6 minutes until these commands are executed
   - 'export API_URL=https://zam10036.zam.kfa-juelich.de/'
-  - /bin/bash deploy_scripts/deployment.sh /home/apiserver/datacatalog
+  - /bin/bash /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog
