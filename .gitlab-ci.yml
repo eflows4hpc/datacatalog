@@ -4,6 +4,33 @@ variables:
   DOCKER_TLS_CERTDIR: ""
   APP_VERSION: "beta"
 
+# before script copied from gitlab docs
+before_script:
+  ##
+  ## Install ssh-agent if not already installed, it is required by Docker.
+  ## (change apt-get to yum if you use an RPM-based image)
+  ##
+  - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+
+  ##
+  ## Run ssh-agent (inside the build environment)
+  ##
+  - eval $(ssh-agent -s)
+
+  ##
+  ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+  ## We're using tr to fix line endings which makes ed25519 keys work
+  ## without extra base64 encoding.
+  ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+  ##
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+
+  ##
+  ## Create the SSH directory and give it the right permissions
+  ##
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+
 stages:
   - test
   - build
@@ -41,6 +68,7 @@ light-deploy-testing:
   # only run when master is updated, unless the pipeline was triggered via the web UI
   only:
     - master
+    - only-docker-restart
   except:
     - tags
     - web
@@ -54,15 +82,13 @@ light-deploy-testing:
     TESTING_URL: https://zam10036.zam.kfa-juelich.de/
     TESTING_DOMAIN: zam10036.zam.kfa-juelich.de
   script:
-    # TODO insert private key in gitlab
-    - ssh apiserver@$TESTING_DOMAIN 'export API_URL=https://zam10036.zam.kfa-juelich.de/ && export SERVER_DOMAIN=zam10036.zam.kfa-juelich.de && sudo /bin/bash /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog'
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN 'export API_URL=https://zam10036.zam.kfa-juelich.de/ && export SERVER_DOMAIN=zam10036.zam.kfa-juelich.de && sudo /bin/bash /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog'
 
 full-deploy-production:
   stage: deploy
   # only run when stable tag is assigned and the pipeline is triggered in the web UI
   only:
-    - tags
-    - web
+    - tags && web
   tags: [stable]
   environment: Production
   variables:
@@ -93,8 +119,7 @@ full-deploy-testing:
   stage: deploy 
   # only run when master is updated and the pipeline is triggered in the web UI
   only:
-    - master
-    - web
+    - master && web
   except:
     - tags
   environment: Testing
