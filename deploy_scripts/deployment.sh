@@ -20,11 +20,11 @@ sed -i "s_datacatalog.fz-juelich.de_${SERVER_DOMAIN}_g" docker-compose.yml
 
 # it is at this point assumed that ip and volume are correctly assigned, and that dns is working properly
 
-docker-compose down #  if nothing is running, this will do nothing and not throw any error
+docker-compose pull #  pull changed images (e.g. new latest, or specific tag)
 TIME=`date +%Y-%m-%d-%H-%M`
 mv /app/mnt/docker.log "/app/mnt/docker.log.${TIME}"
 
-docker-compose up -d
+docker-compose up -d # should only restart changed images, which will also update nginx and reverse-proxy image if needed
 
 nohup docker-compose logs -f >/app/mnt/docker.log & # or similar to capture docker log TODO
 
