@@ -2,6 +2,8 @@
 
 OLD_DIR=`pwd`
 
+if [ -z "$1" ]; then 1=`pwd`; fi
+
 cd $1
 
 git pull --all
@@ -18,6 +20,12 @@ sed -i "s_datacatalog.fz-juelich.de_${SERVER_DOMAIN}_g" docker-compose.yml
 
 # it is at this point assumed that ip and volume are correctly assigned, and that dns is working properly
 
-nohup docker-compose up >/app/mnt/docker.log & # or similar to capture docker log TODO
+docker-compose down #  if nothing is running, this will do nothing and not throw any error
+TIME=`date +%Y-%m-%d-%H-%M`
+mv /app/mnt/docker.log "/app/mnt/docker.log.${TIME}"
+
+docker-compose up -d
+
+nohup docker-compose logs -f >/app/mnt/docker.log & # or similar to capture docker log TODO
 
 cd $OLD_DIR
