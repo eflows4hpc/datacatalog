@@ -26,6 +26,6 @@ mv /app/mnt/docker.log "/app/mnt/docker.log.${TIME}"
 
 docker-compose up -d # should only restart changed images, which will also update nginx and reverse-proxy image if needed
 
-nohup docker-compose logs -f >/app/mnt/docker.log & # or similar to capture docker log TODO
+# nohup docker-compose logs -f >/app/mnt/docker.log & # or similar to capture docker log TODO (seems to cause gitlab CI to hang)
 
 cd $OLD_DIR
