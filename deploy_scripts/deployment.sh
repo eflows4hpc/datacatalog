@@ -1,16 +1,20 @@
 #!/bin/bash
 
+## USAGE:
+#
+# deployment.sh <git_directory> [CHECKOUT_TAG] [API_URL] [SERVER_DOMAIN]
+
 OLD_DIR=`pwd`
 
 if [ -z "$1" ]; then 1=`pwd`; fi
+if [ -z "$2" ]; then CHECKOUT_TAG=master; else CHECKOUT_TAG=$2; fi
+if [ -z "$3" ]; then API_URL=https://datacatalog.fz-juelich.de/; else API_URL=$3; fi
+if [ -z "$4" ]; then SERVER_DOMAIN=datacatalog.fz-juelich.de; else SERVER_DOMAIN=$4; fi
 
 cd $1
 
 git pull --all
-if [ -z "$CHECKOUT_TAG" ]; then export CHECKOUT_TAG=master; fi
 git checkout $CHECKOUT_TAG
-if [ -z "$API_URL" ]; then export API_URL=https://datacatalog.fz-juelich.de/; fi
-if [ -z "$SERVER_DOMAIN" ]; then export SERVER_DOMAIN=datacatalog.fz-juelich.de; fi
 
 pip install -r requirements.txt
 
