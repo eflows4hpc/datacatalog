@@ -14,7 +14,7 @@ if [ -z "$4" ]; then SERVER_DOMAIN=datacatalog.fz-juelich.de; else SERVER_DOMAIN
 cd $1
 
 git pull --all
-git checkout $CHECKOUT_TAG
+git checkout -f $CHECKOUT_TAG
 
 pip install -r requirements.txt
 
