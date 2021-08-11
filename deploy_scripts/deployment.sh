@@ -8,7 +8,7 @@ OLD_DIR=`pwd`
 
 echo "DEBUG_1 $0 $1 $2 $3"
 
-if [ -z ${1+x} ]; then NEW_DIR=`pwd`; fi
+if [ -z ${1+x} ]; then NEW_DIR=`pwd`; else NEW_DIR=$1; fi
 if [ -z ${2+x} ]; then API_URL=https://datacatalog.fz-juelich.de/; else API_URL=$2; fi
 if [ -z ${3+x} ]; then SERVER_DOMAIN=datacatalog.fz-juelich.de; else SERVER_DOMAIN=$3; fi
 
