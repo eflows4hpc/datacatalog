@@ -2,23 +2,19 @@
 
 ## USAGE:
 #
-# deployment.sh <git_directory> [CHECKOUT_TAG] [API_URL] [SERVER_DOMAIN]
+# deployment.sh <git_directory> [API_URL] [SERVER_DOMAIN]
 
 OLD_DIR=`pwd`
 
-echo "DEBUG_1 $0 $1 $2 $3 $4"
+echo "DEBUG_1 $0 $1 $2 $3"
 
 if [ -z ${1+x} ]; then NEW_DIR=`pwd`; fi
-if [ -z ${2+x} ]; then CHECKOUT_TAG=master; else CHECKOUT_TAG=$2; fi
-if [ -z ${3+x} ]; then API_URL=https://datacatalog.fz-juelich.de/; else API_URL=$3; fi
-if [ -z ${4+x} ]; then SERVER_DOMAIN=datacatalog.fz-juelich.de; else SERVER_DOMAIN=$4; fi
+if [ -z ${2+x} ]; then API_URL=https://datacatalog.fz-juelich.de/; else API_URL=$2; fi
+if [ -z ${3+x} ]; then SERVER_DOMAIN=datacatalog.fz-juelich.de; else SERVER_DOMAIN=$3; fi
 
-echo "DEBUG_2 $0 $1 $2 $3 $4"
+echo "DEBUG_2 $0 $1 $2 $3"
 
 cd $NEW_DIR
-
-git pull --all
-git checkout -f $CHECKOUT_TAG
 
 pip install -r requirements.txt
 

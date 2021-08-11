@@ -82,7 +82,8 @@ light-deploy-testing:
     TESTING_URL: https://zam10036.zam.kfa-juelich.de/
     TESTING_DOMAIN: zam10036.zam.kfa-juelich.de
   script:
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN 'sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $CI_COMMIT_BRANCH $TESTING_URL $TESTING_DOMAIN'
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN 'cd /home/apiserver/datacatalog && sudo git pull --all && sudo git checkout -f $CI_COMMIT_BRANCH'
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN 'sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $TESTING_URL $TESTING_DOMAIN'
 
 full-deploy-production:
   stage: deploy

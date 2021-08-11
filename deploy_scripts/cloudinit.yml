@@ -53,4 +53,4 @@ runcmd:
   # general startup takes long enough that no delay should bee needed - 5 to 6 minutes until these commands are executed
   - 'export API_URL=https://datacatalog.fz-juelich.de/'
   - 'export SERVER_DOMAIN=datacatalog.fz-juelich.de'
-  - /bin/bash /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog master $API_URL $SERVER_DOMAIN
+  - /bin/bash /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $API_URL $SERVER_DOMAIN
