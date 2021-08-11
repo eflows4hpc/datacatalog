@@ -82,7 +82,7 @@ light-deploy-testing:
     TESTING_URL: https://zam10036.zam.kfa-juelich.de/
     TESTING_DOMAIN: zam10036.zam.kfa-juelich.de
   script:
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN 'export API_URL=https://zam10036.zam.kfa-juelich.de/ && export SERVER_DOMAIN=zam10036.zam.kfa-juelich.de && sudo /bin/bash /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog'
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN 'export API_URL=https://zam10036.zam.kfa-juelich.de/ && export SERVER_DOMAIN=zam10036.zam.kfa-juelich.de && sudo /bin/bash -c "/home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog"'
 
 full-deploy-production:
   stage: deploy
