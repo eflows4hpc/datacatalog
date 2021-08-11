@@ -6,12 +6,16 @@
 
 OLD_DIR=`pwd`
 
-if [ -z "$1" ]; then 1=`pwd`; fi
-if [ -z "$2" ]; then CHECKOUT_TAG=master; else CHECKOUT_TAG=$2; fi
-if [ -z "$3" ]; then API_URL=https://datacatalog.fz-juelich.de/; else API_URL=$3; fi
-if [ -z "$4" ]; then SERVER_DOMAIN=datacatalog.fz-juelich.de; else SERVER_DOMAIN=$4; fi
+echo "DEBUG_1 $0 $1 $2 $3 $4"
 
-cd $1
+if [ -z ${1+x} ]; then NEW_DIR=`pwd`; fi
+if [ -z ${2+x} ]; then CHECKOUT_TAG=master; else CHECKOUT_TAG=$2; fi
+if [ -z ${3+x} ]; then API_URL=https://datacatalog.fz-juelich.de/; else API_URL=$3; fi
+if [ -z ${4+x} ]; then SERVER_DOMAIN=datacatalog.fz-juelich.de; else SERVER_DOMAIN=$4; fi
+
+echo "DEBUG_2 $0 $1 $2 $3 $4"
+
+cd $NEW_DIR
 
 git pull --all
 git checkout -f $CHECKOUT_TAG
