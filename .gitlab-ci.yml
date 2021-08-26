@@ -3,31 +3,24 @@ default:
 variables:
   DOCKER_TLS_CERTDIR: ""
   APP_VERSION: "beta"
+  OS_AUTH_TYPE: v3applicationcredential
+  OS_AUTH_URL: https://hdf-cloud.fz-juelich.de:5000
+  OS_IDENTITY_API_VERSION: 3
+  OS_REGION_NAME: "HDFCloud"
+  OS_INTERFACE: public
+  PRODUCTION_URL: https://datacatalog.fz-juelich.de/
+  PRODUCTION_DOMAIN: datacatalog.fz-juelich.de
+  VOLUME_ID: 07a93071-5be7-4cc0-8ff3-cb34e7ed2b80
+  PRODUCTION_IP: 134.94.199.59
+  TESTING_URL: https://zam10036.zam.kfa-juelich.de/
+  TESTING_DOMAIN: zam10036.zam.kfa-juelich.de
+  TESTING_IP: 134.94.199.36
 
 # before script copied from gitlab docs
 before_script:
-  ##
-  ## Install ssh-agent if not already installed, it is required by Docker.
-  ## (change apt-get to yum if you use an RPM-based image)
-  ##
   - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
-
-  ##
-  ## Run ssh-agent (inside the build environment)
-  ##
   - eval $(ssh-agent -s)
-
-  ##
-  ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
-  ## We're using tr to fix line endings which makes ed25519 keys work
-  ## without extra base64 encoding.
-  ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
-  ##
   - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-
-  ##
-  ## Create the SSH directory and give it the right permissions
-  ##
   - mkdir -p ~/.ssh
   - chmod 700 ~/.ssh
 
@@ -37,6 +30,7 @@ stages:
   - publish
   - deploy
   - test-deployment
+  - cleanup
 
 test:
   stage: test
@@ -47,22 +41,6 @@ test:
     reports:
       cobertura: coverage.xml
 
-
-deploy-sites:
-  cache: {}
-  stage: deploy
-  script:
-    - pip install -r requirements.txt
-    - python frontend/createStatic.py -u "https://datacatalog.fz-juelich.de/"
-    - echo "static web content has been created"
-    - mkdir public
-    - cp -r site/* public/
-    - echo "Static content has been deployed to gitlab pages. Will not work with backend API due to CORS."
-  artifacts:
-    paths:
-      - public
-
-
 light-deploy-testing:
   stage: deploy 
   # only run when master is updated, unless the pipeline was triggered via the web UI
@@ -72,16 +50,8 @@ light-deploy-testing:
     - tags
     - web
   environment: Testing
-  variables:
-    OS_AUTH_TYPE: v3applicationcredential
-    OS_AUTH_URL: https://hdf-cloud.fz-juelich.de:5000
-    OS_IDENTITY_API_VERSION: 3
-    OS_REGION_NAME: "HDFCloud"
-    OS_INTERFACE: public
-    TESTING_URL: https://zam10036.zam.kfa-juelich.de/
-    TESTING_DOMAIN: zam10036.zam.kfa-juelich.de
   script:
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "cd /home/apiserver/datacatalog && sudo git pull --all && sudo git checkout -f $CI_COMMIT_BRANCH"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "cd /home/apiserver/datacatalog && sudo git pull --all && sudo git checkout -f $CI_COMMIT_TAG"
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $TESTING_URL $TESTING_DOMAIN"
 
 light-deploy-production:
@@ -93,14 +63,6 @@ light-deploy-production:
     - web
   tags: [stable]
   environment: Production
-  variables:
-    OS_AUTH_TYPE: v3applicationcredential
-    OS_AUTH_URL: https://hdf-cloud.fz-juelich.de:5000
-    OS_IDENTITY_API_VERSION: 3
-    OS_REGION_NAME: "HDFCloud"
-    OS_INTERFACE: public
-    PRODUCTION_URL: https://datacatalog.fz-juelich.de/
-    PRODUCTION_DOMAIN: datacatalog.fz-juelich.de
   script:
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "cd /home/apiserver/datacatalog && sudo git pull --all && sudo git checkout -f $CI_COMMIT_TAG"
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN"
@@ -112,29 +74,23 @@ full-deploy-production:
     - tags && web
   tags: [stable]
   environment: Production
-  variables:
-    OS_AUTH_TYPE: v3applicationcredential
-    OS_AUTH_URL: https://hdf-cloud.fz-juelich.de:5000
-    OS_IDENTITY_API_VERSION: 3
-    OS_REGION_NAME: "HDFCloud"
-    OS_INTERFACE: public
-    PRODUCTION_URL: https://datacatalog.fz-juelich.de/
-    PRODUCTION_DOMAIN: datacatalog.fz-juelich.de
-    VOLUME_ID: 07a93071-5be7-4cc0-8ff3-cb34e7ed2b80
-    FLOATING_IP: 134.94.199.59
   script:
     - echo "Starting the full production deployment."
-    - sed -i 's_datacatalog.fz_zam10036.zam.kfa_g' deploy_scripts/cloudinit.yml
     - pip install python-openstackclient
-    - OLD_ID=`openstack server show testing-deployment -f value -c id`
-    # TODO create snapshot copy of old instance
-    - openstack server remove floating ip $OLD_ID $FLOATING_IP
+    - OLD_ID=`openstack server show production-deployment -f value -c id`
+    # TODO rename old instance, so that we can find it in cleanup task
+    # TODO get and locally store zip of old certificate-docker-volume
+    # don't create snapshot copy of old instance, we keep the old instance alive as long as possible
+    # add should work without removing first- openstack server remove floating ip $OLD_ID $PRODUCTION_IP
     - openstack server remove volume $OLD_ID $VOLUME_ID
-    - INSTANCE_ID=`openstack server create -f value -c id --prefix IMAGE_ --flavor s2 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 --user-data deploy_scripts/cloudinit.yml --security-group ssh --security-group www --security-group https testing-deployment`
+    - INSTANCE_ID=`openstack server create -f value -c id --prefix IMAGE_ --flavor s2 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 --user-data deploy_scripts/cloudinit.yml --security-group ssh --security-group www --security-group https production-deployment`
     - while [ "`openstack server show $INSTANCE_ID -c addresses -f value`" = "{}" ]; do sleep 5; done # wait until an address is available to attach the floating ip
-    - openstack server add floating ip $INSTANCE_ID $FLOATING_IP
+    - openstack server add floating ip $INSTANCE_ID $PRODUCTION_IP
+    # TODO move local zip of certificate-docker-volume to server once startup is complete
     - openstack server add volume $INSTANCE_ID $VOLUME_ID
-    - openstack server delete $OLD_ID
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "mount /dev/vdb1 /app/mnt"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "until [ -e /finished_cloudinit ]; do sleep 5; done" # wait until cloudinit script is complete - this should also mean that the server has started TODO check this
+    # do this in cleanup job, depending on the state of the server- openstack server delete $OLD_ID
 
 full-deploy-testing:
   stage: deploy 
@@ -144,26 +100,75 @@ full-deploy-testing:
   except:
     - tags
   environment: Testing
-  variables:
-    OS_AUTH_TYPE: v3applicationcredential
-    OS_AUTH_URL: https://hdf-cloud.fz-juelich.de:5000
-    OS_IDENTITY_API_VERSION: 3
-    OS_REGION_NAME: "HDFCloud"
-    OS_INTERFACE: public
-    TESTING_URL: https://zam10036.zam.kfa-juelich.de/
-    TESTING_DOMAIN: zam10036.zam.kfa-juelich.de
-    FLOATING_IP: 134.94.199.36
   script:
     - echo "Starting the full testing deployment."
     - sed -i 's_datacatalog.fz_zam10036.zam.kfa_g' deploy_scripts/cloudinit.yml
     - pip install python-openstackclient
     - OLD_ID=`openstack server show testing-deployment -f value -c id`
-    - openstack server remove floating ip $OLD_ID $FLOATING_IP
-    - INSTANCE_ID=`openstack server create -f value -c id --prefix IMAGE_ --flavor s2 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 --user-data deploy_scripts/cloudinit.yml --security-group ssh --security-group www --security-group https testing-deployment`
+    # TODO rename old instance, so that we can find it in cleanup task
+    # TODO get and locally store zip of old certificate-docker-volume
+    # add should work without removing first- openstack server remove floating ip $OLD_ID $TESTING_IP
+    - INSTANCE_ID=`openstack server create -f value -c id --prefix IMAGE_ --flavor s1 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 --user-data deploy_scripts/cloudinit.yml --security-group ssh --security-group www --security-group https testing-deployment`
     - while [ "`openstack server show $INSTANCE_ID -c addresses -f value`" = "{}" ]; do sleep 5; done # wait until an address is available to attach the floating ip
-    - openstack server add floating ip $INSTANCE_ID $FLOATING_IP
-    - openstack server delete $OLD_ID
+    - openstack server add floating ip $INSTANCE_ID $TESTING_IP
+    # TODO move local zip of certificate-docker-volume to server once startup is complete
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "until [ -e /finished_cloudinit ]; do sleep 5; done" # wait until cloudinit script is complete - this should also mean that the server has started TODO check this
+    # do this in cleanup job, depending on the state of the server- openstack server delete $OLD_ID
 
+  
+cleanup-failed-full-deployment:
+  # check if there is an old prod or test instance, assign respective ip to it, re-attach volume, delete new instance, rename old instance
+  # if there is none, this is a failed light-deployment, which is handled by another job
+  # this does not guarantee a successful rollback, but unless the old instance was faulty, this should work
+  stage: cleanup
+  when: on_failure
+  only:
+    - web
+  script:
+    - echo "This is the cleanup for the full-redeployment of the testing or production servers"
+    - echo "if this job is reached, some earlier job had to have failed, this will return to the previous instance (if available)"
+    - echo "A successfull cleanup can not be guaranteed, depending on the failure reason"
+    # TODO check which old instance is present. (eithger test-old or production-old); store instance id in var test_id and prod_id
+    # TODO if test_id is set, rollback test ip address, rename test instance and delete new instance
+    # TODO if prod_id is set, rollback prod ip, remove new instance, attach volume to old, remname prod instance
+    # gitlab should automatically alert the devs about this failure
+
+cleanup-failed-light-test-deployment:
+  # if there is a failure with the light deployments, this tries to git checkout an earlier version and rollback to that.
+  stage: cleanup
+  when: on_failure
+  only:
+    - master
+  except:
+    - tags
+    - web
+  script:
+    - echo "This is the cleanup for the light-redeployment of the testing servers"
+    - echo "if this job is reached, some earlier job had to have failed, this will return to the previous instance (if available)"
+    - echo "A successfull cleanup can not be guaranteed, depending on the failure reason"
+    # TODO somehow find out which commit to rollback to
+    - COMMIT_TAG="" # TODO set some stable base version here, update regularily?
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "cd /home/apiserver/datacatalog && sudo git pull --all && sudo git checkout -f $COMMIT_TAG"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $TESTING_URL $TESTING_DOMAIN"
+
+
+cleanup-failed-light-production-deployment:
+  # if there is a failure with the light deployments, this tries to git checkout an earlier version and rollback to that.
+  stage: cleanup
+  when: on_failure
+  only:
+    - tags
+  except:
+    - web
+  tags: [stable]
+  script:
+    - echo "This is the cleanup for the light-redeployment of the production servers"
+    - echo "if this job is reached, some earlier job had to have failed, this will return to the previous instance (if available)"
+    - echo "A successfull cleanup can not be guaranteed, depending on the failure reason"
+    # TODO somehow find out which commit to rollback to
+    - COMMIT_TAG="" # TODO set some stable base version here, update regularily?
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "cd /home/apiserver/datacatalog && sudo git pull --all && sudo git checkout -f $COMMIT_TAG"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN"
   
 test-testing:
   cache: {}
@@ -173,7 +178,6 @@ test-testing:
   except:
     - tags
   variables:
-    TESTING_URL: https://zam10036.zam.kfa-juelich.de/
   script:
     - apt update && apt -y install curl
     - echo "TODO This should run tests for the testing deployment, to ensure full functionality of the deployment."
@@ -187,8 +191,6 @@ test-production:
     - tags
   tags: [stable]
   environment: Production
-  variables:
-    PRODUCTION_URL: https://datacatalog.fz-juelich.de/
   script:
     - apt update && apt -y install curl
     - echo "TODO This should run tests for the production deployment, to ensure full functionality of the deployment."
