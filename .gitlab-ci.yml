@@ -15,6 +15,7 @@ variables:
   TESTING_URL: https://zam10036.zam.kfa-juelich.de/
   TESTING_DOMAIN: zam10036.zam.kfa-juelich.de
   TESTING_IP: 134.94.199.36
+  ROLLBACK_COMMIT_TAG: e2c528fcc617dfc01a8e6b3a8ffcddc4abb1f67b
 
 # before script copied from gitlab docs
 before_script:
@@ -90,7 +91,6 @@ full-deploy-production:
     - openstack server add volume $INSTANCE_ID $VOLUME_ID
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "mount /dev/vdb1 /app/mnt"
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "until [ -e /finished_cloudinit ]; do sleep 5; done" # wait until cloudinit script is complete - this should also mean that the server has started TODO check this
-    # do this in cleanup job, depending on the state of the server- openstack server delete $OLD_ID
 
 full-deploy-testing:
   stage: deploy 
@@ -113,7 +113,6 @@ full-deploy-testing:
     - openstack server add floating ip $INSTANCE_ID $TESTING_IP
     # TODO move local zip of certificate-docker-volume to server once startup is complete
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "until [ -e /finished_cloudinit ]; do sleep 5; done" # wait until cloudinit script is complete - this should also mean that the server has started TODO check this
-    # do this in cleanup job, depending on the state of the server- openstack server delete $OLD_ID
 
   
 cleanup-failed-full-deployment:
@@ -128,10 +127,24 @@ cleanup-failed-full-deployment:
     - echo "This is the cleanup for the full-redeployment of the testing or production servers"
     - echo "if this job is reached, some earlier job had to have failed, this will return to the previous instance (if available)"
     - echo "A successfull cleanup can not be guaranteed, depending on the failure reason"
-    # TODO check which old instance is present. (eithger test-old or production-old); store instance id in var test_id and prod_id
+    # TODO check which old instance is present. (either test-old or production-old); store instance id in var test_id and prod_id
     # TODO if test_id is set, rollback test ip address, rename test instance and delete new instance
     # TODO if prod_id is set, rollback prod ip, remove new instance, attach volume to old, remname prod instance
     # gitlab should automatically alert the devs about this failure
+
+cleanup-successful-full-deployment:
+  # check if there is an old prod or test instance, and delete it if present
+  stage: cleanup
+  when: on_success
+  only:
+    - web
+  script:
+    - echo "This is the cleanup for the full-redeployment of the testing or production servers"
+    - echo "if this job is reached, some earlier job had to have failed, this will return to the previous instance (if available)"
+    - echo "A successfull cleanup can not be guaranteed, depending on the failure reason"
+    # TODO check which old instance is present. (eithger test-old or production-old); store instance id in var test_id and prod_id
+    # TODO if test_id is set, delete it
+    # TODO if prod_id is set, delete it
 
 cleanup-failed-light-test-deployment:
   # if there is a failure with the light deployments, this tries to git checkout an earlier version and rollback to that.
@@ -144,10 +157,9 @@ cleanup-failed-light-test-deployment:
     - web
   script:
     - echo "This is the cleanup for the light-redeployment of the testing servers"
-    - echo "if this job is reached, some earlier job had to have failed, this will return to the previous instance (if available)"
+    - echo "if this job is reached, some earlier job had to have failed, this will return to a previous commit"
     - echo "A successfull cleanup can not be guaranteed, depending on the failure reason"
-    # TODO somehow find out which commit to rollback to
-    - COMMIT_TAG="" # TODO set some stable base version here, update regularily?
+    - COMMIT_TAG="$ROLLBACK_COMMIT_TAG" # a stable base version here, shpuld be updated once a release (i.e. a stable-XX tag) has been proven stable in pracice
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "cd /home/apiserver/datacatalog && sudo git pull --all && sudo git checkout -f $COMMIT_TAG"
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $TESTING_URL $TESTING_DOMAIN"
 
@@ -163,10 +175,9 @@ cleanup-failed-light-production-deployment:
   tags: [stable]
   script:
     - echo "This is the cleanup for the light-redeployment of the production servers"
-    - echo "if this job is reached, some earlier job had to have failed, this will return to the previous instance (if available)"
+    - echo "if this job is reached, some earlier job had to have failed, this will return to a previous commit"
     - echo "A successfull cleanup can not be guaranteed, depending on the failure reason"
-    # TODO somehow find out which commit to rollback to
-    - COMMIT_TAG="" # TODO set some stable base version here, update regularily?
+    - COMMIT_TAG="$ROLLBACK_COMMIT_TAG" # some stable base version here, should be updated if an important commit has been proven stable
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "cd /home/apiserver/datacatalog && sudo git pull --all && sudo git checkout -f $COMMIT_TAG"
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN"
   
@@ -180,7 +191,6 @@ test-testing:
   variables:
   script:
     - apt update && apt -y install curl
-    - echo "TODO This should run tests for the testing deployment, to ensure full functionality of the deployment."
     - echo "For now, this will be a basic health check i.e. GET / and check for 2xx code."
     - 'curl -f -H "Accept: application/json" $TESTING_URL'
 
@@ -190,10 +200,8 @@ test-production:
   only:
     - tags
   tags: [stable]
-  environment: Production
   script:
     - apt update && apt -y install curl
-    - echo "TODO This should run tests for the production deployment, to ensure full functionality of the deployment."
     - echo "For now, this will be a basic health check i.e. GET / and check for 2xx code."
     - 'curl -f -H "Accept: application/json" $PRODUCTION_URL' 
 
