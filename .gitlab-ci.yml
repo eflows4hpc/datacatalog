@@ -205,6 +205,7 @@ test-production:
     - echo "For now, this will be a basic health check i.e. GET / and check for 2xx code."
     - 'curl -f -H "Accept: application/json" $PRODUCTION_URL' 
 
+
 publishgit-do:
   image: python:3-slim
   stage: publish
