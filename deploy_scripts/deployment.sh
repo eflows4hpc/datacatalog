@@ -1,14 +1,20 @@
 #!/bin/bash
 
+## USAGE:
+#
+# deployment.sh <git_directory> [API_URL] [SERVER_DOMAIN]
+
 OLD_DIR=`pwd`
 
-cd $1
+echo "DEBUG_1 $0 $1 $2 $3"
 
-git pull --all
-if [ -z "$CHECKOUT_TAG" ]; then export CHECKOUT_TAG=master; fi
-git checkout $CHECKOUT_TAG
-if [ -z "$API_URL" ]; then export API_URL=https://datacatalog.fz-juelich.de/; fi
-if [ -z "$SERVER_DOMAIN" ]; then export SERVER_DOMAIN=datacatalog.fz-juelich.de; fi
+if [ -z ${1+x} ]; then NEW_DIR=`pwd`; else NEW_DIR=$1; fi
+if [ -z ${2+x} ]; then API_URL=https://datacatalog.fz-juelich.de/; else API_URL=$2; fi
+if [ -z ${3+x} ]; then SERVER_DOMAIN=datacatalog.fz-juelich.de; else SERVER_DOMAIN=$3; fi
+
+echo "DEBUG_2 $0 $1 $2 $3"
+
+cd $NEW_DIR
 
 pip install -r requirements.txt
 
@@ -18,6 +24,12 @@ sed -i "s_datacatalog.fz-juelich.de_${SERVER_DOMAIN}_g" docker-compose.yml
 
 # it is at this point assumed that ip and volume are correctly assigned, and that dns is working properly
 
-nohup docker-compose up >/app/mnt/docker.log & # or similar to capture docker log TODO
+docker-compose pull #  pull changed images (e.g. new latest, or specific tag)
+TIME=`date +%Y-%m-%d-%H-%M`
+mv /app/mnt/docker.log "/app/mnt/docker.log.${TIME}"
+
+docker-compose up -d # should only restart changed images, which will also update nginx and reverse-proxy image if needed
+
+# nohup docker-compose logs -f >/app/mnt/docker.log & # or similar to capture docker log TODO (seems to cause gitlab CI to hang)
 
 cd $OLD_DIR
