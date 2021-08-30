@@ -13,10 +13,12 @@ variables:
   VOLUME_ID: 07a93071-5be7-4cc0-8ff3-cb34e7ed2b80
   PRODUCTION_IP: 134.94.199.59
   OLD_PROD_NAME: old-production
+  PRODUCTION_NAME: datacatalog-production
   TESTING_URL: https://zam10036.zam.kfa-juelich.de/
   TESTING_DOMAIN: zam10036.zam.kfa-juelich.de
   TESTING_IP: 134.94.199.36
   OLD_TEST_NAME: old-testing
+  TESTING_NAME: datacatalog-testing
   ROLLBACK_COMMIT_TAG: aa1f8345d322f2532977643043df18eb4aff3bcf # stable version on master, also tagged as 0.18
 
 # before script copied from gitlab docs
@@ -82,13 +84,13 @@ full-deploy-production:
   script:
     - echo "Starting the full production deployment."
     - pip install python-openstackclient
-    - OLD_ID=`openstack server show datacatalog-production -f value -c id`
+    - OLD_ID=`openstack server show $PRODUCTION_NAME -f value -c id`
     - openstack server set --name $OLD_PROD_NAME $OLD_ID
     # TODO get and locally store zip of old certificate-docker-volume
     # don't create snapshot copy of old instance, we keep the old instance alive as long as possible
     # add should work without removing first- openstack server remove floating ip $OLD_ID $PRODUCTION_IP
     - openstack server remove volume $OLD_ID $VOLUME_ID
-    - INSTANCE_ID=`openstack server create -f value -c id --prefix IMAGE_ --flavor s2 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 --user-data deploy_scripts/cloudinit.yml --security-group ssh --security-group www --security-group https datacatalog-production`
+    - INSTANCE_ID=`openstack server create -f value -c id --prefix IMAGE_ --flavor s2 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 --user-data deploy_scripts/cloudinit.yml --security-group ssh --security-group www --security-group https $PRODUCTION_NAME`
     - while [ "`openstack server show $INSTANCE_ID -c addresses -f value`" = "{}" ]; do sleep 5; done # wait until an address is available to attach the floating ip
     - openstack server add floating ip $INSTANCE_ID $PRODUCTION_IP
     # TODO move local zip of certificate-docker-volume to server once startup is complete
@@ -108,11 +110,11 @@ full-deploy-testing:
     - echo "Starting the full testing deployment."
     - sed -i 's_datacatalog.fz_zam10036.zam.kfa_g' deploy_scripts/cloudinit.yml
     - pip install python-openstackclient
-    - OLD_ID=`openstack server show datacatalog-testing -f value -c id`
+    - OLD_ID=`openstack server show $TESTING_NAME -f value -c id`
     - openstack server set --name $OLD_TEST_NAME $OLD_ID
     # TODO get and locally store zip of old certificate-docker-volume
     # add should work without removing first- openstack server remove floating ip $OLD_ID $TESTING_IP
-    - INSTANCE_ID=`openstack server create -f value -c id --prefix IMAGE_ --flavor s1 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 --user-data deploy_scripts/cloudinit.yml --security-group ssh --security-group www --security-group https datacatalog-testing`
+    - INSTANCE_ID=`openstack server create -f value -c id --prefix IMAGE_ --flavor s1 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 --user-data deploy_scripts/cloudinit.yml --security-group ssh --security-group www --security-group https $TESTING_NAME`
     - while [ "`openstack server show $INSTANCE_ID -c addresses -f value`" = "{}" ]; do sleep 5; done # wait until an address is available to attach the floating ip
     - openstack server add floating ip $INSTANCE_ID $TESTING_IP
     # TODO move local zip of certificate-docker-volume to server once startup is complete
@@ -132,10 +134,23 @@ cleanup-failed-full-deployment:
     - echo "if this job is reached, some earlier job had to have failed, this will return to the previous instance (if available)"
     - echo "A successfull cleanup can not be guaranteed, depending on the failure reason"
     # check which old instance is present. (either old test or old production); store instance id in a var
-    - OLD_TEST_ID=`openstack server show $OLD_TEST_NAME -f value -c id`
-    - OLD_PROD_ID=`openstack server show $OLD_PROD_NAME -f value -c id`
-    # TODO if test_id is set, rollback test ip address, rename test instance and delete new instance
-    # TODO if prod_id is set, rollback prod ip, remove new instance, attach volume to old, remname prod instance
+    - OLD_TEST_ID=`openstack server show $OLD_TEST_NAME -f value -c id` && rollback_test=true || echo "No old testing server found."
+    - OLD_PROD_ID=`openstack server show $OLD_PROD_NAME -f value -c id` && rollback_prod=true || echo "No old production server found."
+    # if applicable: rollback test server
+    - if [ "$rollback_test" = true ] ; then 
+      REMOVE_ID=`openstack server show $TESTING_NAME -f value -c id`
+      openstack server set --name $TESTING_NAME $OLD_TEST_ID
+      openstack add floating ip $OLD_TEST_ID $TESTING_IP
+      openstack server delete $REMOVE_ID && echo "Deleted old testing server."
+    # if applicable, rollback prod server
+    - if [ "$rollback_prod" = true ] ; then 
+      REMOVE_ID=`openstack server show $PRODUCTION_NAME -f value -c id`
+      openstack server set --name $PRODUCTION_NAME $OLD_PROD_ID
+      openstack add floating ip $OLD_PROD_ID $PRODUCTION_IP
+    - openstack server remove volume $REMOVE_ID $VOLUME_ID
+      openstack server delete $REMOVE_ID && echo "Deleted old testing server."
+    - openstack server add volume $OLD_PROD_ID $VOLUME_ID
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "mount /dev/vdb1 /app/mnt"
     # gitlab should automatically alert the devs about this failure
 
 cleanup-successful-full-deployment:
