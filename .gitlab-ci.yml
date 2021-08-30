@@ -47,8 +47,7 @@ test:
       cobertura: coverage.xml
 
 light-deploy-testing:
-  stage: deploy 
-  image: alpine:latest
+  stage: deploy
   # only run when master is updated, unless the pipeline was triggered via the web UI
   only:
     - master
@@ -61,8 +60,7 @@ light-deploy-testing:
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $TESTING_URL $TESTING_DOMAIN"
 
 light-deploy-production:
-  stage: deploy 
-  image: alpine:latest
+  stage: deploy
   # only run when stable tag is updated, unless the pipeline was triggered via the web UI
   only:
     - tags
@@ -171,7 +169,6 @@ cleanup-successful-full-deployment:
 cleanup-failed-light-test-deployment:
   # if there is a failure with the light deployments, this tries to git checkout an earlier version and rollback to that.
   stage: cleanup
-  image: alpine:latest
   when: on_failure
   only:
     - master
@@ -190,7 +187,6 @@ cleanup-failed-light-test-deployment:
 cleanup-failed-light-production-deployment:
   # if there is a failure with the light deployments, this tries to git checkout an earlier version and rollback to that.
   stage: cleanup
-  image: alpine:latest
   when: on_failure
   only:
     - tags
@@ -208,7 +204,6 @@ cleanup-failed-light-production-deployment:
 test-testing:
   cache: {}
   stage: test-deployment 
-  image: alpine:latest
   only:
     - master
   except:
@@ -221,8 +216,7 @@ test-testing:
 
 test-production:
   cache: {}
-  stage: test-deployment 
-  image: alpine:latest
+  stage: test-deployment
   only:
     - tags
   tags: [stable]
@@ -233,7 +227,6 @@ test-production:
 
 
 publishgit-do:
-  image: alpine:latest
   stage: publish
   only:
     - tags
