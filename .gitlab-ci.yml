@@ -138,19 +138,21 @@ cleanup-failed-full-deployment:
     - OLD_PROD_ID=`openstack server show $OLD_PROD_NAME -f value -c id` && rollback_prod=true || echo "No old production server found."
     # if applicable: rollback test server
     - if [ "$rollback_test" = true ] ; then 
-      REMOVE_ID=`openstack server show $TESTING_NAME -f value -c id`
-      openstack server set --name $TESTING_NAME $OLD_TEST_ID
-      openstack add floating ip $OLD_TEST_ID $TESTING_IP
-      openstack server delete $REMOVE_ID && echo "Deleted old testing server."
+      REMOVE_ID=`openstack server show $TESTING_NAME -f value -c id`;
+      openstack server set --name $TESTING_NAME $OLD_TEST_ID;
+      openstack add floating ip $OLD_TEST_ID $TESTING_IP;
+      openstack server delete $REMOVE_ID && echo "Deleted old testing server.";
+      fi
     # if applicable, rollback prod server
     - if [ "$rollback_prod" = true ] ; then 
-      REMOVE_ID=`openstack server show $PRODUCTION_NAME -f value -c id`
-      openstack server set --name $PRODUCTION_NAME $OLD_PROD_ID
-      openstack add floating ip $OLD_PROD_ID $PRODUCTION_IP
-    - openstack server remove volume $REMOVE_ID $VOLUME_ID
-      openstack server delete $REMOVE_ID && echo "Deleted old testing server."
-    - openstack server add volume $OLD_PROD_ID $VOLUME_ID
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "mount /dev/vdb1 /app/mnt"
+      REMOVE_ID=`openstack server show $PRODUCTION_NAME -f value -c id`;
+      openstack server set --name $PRODUCTION_NAME $OLD_PROD_ID;
+      openstack add floating ip $OLD_PROD_ID $PRODUCTION_IP;
+      openstack server remove volume $REMOVE_ID $VOLUME_ID;
+      openstack server delete $REMOVE_ID && echo "Deleted old testing server.";
+      openstack server add volume $OLD_PROD_ID $VOLUME_ID;
+      ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "mount /dev/vdb1 /app/mnt";
+      fi
     # gitlab should automatically alert the devs about this failure
 
 cleanup-successful-full-deployment:
