@@ -12,10 +12,12 @@ variables:
   PRODUCTION_DOMAIN: datacatalog.fz-juelich.de
   VOLUME_ID: 07a93071-5be7-4cc0-8ff3-cb34e7ed2b80
   PRODUCTION_IP: 134.94.199.59
+  OLD_PROD_NAME: old-production
   TESTING_URL: https://zam10036.zam.kfa-juelich.de/
   TESTING_DOMAIN: zam10036.zam.kfa-juelich.de
   TESTING_IP: 134.94.199.36
-  ROLLBACK_COMMIT_TAG: e2c528fcc617dfc01a8e6b3a8ffcddc4abb1f67b
+  OLD_TEST_NAME: old-testing
+  ROLLBACK_COMMIT_TAG: aa1f8345d322f2532977643043df18eb4aff3bcf # stable version on master, also tagged as 0.18
 
 # before script copied from gitlab docs
 before_script:
@@ -44,6 +46,7 @@ test:
 
 light-deploy-testing:
   stage: deploy 
+  image: alpine:latest
   # only run when master is updated, unless the pipeline was triggered via the web UI
   only:
     - master
@@ -57,7 +60,8 @@ light-deploy-testing:
 
 light-deploy-production:
   stage: deploy 
-  # only run when master is updated, unless the pipeline was triggered via the web UI
+  image: alpine:latest
+  # only run when stable tag is updated, unless the pipeline was triggered via the web UI
   only:
     - tags
   except:
@@ -78,13 +82,13 @@ full-deploy-production:
   script:
     - echo "Starting the full production deployment."
     - pip install python-openstackclient
-    - OLD_ID=`openstack server show production-deployment -f value -c id`
-    # TODO rename old instance, so that we can find it in cleanup task
+    - OLD_ID=`openstack server show datacatalog-production -f value -c id`
+    - openstack server set --name $OLD_PROD_NAME $OLD_ID
     # TODO get and locally store zip of old certificate-docker-volume
     # don't create snapshot copy of old instance, we keep the old instance alive as long as possible
     # add should work without removing first- openstack server remove floating ip $OLD_ID $PRODUCTION_IP
     - openstack server remove volume $OLD_ID $VOLUME_ID
-    - INSTANCE_ID=`openstack server create -f value -c id --prefix IMAGE_ --flavor s2 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 --user-data deploy_scripts/cloudinit.yml --security-group ssh --security-group www --security-group https production-deployment`
+    - INSTANCE_ID=`openstack server create -f value -c id --prefix IMAGE_ --flavor s2 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 --user-data deploy_scripts/cloudinit.yml --security-group ssh --security-group www --security-group https datacatalog-production`
     - while [ "`openstack server show $INSTANCE_ID -c addresses -f value`" = "{}" ]; do sleep 5; done # wait until an address is available to attach the floating ip
     - openstack server add floating ip $INSTANCE_ID $PRODUCTION_IP
     # TODO move local zip of certificate-docker-volume to server once startup is complete
@@ -104,11 +108,11 @@ full-deploy-testing:
     - echo "Starting the full testing deployment."
     - sed -i 's_datacatalog.fz_zam10036.zam.kfa_g' deploy_scripts/cloudinit.yml
     - pip install python-openstackclient
-    - OLD_ID=`openstack server show testing-deployment -f value -c id`
-    # TODO rename old instance, so that we can find it in cleanup task
+    - OLD_ID=`openstack server show datacatalog-testing -f value -c id`
+    - openstack server set --name $OLD_TEST_NAME $OLD_ID
     # TODO get and locally store zip of old certificate-docker-volume
     # add should work without removing first- openstack server remove floating ip $OLD_ID $TESTING_IP
-    - INSTANCE_ID=`openstack server create -f value -c id --prefix IMAGE_ --flavor s1 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 --user-data deploy_scripts/cloudinit.yml --security-group ssh --security-group www --security-group https testing-deployment`
+    - INSTANCE_ID=`openstack server create -f value -c id --prefix IMAGE_ --flavor s1 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 --user-data deploy_scripts/cloudinit.yml --security-group ssh --security-group www --security-group https datacatalog-testing`
     - while [ "`openstack server show $INSTANCE_ID -c addresses -f value`" = "{}" ]; do sleep 5; done # wait until an address is available to attach the floating ip
     - openstack server add floating ip $INSTANCE_ID $TESTING_IP
     # TODO move local zip of certificate-docker-volume to server once startup is complete
@@ -127,7 +131,9 @@ cleanup-failed-full-deployment:
     - echo "This is the cleanup for the full-redeployment of the testing or production servers"
     - echo "if this job is reached, some earlier job had to have failed, this will return to the previous instance (if available)"
     - echo "A successfull cleanup can not be guaranteed, depending on the failure reason"
-    # TODO check which old instance is present. (either test-old or production-old); store instance id in var test_id and prod_id
+    # check which old instance is present. (either old test or old production); store instance id in a var
+    - OLD_TEST_ID=`openstack server show $OLD_TEST_NAME -f value -c id`
+    - OLD_PROD_ID=`openstack server show $OLD_PROD_NAME -f value -c id`
     # TODO if test_id is set, rollback test ip address, rename test instance and delete new instance
     # TODO if prod_id is set, rollback prod ip, remove new instance, attach volume to old, remname prod instance
     # gitlab should automatically alert the devs about this failure
@@ -142,13 +148,13 @@ cleanup-successful-full-deployment:
     - echo "This is the cleanup for the full-redeployment of the testing or production servers"
     - echo "if this job is reached, some earlier job had to have failed, this will return to the previous instance (if available)"
     - echo "A successfull cleanup can not be guaranteed, depending on the failure reason"
-    # TODO check which old instance is present. (eithger test-old or production-old); store instance id in var test_id and prod_id
-    # TODO if test_id is set, delete it
-    # TODO if prod_id is set, delete it
+    - openstack server delete $OLD_TEST_NAME && echo "Deleted old testing server." || echo "No old testing server found."
+    - openstack server delete $OLD_PROD_NAME && echo "Deleted old production server." || echo "No old production server found."
 
 cleanup-failed-light-test-deployment:
   # if there is a failure with the light deployments, this tries to git checkout an earlier version and rollback to that.
   stage: cleanup
+  image: alpine:latest
   when: on_failure
   only:
     - master
@@ -159,7 +165,7 @@ cleanup-failed-light-test-deployment:
     - echo "This is the cleanup for the light-redeployment of the testing servers"
     - echo "if this job is reached, some earlier job had to have failed, this will return to a previous commit"
     - echo "A successfull cleanup can not be guaranteed, depending on the failure reason"
-    - COMMIT_TAG="$ROLLBACK_COMMIT_TAG" # a stable base version here, shpuld be updated once a release (i.e. a stable-XX tag) has been proven stable in pracice
+    - COMMIT_TAG="$ROLLBACK_COMMIT_TAG" # a stable base version here, update from time to time
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "cd /home/apiserver/datacatalog && sudo git pull --all && sudo git checkout -f $COMMIT_TAG"
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $TESTING_URL $TESTING_DOMAIN"
 
@@ -167,6 +173,7 @@ cleanup-failed-light-test-deployment:
 cleanup-failed-light-production-deployment:
   # if there is a failure with the light deployments, this tries to git checkout an earlier version and rollback to that.
   stage: cleanup
+  image: alpine:latest
   when: on_failure
   only:
     - tags
@@ -177,13 +184,14 @@ cleanup-failed-light-production-deployment:
     - echo "This is the cleanup for the light-redeployment of the production servers"
     - echo "if this job is reached, some earlier job had to have failed, this will return to a previous commit"
     - echo "A successfull cleanup can not be guaranteed, depending on the failure reason"
-    - COMMIT_TAG="$ROLLBACK_COMMIT_TAG" # some stable base version here, should be updated if an important commit has been proven stable
+    - COMMIT_TAG="$ROLLBACK_COMMIT_TAG" # some stable base version here, update from time to time
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "cd /home/apiserver/datacatalog && sudo git pull --all && sudo git checkout -f $COMMIT_TAG"
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN"
   
 test-testing:
   cache: {}
   stage: test-deployment 
+  image: alpine:latest
   only:
     - master
   except:
@@ -197,6 +205,7 @@ test-testing:
 test-production:
   cache: {}
   stage: test-deployment 
+  image: alpine:latest
   only:
     - tags
   tags: [stable]
@@ -207,7 +216,7 @@ test-production:
 
 
 publishgit-do:
-  image: python:3-slim
+  image: alpine:latest
   stage: publish
   only:
     - tags
