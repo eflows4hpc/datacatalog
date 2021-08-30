@@ -76,8 +76,8 @@ full-deploy-production:
   stage: deploy
   # only run when stable tag is assigned and the pipeline is triggered in the web UI
   only:
-    - tags && web
-  tags: [stable]
+    variables:
+      - ($CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_REF_NAME =~ "/^stable-/")
   environment: Production
   script:
     - echo "Starting the full production deployment."
@@ -100,9 +100,8 @@ full-deploy-testing:
   stage: deploy 
   # only run when master is updated and the pipeline is triggered in the web UI
   only:
-    - master && web
-  except:
-    - tags
+    variables:
+      - ($CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_REF_NAME == "master")
   environment: Testing
   script:
     - echo "Starting the full testing deployment."
