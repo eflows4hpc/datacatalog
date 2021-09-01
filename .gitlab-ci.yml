@@ -115,7 +115,7 @@ full-deploy-testing:
     - while [ "`openstack server show $INSTANCE_ID -c addresses -f value`" = "{}" ]; do sleep 5; done # wait until an address is available to attach the floating ip
     - openstack server add floating ip $INSTANCE_ID $TESTING_IP
     # TODO move local zip of certificate-docker-volume to server once startup is complete
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "until [ -e /finished_cloudinit ]; do sleep 5; done" # wait until cloudinit script is complete - this should also mean that the server has started TODO check this
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "until [ -e /finished_cloudinit ]; do sleep 5; done; exit" # wait until cloudinit script is complete - this should also mean that the server has started TODO check this
 
   
 cleanup-failed-full-deployment:
