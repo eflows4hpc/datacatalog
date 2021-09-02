@@ -111,8 +111,9 @@ full-deploy-testing:
     - INSTANCE_ID=`openstack server create -f value -c id --prefix IMAGE_ --flavor s1 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 --user-data deploy_scripts/cloudinit.yml --security-group ssh --security-group www --security-group https $TESTING_NAME`
     - while [ "`openstack server show $INSTANCE_ID -c addresses -f value`" = "{}" ]; do sleep 5; done # wait until an address is available to attach the floating ip
     - openstack server add floating ip $INSTANCE_ID $TESTING_IP
+    - sleep 10 # ensure that next command reaches the new server, prevents host key problems
     # TODO move local zip of certificate-docker-volume to server once startup is complete
-    - until ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN [[ -e /finished_clloudinit ]]; do sleep 30; done # wait until cloudinit script is complete
+    - until ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN ls /finished_cloudinit >/dev/null 2>&1; do sleep 30; done # wait until cloudinit script is complete
 
   
 cleanup-failed-full-deployment:
