@@ -77,10 +77,10 @@ full-deploy-production:
   # only run when stable tag is assigned and the pipeline is triggered in the web UI
   only:
     variables:
-      - ($CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_REF_NAME =~ "/^stable-/")
+      - ($CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_TAG =~ /stable/)
   environment: Production
   script:
-    - echo "Starting the full production deployment."
+    - echo "Starting the full production deployment for tag $CI_COMMIT_TAG."
     - pip install python-openstackclient
     - OLD_ID=`openstack server show $PRODUCTION_NAME -f value -c id`
     - openstack server set --name $OLD_PROD_NAME $OLD_ID
@@ -160,8 +160,7 @@ cleanup-successful-full-deployment:
     - web
   script:
     - echo "This is the cleanup for the full-redeployment of the testing or production servers"
-    - echo "if this job is reached, some earlier job had to have failed, this will return to the previous instance (if available)"
-    - echo "A successfull cleanup can not be guaranteed, depending on the failure reason"
+    - echo "if this job is reached, all earlier jobs were successful, and any lingering old instances need to be removed"
     - openstack server delete $OLD_TEST_NAME && echo "Deleted old testing server." || echo "No old testing server found."
     - openstack server delete $OLD_PROD_NAME && echo "Deleted old production server." || echo "No old production server found."
 
