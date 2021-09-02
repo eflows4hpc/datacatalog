@@ -85,8 +85,6 @@ full-deploy-production:
     - OLD_ID=`openstack server show $PRODUCTION_NAME -f value -c id`
     - openstack server set --name $OLD_PROD_NAME $OLD_ID
     # TODO get and locally store zip of old certificate-docker-volume
-    # don't create snapshot copy of old instance, we keep the old instance alive as long as possible
-    # add should work without removing first- openstack server remove floating ip $OLD_ID $PRODUCTION_IP
     - openstack server remove volume $OLD_ID $VOLUME_ID
     - INSTANCE_ID=`openstack server create -f value -c id --prefix IMAGE_ --flavor s2 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 --user-data deploy_scripts/cloudinit.yml --security-group ssh --security-group www --security-group https $PRODUCTION_NAME`
     - while [ "`openstack server show $INSTANCE_ID -c addresses -f value`" = "{}" ]; do sleep 5; done # wait until an address is available to attach the floating ip
@@ -94,7 +92,7 @@ full-deploy-production:
     # TODO move local zip of certificate-docker-volume to server once startup is complete
     - openstack server add volume $INSTANCE_ID $VOLUME_ID
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "mount /dev/vdb1 /app/mnt"
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "until [ -e /finished_cloudinit ]; do sleep 5; done" # wait until cloudinit script is complete - this should also mean that the server has started TODO check this
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "until [ -e /finished_cloudinit ]; do sleep 5; done" # wait until cloudinit script is complete
 
 full-deploy-testing:
   stage: deploy 
@@ -110,12 +108,11 @@ full-deploy-testing:
     - OLD_ID=`openstack server show $TESTING_NAME -f value -c id`
     - openstack server set --name $OLD_TEST_NAME $OLD_ID
     # TODO get and locally store zip of old certificate-docker-volume
-    # add should work without removing first- openstack server remove floating ip $OLD_ID $TESTING_IP
     - INSTANCE_ID=`openstack server create -f value -c id --prefix IMAGE_ --flavor s1 --image 149a65b5-aeb8-499f-aaa6-ec966bd28dd6 --user-data deploy_scripts/cloudinit.yml --security-group ssh --security-group www --security-group https $TESTING_NAME`
     - while [ "`openstack server show $INSTANCE_ID -c addresses -f value`" = "{}" ]; do sleep 5; done # wait until an address is available to attach the floating ip
     - openstack server add floating ip $INSTANCE_ID $TESTING_IP
     # TODO move local zip of certificate-docker-volume to server once startup is complete
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "until [ -e /finished_cloudinit ]; do sleep 5; done; exit" # wait until cloudinit script is complete - this should also mean that the server has started TODO check this
+    - until ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN [[ -e /finished_clloudinit ]]; do sleep 30; done # wait until cloudinit script is complete
 
   
 cleanup-failed-full-deployment:
@@ -130,6 +127,7 @@ cleanup-failed-full-deployment:
     - echo "This is the cleanup for the full-redeployment of the testing or production servers"
     - echo "if this job is reached, some earlier job had to have failed, this will return to the previous instance (if available)"
     - echo "A successfull cleanup can not be guaranteed, depending on the failure reason"
+    - pip install python-openstackclient
     # check which old instance is present. (either old test or old production); store instance id in a var
     - OLD_TEST_ID=`openstack server show $OLD_TEST_NAME -f value -c id` && rollback_test=true || echo "No old testing server found."
     - OLD_PROD_ID=`openstack server show $OLD_PROD_NAME -f value -c id` && rollback_prod=true || echo "No old production server found."
