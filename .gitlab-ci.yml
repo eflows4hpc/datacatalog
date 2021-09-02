@@ -136,14 +136,14 @@ cleanup-failed-full-deployment:
     - if [ "$rollback_test" = true ] ; then 
       REMOVE_ID=`openstack server show $TESTING_NAME -f value -c id`;
       openstack server set --name $TESTING_NAME $OLD_TEST_ID;
-      openstack add floating ip $OLD_TEST_ID $TESTING_IP;
+      openstack server add floating ip $OLD_TEST_ID $TESTING_IP;
       openstack server delete $REMOVE_ID && echo "Deleted old testing server.";
       fi
     # if applicable, rollback prod server
     - if [ "$rollback_prod" = true ] ; then 
       REMOVE_ID=`openstack server show $PRODUCTION_NAME -f value -c id`;
       openstack server set --name $PRODUCTION_NAME $OLD_PROD_ID;
-      openstack add floating ip $OLD_PROD_ID $PRODUCTION_IP;
+      openstack server add floating ip $OLD_PROD_ID $PRODUCTION_IP;
       openstack server remove volume $REMOVE_ID $VOLUME_ID;
       openstack server delete $REMOVE_ID && echo "Deleted old testing server.";
       openstack server add volume $OLD_PROD_ID $VOLUME_ID;
