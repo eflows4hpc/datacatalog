@@ -92,7 +92,8 @@ full-deploy-production:
     - sleep 10 # ensure that next command reaches the new server, prevents host key problems
     # TODO move local zip of certificate-docker-volume to server once startup is complete
     - openstack server add volume $INSTANCE_ID $VOLUME_ID
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "mount /dev/vdb1 /app/mnt"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo mkdir -p /app/mnt"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo mount /dev/vdb1 /app/mnt"
     - until ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN ls /finished_cloudinit >/dev/null 2>&1; do sleep 30; done # wait until cloudinit script is complete
 
 full-deploy-testing:
@@ -148,7 +149,7 @@ cleanup-failed-full-deployment:
       openstack server remove volume $REMOVE_ID $VOLUME_ID || "No Volume was removed.";
       openstack server delete $REMOVE_ID && echo "Deleted faulty production server." || "No faulty production was deleted.";
       openstack server add volume $OLD_PROD_ID $VOLUME_ID;
-      ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "mount /dev/vdb1 /app/mnt";
+      ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo mount /dev/vdb1 /app/mnt";
       fi
     # gitlab should automatically alert the devs about this failure
 
