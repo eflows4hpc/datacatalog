@@ -143,11 +143,11 @@ cleanup-failed-full-deployment:
       fi
     # if applicable, rollback prod server
     - if [ "$rollback_prod" = true ] ; then 
-      REMOVE_ID=`openstack server show $PRODUCTION_NAME -f value -c id` || "No new production server found.";
+      REMOVE_ID=`openstack server show $PRODUCTION_NAME -f value -c id` || echo "No new production server found.";
       openstack server set --name $PRODUCTION_NAME $OLD_PROD_ID;
       openstack server add floating ip $OLD_PROD_ID $PRODUCTION_IP;
-      openstack server remove volume $REMOVE_ID $VOLUME_ID || "No Volume was removed.";
-      openstack server delete $REMOVE_ID && echo "Deleted faulty production server." || "No faulty production was deleted.";
+      openstack server remove volume $REMOVE_ID $VOLUME_ID || echo "No Volume was removed.";
+      openstack server delete $REMOVE_ID && echo "Deleted faulty production server." || echo "No faulty production was deleted.";
       openstack server add volume $OLD_PROD_ID $VOLUME_ID;
       ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo mount /dev/vdb1 /app/mnt";
       fi
