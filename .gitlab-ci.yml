@@ -162,6 +162,7 @@ cleanup-successful-full-deployment:
   script:
     - echo "This is the cleanup for the full-redeployment of the testing or production servers"
     - echo "if this job is reached, all earlier jobs were successful, and any lingering old instances need to be removed"
+    - pip install python-openstackclient
     - openstack server delete $OLD_TEST_NAME && echo "Deleted old testing server." || echo "No old testing server found."
     - openstack server delete $OLD_PROD_NAME && echo "Deleted old production server." || echo "No old production server found."
 
