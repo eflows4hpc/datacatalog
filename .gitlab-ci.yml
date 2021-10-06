@@ -1,5 +1,5 @@
 default:
-  image: python:3-slim
+  image: python:3.9-slim
 variables:
   DOCKER_TLS_CERTDIR: ""
   APP_VERSION: "beta"
