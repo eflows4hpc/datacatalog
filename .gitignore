@@ -6,3 +6,4 @@
 app/
 site/
 .coverage
+coverage.xml
