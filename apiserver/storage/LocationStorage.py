@@ -61,6 +61,10 @@ class AbstractLocationDataStorageAdapter:
     def delete(self, n_type: LocationDataType, oid: str, usr: str):
         """ deletes given resource"""
         raise NotImplementedError()
+
+    def list_secrets(self, n_type: LocationDataType, oid:str, usr: str):
+        """ list all available secrets for this object"""
+        raise NotImplementedError()
     
     def add_update_secret(self, n_type: LocationDataType, oid:str, key: str, value: str, usr: str):
         """ add new secrets to an existing object"""

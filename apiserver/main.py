@@ -146,6 +146,55 @@ async def delete_specific_dataset(location_data_type: LocationDataType,
     log.debug("Authenticed User: '%s' deleted /%s/%s", user.username, location_data_type.value, dataset_id)
     return adapter.delete(location_data_type, str(dataset_id), user.username)
 
+@app.get("/{location_data_type}/{dataset_id}/secrets")
+async def list_dataset_secrets(location_data_type: LocationDataType,
+                                  dataset_id: UUID4,
+                                  user: str = Depends(my_user)):
+    """list the secrets of a specific dataset"""
+    # TODO log
+    if userdb.get(user).has_secrets_access:
+        return adapter.list_secrets(location_data_type, dataset_id, user)
+    else:
+        raise HTTPException(403)
+
+@app.get("/{location_data_type}/{dataset_id}/secrets/{key}")
+async def get_dataset_secret(location_data_type: LocationDataType,
+                                  dataset_id: UUID4,
+                                  key: str,
+                                  user: str = Depends(my_user)):
+    """get the secrets of a specific dataset"""
+    # TODO log
+    if userdb.get(user).has_secrets_access:
+        return adapter.get_secret(location_data_type, dataset_id, key, user)
+    else:
+        raise HTTPException(403)
+
+@app.put("/{location_data_type}/{dataset_id}/secrets/{key}")
+async def add_update_dataset_secret(location_data_type: LocationDataType,
+                                  dataset_id: UUID4,
+                                  key: str,
+                                  value: str,
+                                  user: str = Depends(my_user)):
+    """get the secrets of a specific dataset"""
+    # TODO log
+    if userdb.get(user).has_secrets_access:
+        return adapter.add_update_secret(location_data_type, dataset_id, key, value, user)
+    else:
+        raise HTTPException(403)
+
+@app.delete("/{location_data_type}/{dataset_id}/secrets/{key}")
+async def get_dataset_secrets(location_data_type: LocationDataType,
+                                  dataset_id: UUID4,
+                                  key: str,
+                                  user: str = Depends(my_user)):
+    """delete a secret of a specific dataset"""
+    # TODO log
+    if userdb.get(user).has_secrets_access:
+        return adapter.delete_secret(location_data_type, dataset_id, key, user)
+    else:
+        raise HTTPException(403)
+
+
 
 @app.exception_handler(FileNotFoundError)
 async def not_found_handler(request: Request, ex: FileNotFoundError):
