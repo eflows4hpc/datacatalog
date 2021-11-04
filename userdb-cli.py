@@ -2,7 +2,7 @@
 import os, json, argparse, abc
 
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from passlib.context import CryptContext
 
 
@@ -10,6 +10,7 @@ from passlib.context import CryptContext
 class User(BaseModel):
     username: str
     email: str = None
+    has_secrets_access: Optional[bool] = False
 
 
 class UserInDB(User):
@@ -106,7 +107,7 @@ def main(args):
                 raise ValueError("No Password or hash given!")
             hash = get_password_hash(args.password)
         
-        user = UserInDB(username=args.username, email=args.mail, hashed_password=hash)
+        user = UserInDB(username=args.username, email=args.mail, hashed_password=hash, has_secrets_access=args.secret_access)
         userdb.add(user)
         print("new User added:")
         print(user)
@@ -122,6 +123,16 @@ def main(args):
         print("Deleting the following user:")
         print(user)
         userdb.delete(args.username)
+    elif 'give_secret' in args.operation:
+        user = userdb.get(args.username)
+        user.has_secrets_access = True
+        userdb.delete(args.username)
+        userdb.add(user)
+    elif 'remove_secret' in args.operation:
+        user = userdb.get(args.username)
+        user.has_secrets_access = False
+        userdb.delete(args.username)
+        userdb.add(user)
 
 
 if __name__ == "__main__":
@@ -129,14 +140,17 @@ if __name__ == "__main__":
     parser.add_argument("operation", type=str, nargs=1, help="\
 hash \tReturn a bcrypt hash for the given password. Requires -p. \n\
 ls \tLists all Users in the userdb. \n\
-add \tAdds a new user to the userdb. Requires -u, -m and either -p or -b. \n\
+add \tAdds a new user to the userdb. Requires -u, -m and either -p or -b. -s is optional.\n\
 show \tShows a single user from the userdb. Requires -u. \n\
+give_secret \tGives the given user access to secrets. Requires -u. \n\
+remove_secret \tRemove the given users access to secrets. Requires -u. \n\
 rm \tDeletes a single user from the userdb. Requires -u. \
 ")
     parser.add_argument("-u", "--username", help="The username that should be modified")
     parser.add_argument("-m", "--mail", help="The email of a newly created user.")
     parser.add_argument("-p", "--password", help="The password of a newly created user.")
     parser.add_argument("-b", "--bcrypt-hash", help="The bcrypt password-hash of a newly created user.")
+    parser.add_argument("-s", "--secret-access", action="store_true", help="Give the new user access to secrets.")
     parser.add_argument("userdb_path", type=str, nargs='?', help="The path to the userdb to be modified or created.", default="./userdb.json")
     args = parser.parse_args()
     main(args)

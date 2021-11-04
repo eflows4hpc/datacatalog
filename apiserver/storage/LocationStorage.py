@@ -8,12 +8,16 @@ from pydantic import BaseModel
 class LocationDataType(Enum):
     DATASET = 'dataset'
     STORAGETARGET = 'storage_target'
+    AIRFLOW_CONNECTIONS = 'airflow_connections'
 
 
 class LocationData(BaseModel):
     name: str
     url: str
     metadata: Optional[Dict[str, str]]
+
+class LocationDataWithSecrets(LocationData):
+    secrets: Optional[Dict[str, str]]
 
 
 class AbstractLocationDataStorageAdapter:

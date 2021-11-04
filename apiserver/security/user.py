@@ -34,6 +34,7 @@ class Token(BaseModel):
 class User(BaseModel):
     username: str
     email: str = None
+    has_secrets_access: Optional[bool] = False
 
 
 class UserInDB(User):

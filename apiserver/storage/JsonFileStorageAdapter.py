@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from apiserver.config import ApiserverSettings
 
 from .LocationStorage import (AbstractLocationDataStorageAdapter, LocationData,
-                              LocationDataType)
+                              LocationDataType, LocationDataWithSecrets)
 
 
 log = logging.getLogger(__name__)
