@@ -16,9 +16,6 @@ class LocationData(BaseModel):
     url: str
     metadata: Optional[Dict[str, str]]
 
-class LocationDataWithSecrets(LocationData):
-    secrets: Optional[Dict[str, str]]
-
 
 class AbstractLocationDataStorageAdapter:
     """
@@ -63,6 +60,18 @@ class AbstractLocationDataStorageAdapter:
 
     def delete(self, n_type: LocationDataType, oid: str, usr: str):
         """ deletes given resource"""
+        raise NotImplementedError()
+    
+    def add_update_secret(self, n_type: LocationDataType, oid:str, key: str, value: str, usr: str):
+        """ add new secrets to an existing object"""
+        raise NotImplementedError()
+
+    def get_secret(self, n_type: LocationDataType, oid:str, key: str, usr: str):
+        """ return the value of the requested secret for the given object"""
+        raise NotImplementedError()
+
+    def delete_secret(self, n_type: LocationDataType, oid:str, key: str, usr: str):
+        """ delete and return the value of the requested secret for the given object"""
         raise NotImplementedError()
 
     def get_owner(self, n_type: LocationDataType, oid: str):

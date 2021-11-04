@@ -1,7 +1,7 @@
 import json
 import os
 import uuid
-from typing import List
+from typing import Dict, List, Optional
 import logging
 
 from pydantic import BaseModel
@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from apiserver.config import ApiserverSettings
 
 from .LocationStorage import (AbstractLocationDataStorageAdapter, LocationData,
-                              LocationDataType, LocationDataWithSecrets)
+                              LocationDataType)
 
 
 log = logging.getLogger(__name__)
@@ -78,6 +78,20 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
                 f"The requested object ({oid}) {full_path} does not exist.")
         return full_path
 
+    def __get_secrets_path(self, value: str, oid: str) -> str:
+        return self.__get_object_path(value, oid) + ".secrets"
+
+    def __load_secrets(self, path: str) -> Dict[str, str]:
+        if not os.path.isfile(path):
+            return {}
+        with open(path, "r") as file:
+            dict = eval(file.read())
+        return dict
+
+    def __store_secrets(self, path: str, secrets: Dict[str, str]):
+        with open(path, "w") as file:
+            json.dump(secrets, file)
+
     def get_list(self, n_type: LocationDataType) -> List:
         local_path = self.__setup_path(n_type.value)
         ret = []
@@ -121,16 +135,26 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         log.debug("Deleted object %s by user '%s'.", oid, usr)
         os.remove(full_path)
 
-    def get_owner(self, n_type: LocationDataType, oid: str):
-        raise NotImplementedError()
+    def add_update_secret(self, n_type: LocationDataType, oid:str, key: str, value: str, usr: str):
+        """ add new secrets to an existing object"""
+        secrets_path = self.__get_secrets_path(value=n_type.value, oid=oid)
+        secrets = self.__load_secrets(secrets_path)
+        secrets[key] = value
+        # TODO log
+        self.__store_secrets(secrets_path, secrets)
 
-    def check_perm(self, n_type: LocationDataType, oid: str, usr: str):
-        raise NotImplementedError()
+    def get_secret(self, n_type: LocationDataType, oid:str, key: str, usr: str):
+        """ return the value of the requested secret for the given object"""
+        secrets_path = self.__get_secrets_path(value=n_type.value, oid=oid)
+        secrets = self.__load_secrets(secrets_path)
+        # TODO log
+        return secrets[key]
 
-    def add_perm(self, n_type: LocationDataType, oid: str, usr: str):
-        """add user to file perm"""
-        raise NotImplementedError()
-
-    def rm_perm(self, n_type: LocationDataType, oid: str, usr: str):
-        """remove user from file perm"""
-        raise NotImplementedError()
+    def delete_secret(self, n_type: LocationDataType, oid:str, key: str, usr: str):
+        """ delete and return the value of the requested secret for the given object"""
+        secrets_path = self.__get_secrets_path(value=n_type.value, oid=oid)
+        secrets = self.__load_secrets(secrets_path)
+        val = secrets.pop(key, None)
+        # TODO log
+        self.__store_secrets(secrets_path, secrets)
+        return val 
