@@ -49,7 +49,8 @@ def render_template_to_site(api_url=API_URL_DEFAULT_VALUE):
         'index' : 'index_content.html.jinja',
         'storage' : 'storage_content.html.jinja',
         'impressum' : 'impressum_content.html.jinja',
-        'login' : 'login_content.html.jinja'
+        'login' : 'login_content.html.jinja',
+        '404' : '404.html.jinja'
     }
 
     templates = {}
@@ -64,6 +65,7 @@ def render_template_to_site(api_url=API_URL_DEFAULT_VALUE):
     html['storage'] = templates['storage'].render(storage=True)
     html['impressum'] = templates['impressum'].render(impressum=True)
     html['login'] = templates['login'].render(login=True)
+    html['404'] = templates['404'].render()
 
     for file in files.keys():
         with open('site/'+file+'.html', 'w') as f:
