@@ -1,5 +1,5 @@
 default:
-  image: python:3-slim
+  image: python:3.9-slim
 variables:
   DOCKER_TLS_CERTDIR: ""
   APP_VERSION: "beta"
@@ -23,7 +23,7 @@ variables:
 
 # before script copied from gitlab docs
 before_script:
-  - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+  - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client gcc libxslt-dev libffi-dev libssl-dev build-essential python3-dev -y )'
   - eval $(ssh-agent -s)
   - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
   - mkdir -p ~/.ssh
