@@ -66,7 +66,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
 
     def __get_object_path(self, value: str, oid: str) -> str:
         localpath = os.path.join(self.data_dir, value)
-        full_path = os.path.join(localpath, oid)
+        full_path = os.path.join(localpath, str(oid))
         common = os.path.commonprefix((os.path.realpath(full_path),os.path.realpath(self.data_dir)))
         if common != os.path.realpath(self.data_dir):
             log.error(f"Escaping the data dir! {common} {full_path}")
@@ -85,7 +85,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         if not os.path.isfile(path):
             return {}
         with open(path, "r") as file:
-            dict = eval(file.read())
+            dict = json.load(file)
         return dict
 
     def __store_secrets(self, path: str, secrets: Dict[str, str]):
@@ -139,7 +139,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         """ list all available secrets for this object"""
         secrets_path = self.__get_secrets_path(value=n_type.value, oid=oid)
         secrets = self.__load_secrets(secrets_path)
-        return secrets.keys()
+        return list(secrets.keys())
 
     def add_update_secret(self, n_type: LocationDataType, oid:str, key: str, value: str, usr: str):
         """ add new secrets to an existing object"""

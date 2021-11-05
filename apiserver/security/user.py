@@ -34,11 +34,15 @@ class Token(BaseModel):
 class User(BaseModel):
     username: str
     email: str = None
-    has_secrets_access: Optional[bool] = False
+    has_secrets_access: bool = False
 
 
 class UserInDB(User):
     hashed_password: str = None
+
+class Secret(BaseModel):
+    key: str = None
+    secret: str = None
 
 
 class AbstractDBInterface(metaclass=abc.ABCMeta):
