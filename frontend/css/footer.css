@@ -1,0 +1,29 @@
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  bottom: 0;
+  width: 100%;
+  height: auto;
+  background-image: url('../img/Barra-gris-footer.png');
+  background-repeat: no-repeat; 
+  background-size: cover;
+}
+
+div.eflows-line {
+  background-image: url('../img/barra-3-color-8.png') !important;
+  height: 15px; 
+  width: 100%;
+  background-repeat: no-repeat; 
+  background-size: cover;
+}
+
+.eflows-logo {
+  height: auto; 
+  /* min-height: 40px;  */
+  max-height: 70px; 
+}
+
+div.row { 
+  border: 0px;
+}
