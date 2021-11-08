@@ -99,6 +99,8 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
             p = os.path.join(local_path, f)
             if not os.path.isfile(p):
                 continue
+            if p.endswith('secrets'):
+                continue
             data = load_object(p)
             ret.append((data.actualData.name, f))
         log.debug("Listing all objects ob type %s.", n_type.value)
