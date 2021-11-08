@@ -26,7 +26,7 @@ class UserTests(TestCase):
     def test_me(self):
        
        resp = self.client.get('/me')
-       self.assertEqual(resp.json(), {'username': 'foo', 'email': 'bar'})
+       self.assertEqual(resp.json(), {'username': 'foo', 'has_secrets_access' : False, 'email': 'bar'})
 
     def test_token(self):
         rsp = self.client.post('/token').json()
