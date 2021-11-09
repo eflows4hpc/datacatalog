@@ -3,6 +3,7 @@ import os
 import uuid
 from typing import Dict, List, Optional
 import logging
+from fastapi.exceptions import HTTPException
 
 from pydantic import BaseModel
 
@@ -156,13 +157,18 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         secrets_path = self.__get_secrets_path(value=n_type.value, oid=oid)
         secrets = self.__load_secrets(secrets_path)
         # TODO log
-        return secrets[key]
+        try:
+            return secrets[key]
+        except KeyError:
+            raise HTTPException(404)
 
     def delete_secret(self, n_type: LocationDataType, oid:str, key: str, usr: str):
         """ delete and return the value of the requested secret for the given object"""
         secrets_path = self.__get_secrets_path(value=n_type.value, oid=oid)
         secrets = self.__load_secrets(secrets_path)
         val = secrets.pop(key, None)
+        if not val:
+            raise HTTPException(404, "Secret does not exist.")
         # TODO log
         self.__store_secrets(secrets_path, secrets)
         return val 
