@@ -17,7 +17,7 @@ class LocationData(BaseModel):
     metadata: Optional[Dict[str, str]]
 
 
-class AbstractLocationDataStorageAdapter:
+class AbstractLocationDataStorageAdapter: # pragma: no cover
     """
     This is an abstract storage adapter for storing information about datasets,
     storage targets and similar things. It can easily be expanded to also store
@@ -40,7 +40,7 @@ class AbstractLocationDataStorageAdapter:
     def get_list(self, n_type: LocationDataType) -> List:
         """Get a list of all LocationData Elements with the provided type, as pairs of {name : id}"""
 
-        raise NotImplementedError()
+        raise NotImplementedError() 
     
     def add_new(self, n_type: LocationDataType, data: LocationData, user_name: str):
         """

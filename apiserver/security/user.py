@@ -45,7 +45,7 @@ class Secret(BaseModel):
     secret: str = None
 
 
-class AbstractDBInterface(metaclass=abc.ABCMeta):
+class AbstractDBInterface(metaclass=abc.ABCMeta): # pragma: no cover
     @abc.abstractclassmethod
     def list(self) -> List:
         raise NotImplementedError()
