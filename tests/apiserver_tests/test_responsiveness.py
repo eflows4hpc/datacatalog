@@ -53,3 +53,34 @@ class NonAuthTests(unittest.TestCase):
         j = rsp.json()
         self.assertTrue('detail' in j, f"{j} should contain message")
 
+    def test_accept_headers(self):
+        header_accept_json = {'Accept' : "application/json"}
+        header_accept_html = {'Accept' : "text/html"}
+        header_accept_none = {'Accept' : ""}
+        
+        rsp = self.client.get("/", headers=header_accept_json)
+        self.assertEqual(rsp.json(), [{element.value: "/" + element.value} for element in storage.LocationDataType])
+        
+        rsp = self.client.get("/", headers=header_accept_html, allow_redirects=False)
+        self.assertEqual(rsp.status_code, 307)
+        
+        rsp = self.client.get("/", headers=header_accept_html, allow_redirects=True)
+        self.assertEqual(rsp.status_code, 422) # forwarded to /index.html which does not exist on the apiserver
+        
+        rsp = self.client.get("/", headers=header_accept_none)
+        self.assertEqual(rsp.json(), [{element.value: "/" + element.value} for element in storage.LocationDataType])
+
+    def test_secrets_access(self): 
+        # check if access for all secrets endpoints failed with 401 Auth required
+        # list secrets, add secret, get secret, delete secret
+        rsp = self.client.get(f'/dataset/{proper_uuid}/secrets')
+        self.assertEqual(401, rsp.status_code)
+        
+        rsp = self.client.get(f'/dataset/{proper_uuid}/secrets/somespecificsecret')
+        self.assertEqual(401, rsp.status_code)
+        
+        rsp = self.client.post(f'/dataset/{proper_uuid}/secrets', json={'key' : "somekey", "secret" : "somesecret"})
+        self.assertEqual(401, rsp.status_code)
+        
+        rsp = self.client.delete(f'/dataset/{proper_uuid}/secrets/somespecificsecret')
+        self.assertEqual(401, rsp.status_code)
