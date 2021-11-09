@@ -7,7 +7,7 @@ import os
 import pathlib
 import shutil
 import json
-
+from fastapi.exceptions import HTTPException
 
 class SomeTests(unittest.TestCase):
     def setUp(self):
@@ -17,6 +17,8 @@ class SomeTests(unittest.TestCase):
             parents=True, exist_ok=True)
 
         self.store = JsonFileStorageAdapter(self.test_config)
+        self.secret_type = LocationDataType.DATASET
+        self.secret_oid = "secrets-testing-oid"
 
     def tearDown(self):
         if os.path.exists(self.test_config.json_storage_path):
@@ -107,3 +109,53 @@ class SomeTests(unittest.TestCase):
         self.assertFalse(verify_oid(oid='random strawberry'))
         self.assertFalse(verify_oid(oid=None))
         self.assertFalse(verify_oid(oid=1))
+
+    def test_secrets_list_empty(self):
+        self.secret_oid = self.store.add_new(self.secret_type, LocationData(name="secrets_test", url="secrets_url"), "")[0]
+        secrets = self.store.list_secrets(self.secret_type, self.secret_oid, "")
+        self.assertEqual(len(secrets), 0)
+        self.store.delete(self.secret_type, self.secret_oid, "")
+    
+    def test_secrets_add_get_delete(self):
+        self.secret_oid = self.store.add_new(self.secret_type, LocationData(name="secrets_test", url="secrets_url"), "")[0]
+        key = "secretkey"
+        val = "secretvalue"
+        val2 = "othersecretvalue"
+        self.store.add_update_secret(self.secret_type, self.secret_oid, key, val, "")
+        secrets = self.store.list_secrets(self.secret_type, self.secret_oid, "")
+        self.assertEqual(len(secrets), 1)
+
+        get_val = self.store.get_secret(self.secret_type, self.secret_oid, key, "")
+        self.assertEqual(val, get_val)
+
+        self.store.add_update_secret(self.secret_type, self.secret_oid, key, val2, "")
+        get_val2 = self.store.get_secret(self.secret_type, self.secret_oid, key, "")
+        self.assertEqual(val2, get_val2)
+        
+        
+        self.store.delete_secret(self.secret_type, self.secret_oid, key, "")
+        secrets = self.store.list_secrets(self.secret_type, self.secret_oid, "")
+        self.assertEqual(len(secrets), 0)
+        self.store.delete(self.secret_type, self.secret_oid, "")
+
+    def test_secrets_add_list_multiple(self):
+        self.secret_oid = self.store.add_new(self.secret_type, LocationData(name="secrets_test", url="secrets_url"), "")[0]
+        size = 10
+        secret_touples = [(f'key_{i}', f'secret_{i}') for i in range(size)]
+
+        for secret in secret_touples:
+            self.store.add_update_secret(self.secret_type, self.secret_oid, secret[0], secret[1], "")
+
+        secrets = self.store.list_secrets(self.secret_type, self.secret_oid, "")
+        self.assertEqual(len(secrets), size)
+
+        for secret in secret_touples:
+            val = self.store.delete_secret(self.secret_type, self.secret_oid, secret[0], "")
+            self.assertEqual(val, secret[1])
+        
+        self.store.delete(self.secret_type, self.secret_oid, "")
+
+    def test_secrets_delete_nonexistent(self):
+        self.secret_oid = self.store.add_new(self.secret_type, LocationData(name="secrets_test", url="secrets_url"), "")[0]
+        self.assertRaises(HTTPException, self.store.delete_secret, self.secret_type, self.secret_oid, "somekey", "")
+        self.store.delete(self.secret_type, self.secret_oid, "")

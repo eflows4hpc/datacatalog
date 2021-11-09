@@ -74,7 +74,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
             raise FileNotFoundError()
 
         if not os.path.isfile(full_path):
-            log.error("Requsted object (%s) %s does not exist.", oid, full_path)
+            log.error("Requested object (%s) %s does not exist.", oid, full_path)
             raise FileNotFoundError(
                 f"The requested object ({oid}) {full_path} does not exist.")
         return full_path
@@ -160,7 +160,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         try:
             return secrets[key]
         except KeyError:
-            raise HTTPException(404)
+            raise HTTPException(404, f"Secret with key {key} does not exist for the object {n_type}/{oid}")
 
     def delete_secret(self, n_type: LocationDataType, oid:str, key: str, usr: str):
         """ delete and return the value of the requested secret for the given object"""
@@ -168,7 +168,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         secrets = self.__load_secrets(secrets_path)
         val = secrets.pop(key, None)
         if not val:
-            raise HTTPException(404, "Secret does not exist.")
+            raise HTTPException(404, f"Secret with key {key} does not exist for the object {n_type}/{oid}")
         # TODO log
         self.__store_secrets(secrets_path, secrets)
         return val 
