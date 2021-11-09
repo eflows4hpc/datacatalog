@@ -11,6 +11,9 @@ proper_uuid = "3a33262e-276e-4de8-87bc-f2d5a0195faf"
 def myfunc():
     return User(username='secret_foo', email='secret_bar', has_secrets_access=True)
 
+def non_access_user():
+    return User(username='secret_foo', email='secret_bar', has_secrets_access=False)
+
 class UserTests(TestCase):
 
     def setUp(self):
@@ -97,5 +100,26 @@ class UserTests(TestCase):
         for element in data:
             key = element['key']
             rsp = self.client.delete(f'/dataset/{self.dummy_oid}/secrets/{key}')
+
+
+
+    
+    def test_secrets_without_access(self): 
+        # override with non_access user
+        apiserver.app.dependency_overrides[apiserver.main.my_auth] = non_access_user
+        apiserver.app.dependency_overrides[apiserver.main.my_user] = non_access_user
+        # check if access for all secrets endpoints failed with 401 Auth required
+        # list secrets, add secret, get secret, delete secret
+        rsp = self.client.get(f'/dataset/{proper_uuid}/secrets')
+        self.assertEqual(403, rsp.status_code)
+        
+        rsp = self.client.get(f'/dataset/{proper_uuid}/secrets/somespecificsecret')
+        self.assertEqual(403, rsp.status_code)
+        
+        rsp = self.client.post(f'/dataset/{proper_uuid}/secrets', json={'key' : "somekey", "secret" : "somesecret"})
+        self.assertEqual(403, rsp.status_code)
+        
+        rsp = self.client.delete(f'/dataset/{proper_uuid}/secrets/somespecificsecret')
+        self.assertEqual(403, rsp.status_code)
 
     # TODO test delete object, DO secrets disappear too? (currently they don't)
