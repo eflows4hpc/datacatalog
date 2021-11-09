@@ -98,3 +98,16 @@ class UserTests(unittest.TestCase):
 
     def test_current_user(self):
         self.assertRaises(HTTPException, get_current_user, 'falsetoken', Mock(spec=JsonDBInterface))
+
+    def test_add_get_remove_secrets_access_user(self):
+        baselen = len(self.userdb.list())
+        user = UserInDB(username="secrets_user", email="secrets_email", hashed_password="secrethash", has_secrets_access=True)
+        self.userdb.add(user)
+        self.assertEqual(len(self.userdb.list()), baselen+1)
+        user_from_db = self.userdb.get(user.username)
+        self.assertEqual(user, user_from_db)
+        self.assertTrue(user_from_db.has_secrets_access)
+        self.userdb.delete(user.username)
+        self.assertEqual(len(self.userdb.list()), baselen)
+
+    
