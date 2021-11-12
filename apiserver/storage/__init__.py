@@ -1,3 +1,5 @@
 from .JsonFileStorageAdapter import JsonFileStorageAdapter, verify_oid
 
 from .LocationStorage import LocationDataType, LocationData, AbstractLocationDataStorageAdapter
+
+from .EncryptedJsonFileStorageAdapter import EncryptedJsonFileStorageAdapter
