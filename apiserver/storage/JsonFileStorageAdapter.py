@@ -135,9 +135,13 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
 
     def delete(self, n_type: LocationDataType, oid: str, usr: str):
         full_path = self.__get_object_path(value=n_type.value, oid=oid)
-        log.debug("Deleted object %s by user '%s'.", oid, usr)
+        secrets_path = self.__get_secrets_path(n_type, oid)
+        log.debug("Deleted object %s/%s by user '%s'.", oid, usr)
         os.remove(full_path)
-        
+        if (os.path.isfile(secrets_path)):
+            log.debug("Deleted secrets from object %s/%s by user '%s", n_type, oid, usr)
+            os.remove(secrets_path)
+            
     def list_secrets(self, n_type: LocationDataType, oid:str, usr: str):
         """ list all available secrets for this object"""
         secrets_path = self.__get_secrets_path(value=n_type.value, oid=oid)
