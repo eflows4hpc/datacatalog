@@ -144,6 +144,11 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         secrets = self.__load_secrets(secrets_path)
         return list(secrets.keys())
 
+    def get_secret_values(self, n_type: LocationDataType, oid:str, usr: str):
+        """ get all available secrets (key + value) for this object"""
+        secrets_path = self.__get_secrets_path(value=n_type.value, oid=oid)
+        return self.__load_secrets(secrets_path)
+
     def add_update_secret(self, n_type: LocationDataType, oid:str, key: str, value: str, usr: str):
         """ add new secrets to an existing object"""
         secrets_path = self.__get_secrets_path(value=n_type.value, oid=oid)

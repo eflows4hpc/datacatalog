@@ -66,6 +66,9 @@ class AbstractLocationDataStorageAdapter: # pragma: no cover
         """ list all available secrets for this object"""
         raise NotImplementedError()
     
+    def get_secret_values(self, n_type: LocationDataType, oid:str, usr: str):
+        raise NotImplementedError()
+    
     def add_update_secret(self, n_type: LocationDataType, oid:str, key: str, value: str, usr: str):
         """ add new secrets to an existing object"""
         raise NotImplementedError()
