@@ -1,7 +1,7 @@
 import json
 import os
 import uuid
-from typing import Dict, List, Optional
+from typing import Dict, List
 import logging
 from fastapi.exceptions import HTTPException
 
@@ -70,7 +70,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         full_path = os.path.join(localpath, str(oid))
         common = os.path.commonprefix((os.path.realpath(full_path),os.path.realpath(self.data_dir)))
         if common != os.path.realpath(self.data_dir):
-            log.error(f"Escaping the data dir! {common} {full_path}")
+            log.error("Escaping the data dir! %s %s", common, full_path)
             raise FileNotFoundError()
 
         if not os.path.isfile(full_path):
@@ -86,8 +86,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         if not os.path.isfile(path):
             return {}
         with open(path, "r") as file:
-            dict = json.load(file)
-        return dict
+            return json.load(file)
 
     def __store_secrets(self, path: str, secrets: Dict[str, str]):
         with open(path, "w") as file:
@@ -137,7 +136,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         full_path = self.__get_object_path(value=n_type.value, oid=oid)
         log.debug("Deleted object %s by user '%s'.", oid, usr)
         os.remove(full_path)
-        
+
     def list_secrets(self, n_type: LocationDataType, oid:str, usr: str):
         """ list all available secrets for this object"""
         secrets_path = self.__get_secrets_path(value=n_type.value, oid=oid)

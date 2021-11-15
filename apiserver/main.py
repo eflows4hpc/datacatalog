@@ -21,7 +21,7 @@ from .config import ApiserverSettings
 from .security import (ACCESS_TOKEN_EXPIRES_MINUTES, JsonDBInterface, Token,
                        User, authenticate_user, create_access_token,
                        get_current_user)
-from .storage import JsonFileStorageAdapter, LocationData, LocationDataType, verify_oid
+from .storage import JsonFileStorageAdapter, LocationData, LocationDataType
 
 log = logging.getLogger(__name__)
 
@@ -97,7 +97,7 @@ async def get_types(request: Request = None):
     # uses first of json and html that is in the accept header; returns json if neither is found
     json_pos = accept_header.find(accept_json)
     html_pos = accept_header.find(accept_html)
-    
+
     if json_pos == -1:
         json_pos = len(accept_header)
     if html_pos == -1:
@@ -106,8 +106,8 @@ async def get_types(request: Request = None):
     if html_pos < json_pos:
         log.debug("Browser was redirected to index.html")
         return redirect_return
-    else:
-        return default_return
+
+    return default_return
 
 
 @app.get("/{location_data_type}")
@@ -156,8 +156,8 @@ async def list_dataset_secrets(location_data_type: LocationDataType,
     if user.has_secrets_access:
         log.debug("Authenticed User: '%s' listed the secrets of /%s/%s", user.username, location_data_type.value, dataset_id)
         return adapter.list_secrets(location_data_type, dataset_id, user)
-    else:
-        raise HTTPException(403)
+    
+    raise HTTPException(403)
 
 @app.get("/{location_data_type}/{dataset_id}/secrets/{key}")
 async def get_dataset_secret(location_data_type: LocationDataType,
@@ -168,8 +168,7 @@ async def get_dataset_secret(location_data_type: LocationDataType,
     if user.has_secrets_access:
         log.debug("Authenticed User: '%s' listed the secret %s of /%s/%s", user.username, key, location_data_type.value, dataset_id)
         return adapter.get_secret(location_data_type, dataset_id, key, user)
-    else:
-        raise HTTPException(403)
+    raise HTTPException(403)
 
 @app.post("/{location_data_type}/{dataset_id}/secrets")
 async def add_update_dataset_secret(location_data_type: LocationDataType,
@@ -180,8 +179,7 @@ async def add_update_dataset_secret(location_data_type: LocationDataType,
     if user.has_secrets_access:
         log.debug("Authenticed User: '%s' added or updated the secret %s of /%s/%s", user.username, secret.key, location_data_type.value, dataset_id)
         return adapter.add_update_secret(location_data_type, dataset_id, secret.key, secret.secret, user)
-    else:
-        raise HTTPException(403)
+    raise HTTPException(403)
 
 @app.delete("/{location_data_type}/{dataset_id}/secrets/{key}")
 async def get_dataset_secrets(location_data_type: LocationDataType,
@@ -192,8 +190,7 @@ async def get_dataset_secrets(location_data_type: LocationDataType,
     if user.has_secrets_access:
         log.debug("Authenticed User: '%s' deleted the secret %s from /%s/%s", user.username, key, location_data_type.value, dataset_id)
         return adapter.delete_secret(location_data_type, dataset_id, key, user)
-    else:
-        raise HTTPException(403)
+    raise HTTPException(403)
 
 
 

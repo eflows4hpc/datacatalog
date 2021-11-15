@@ -1,8 +1,8 @@
+import unittest
+
 from fastapi.testclient import TestClient
 
 from context import apiserver, storage
-import unittest
-
 
 # a properly formatted uuidv4 to ensure the proper errors are returned by the api; the exact value is irrelevant
 proper_uuid = "3a33262e-276e-4de8-87bc-f2d5a0195faf"
@@ -45,7 +45,7 @@ class NonAuthTests(unittest.TestCase):
         self.assertEqual(404, rsp.status_code)
         j = rsp.json()
         self.assertTrue('message' in j, f"{j} should contain message")
-        self.assertFalse('foo' in j['message'], f"error message should not contain object id (foo)")
+        self.assertFalse('foo' in j['message'], "error message should not contain object id (foo)")
 
     def test_get_invalid_oid(self):
         rsp = self.client.get('/dataset/invalid-uuid')
@@ -57,30 +57,30 @@ class NonAuthTests(unittest.TestCase):
         header_accept_json = {'Accept' : "application/json"}
         header_accept_html = {'Accept' : "text/html"}
         header_accept_none = {'Accept' : ""}
-        
+
         rsp = self.client.get("/", headers=header_accept_json)
         self.assertEqual(rsp.json(), [{element.value: "/" + element.value} for element in storage.LocationDataType])
-        
+
         rsp = self.client.get("/", headers=header_accept_html, allow_redirects=False)
         self.assertEqual(rsp.status_code, 307)
-        
+
         rsp = self.client.get("/", headers=header_accept_html, allow_redirects=True)
         self.assertEqual(rsp.status_code, 422) # forwarded to /index.html which does not exist on the apiserver
-        
+
         rsp = self.client.get("/", headers=header_accept_none)
         self.assertEqual(rsp.json(), [{element.value: "/" + element.value} for element in storage.LocationDataType])
 
-    def test_secrets_access(self): 
+    def test_secrets_access(self):
         # check if access for all secrets endpoints failed with 401 Auth required
         # list secrets, add secret, get secret, delete secret
         rsp = self.client.get(f'/dataset/{proper_uuid}/secrets')
         self.assertEqual(401, rsp.status_code)
-        
+
         rsp = self.client.get(f'/dataset/{proper_uuid}/secrets/somespecificsecret')
         self.assertEqual(401, rsp.status_code)
-        
+
         rsp = self.client.post(f'/dataset/{proper_uuid}/secrets', json={'key' : "somekey", "secret" : "somesecret"})
         self.assertEqual(401, rsp.status_code)
-        
+
         rsp = self.client.delete(f'/dataset/{proper_uuid}/secrets/somespecificsecret')
         self.assertEqual(401, rsp.status_code)
