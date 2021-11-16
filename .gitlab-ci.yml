@@ -39,6 +39,9 @@ stages:
 
 test:
   stage: test
+  before_script:
+    - echo "Overwriting the test"
+    - apt-get update -y && apt-get install openssh-client gcc libxslt-dev libffi-dev libssl-dev build-essential python3-dev -y
   script: 
    - pip install -r testing_requirements.txt
    - nosetests --with-coverage --cover-package=apiserver --cover-xml
