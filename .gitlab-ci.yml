@@ -22,12 +22,13 @@ variables:
   ROLLBACK_COMMIT_TAG: aa1f8345d322f2532977643043df18eb4aff3bcf # stable version on master, also tagged as 0.18
 
 # before script copied from gitlab docs
-before_script:
-  - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client gcc libxslt-dev libffi-dev libssl-dev build-essential python3-dev -y )'
-  - eval $(ssh-agent -s)
-  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
-  - mkdir -p ~/.ssh
-  - chmod 700 ~/.ssh
+.before_script_template: &ssh_setup
+  before_script:
+    - 'command -v ssh-agent >/dev/null || ( apt-get update -y && apt-get install openssh-client gcc libxslt-dev libffi-dev libssl-dev build-essential python3-dev -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
 
 stages:
   - test
@@ -39,9 +40,6 @@ stages:
 
 test:
   stage: test
-  before_script:
-    - echo "Overwriting the test"
-    - apt-get update -y && apt-get install openssh-client gcc libxslt-dev libffi-dev libssl-dev build-essential python3-dev -y
   script: 
    - pip install -r testing_requirements.txt
    - nosetests --with-coverage --cover-package=apiserver --cover-xml
@@ -57,6 +55,7 @@ light-deploy-testing:
   except:
     - tags
     - web
+  <<: *ssh_setup
   environment: Testing
   script:
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "cd /home/apiserver/datacatalog && sudo git fetch --all && sudo git checkout -f $CI_COMMIT_TAG"
@@ -70,6 +69,7 @@ light-deploy-production:
   except:
     - web
   tags: [stable]
+  <<: *ssh_setup
   environment: Production
   script:
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "cd /home/apiserver/datacatalog && sudo git fetch --all && sudo git checkout -f $CI_COMMIT_TAG"
@@ -81,6 +81,7 @@ full-deploy-production:
   only:
     variables:
       - ($CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_TAG =~ /stable/)
+  <<: *ssh_setup
   environment: Production
   script:
     - echo "Starting the full production deployment for tag $CI_COMMIT_TAG."
@@ -105,6 +106,7 @@ full-deploy-testing:
   only:
     variables:
       - ($CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_REF_NAME == "master")
+  <<: *ssh_setup
   environment: Testing
   script:
     - echo "Starting the full testing deployment."
@@ -129,6 +131,7 @@ cleanup-failed-full-deployment:
   when: on_failure
   only:
     - web
+  <<: *ssh_setup
   script:
     - echo "This is the cleanup for the full-redeployment of the testing or production servers"
     - echo "if this job is reached, some earlier job had to have failed, this will return to the previous instance (if available)"
@@ -162,6 +165,7 @@ cleanup-successful-full-deployment:
   when: on_success
   only:
     - web
+  <<: *ssh_setup
   script:
     - echo "This is the cleanup for the full-redeployment of the testing or production servers"
     - echo "if this job is reached, all earlier jobs were successful, and any lingering old instances need to be removed"
@@ -178,6 +182,7 @@ cleanup-failed-light-test-deployment:
   except:
     - tags
     - web
+  <<: *ssh_setup
   script:
     - echo "This is the cleanup for the light-redeployment of the testing servers"
     - echo "if this job is reached, some earlier job had to have failed, this will return to a previous commit"
@@ -196,6 +201,7 @@ cleanup-failed-light-production-deployment:
   except:
     - web
   tags: [stable]
+  <<: *ssh_setup
   script:
     - echo "This is the cleanup for the light-redeployment of the production servers"
     - echo "if this job is reached, some earlier job had to have failed, this will return to a previous commit"
@@ -211,7 +217,6 @@ test-testing:
     - master
   except:
     - tags
-  variables:
   script:
     - apt update && apt -y install curl
     - echo "For now, this will be a basic health check i.e. GET / and check for 2xx code."
