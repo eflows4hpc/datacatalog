@@ -135,7 +135,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
 
     def delete(self, n_type: LocationDataType, oid: str, usr: str):
         full_path = self.__get_object_path(value=n_type.value, oid=oid)
-        secrets_path = self.__get_secrets_path(n_type, oid)
+        secrets_path = self.__get_secrets_path(n_type.value, oid)
         log.debug("Deleted object %s/%s by user '%s'.", oid, usr)
         os.remove(full_path)
         if (os.path.isfile(secrets_path)):
@@ -169,7 +169,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         try:
             return secrets[key]
         except KeyError:
-            raise HTTPException(404, f"Secret with key {key} does not exist for the object {n_type}/{oid}")
+            raise HTTPException(404, f"Secret with key {key} does not exist for the object {n_type.value}/{oid}")
 
     def delete_secret(self, n_type: LocationDataType, oid:str, key: str, usr: str):
         """ delete and return the value of the requested secret for the given object"""
@@ -177,7 +177,7 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         secrets = self.__load_secrets(secrets_path)
         val = secrets.pop(key, None)
         if not val:
-            raise HTTPException(404, f"Secret with key {key} does not exist for the object {n_type}/{oid}")
+            raise HTTPException(404, f"Secret with key {key} does not exist for the object {n_type.value}/{oid}")
         # TODO log
         self.__store_secrets(secrets_path, secrets)
         return val 
