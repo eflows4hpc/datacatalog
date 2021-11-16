@@ -14,8 +14,8 @@ class EncryptedJsonFileStorageAdapter(JsonFileStorageAdapter):
         f = Fernet(self.encryption_key)
         return f.decrypt(string.encode()).decode("utf-8")
     
-    def __init__(self, settings: ApiserverSettings, encryption_key) -> None:
-        self.encryption_key = encryption_key
+    def __init__(self, settings: ApiserverSettings) -> None:
+        self.encryption_key = settings.encryption_key
         super().__init__(settings)
     
     

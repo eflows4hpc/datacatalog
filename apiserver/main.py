@@ -21,7 +21,7 @@ from .config import ApiserverSettings
 from .security import (ACCESS_TOKEN_EXPIRES_MINUTES, JsonDBInterface, Token,
                        User, authenticate_user, create_access_token,
                        get_current_user)
-from .storage import JsonFileStorageAdapter, LocationData, LocationDataType, verify_oid
+from .storage import JsonFileStorageAdapter, LocationData, LocationDataType, verify_oid, EncryptedJsonFileStorageAdapter
 
 log = logging.getLogger(__name__)
 
@@ -42,8 +42,15 @@ app = FastAPI(
 # if env variable is set, get config .env filepath from it, else use default
 dotenv_file_path = os.getenv(DOTENV_FILE_PATH_VARNAME, DOTENV_FILE_PATH_DEFAULT)
 
+
 settings = ApiserverSettings(_env_file=dotenv_file_path)
-adapter = JsonFileStorageAdapter(settings)
+
+if settings.encryption_key is not None:
+    log.debug("Using encrypted secrets backend.")
+    adapter = EncryptedJsonFileStorageAdapter(settings)
+else:
+    adapter = JsonFileStorageAdapter(settings)
+
 userdb = JsonDBInterface(settings)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=ReservedPaths.TOKEN)
 

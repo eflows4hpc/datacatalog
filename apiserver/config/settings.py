@@ -8,6 +8,7 @@ DEFAULT_JSON_FILEPATH: str = "./app/data"
 class ApiserverSettings(BaseSettings):
     json_storage_path: str = DEFAULT_JSON_FILEPATH
     userdb_path: str = None
+    encryption_key: str = None
 
     class Config:
         env_prefix: str = "datacatalog_apiserver_"
