@@ -58,7 +58,7 @@ light-deploy-testing:
   <<: *ssh_setup
   environment: Testing
   script:
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "cd /home/apiserver/datacatalog && sudo git pull --all && sudo git checkout -f $CI_COMMIT_TAG"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "cd /home/apiserver/datacatalog && sudo git stash && sudo git pull --all && sudo git checkout -f $CI_COMMIT_TAG && sudo git stash clear"
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $TESTING_URL $TESTING_DOMAIN"
 
 light-deploy-production:
@@ -72,7 +72,7 @@ light-deploy-production:
   <<: *ssh_setup
   environment: Production
   script:
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "cd /home/apiserver/datacatalog && sudo git pull --all && sudo git checkout -f $CI_COMMIT_TAG"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "cd /home/apiserver/datacatalog && sudo git stash && sudo git pull --all && sudo git checkout -f $CI_COMMIT_TAG && sudo git stash clear"
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo SECRETS_ENCRYPTION_KEY=$SECRETS_ENCRYPTION_KEY, /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN"
 
 full-deploy-production:
