@@ -73,7 +73,7 @@ light-deploy-production:
   environment: Production
   script:
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "cd /home/apiserver/datacatalog && sudo git pull --all && sudo git checkout -f $CI_COMMIT_TAG"
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo SECRETS_ENCRYPTION_KEY=$SECRETS_ENCRYPTION_KEY, /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN"
 
 full-deploy-production:
   stage: deploy
@@ -99,6 +99,7 @@ full-deploy-production:
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo mkdir -p /app/mnt"
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo mount /dev/vdb1 /app/mnt"
     - until ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN ls /finished_cloudinit >/dev/null 2>&1; do sleep 30; done # wait until cloudinit script is complete
+    - SECRETS_ENCRYPTION_KEY=$SECRETS_ENCRYPTION_KEY, /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN
 
 full-deploy-testing:
   stage: deploy 
@@ -110,7 +111,6 @@ full-deploy-testing:
   environment: Testing
   script:
     - echo "Starting the full testing deployment."
-    - sed -i 's_datacatalog.fz_zam10036.zam.kfa_g' deploy_scripts/cloudinit.yml
     - pip install python-openstackclient
     - OLD_ID=`openstack server show $TESTING_NAME -f value -c id`
     - openstack server set --name $OLD_TEST_NAME $OLD_ID
@@ -121,6 +121,7 @@ full-deploy-testing:
     - sleep 10 # ensure that next command reaches the new server, prevents host key problems
     # TODO move local zip of certificate-docker-volume to server once startup is complete
     - until ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN ls /finished_cloudinit >/dev/null 2>&1; do sleep 30; done # wait until cloudinit script is complete
+    - /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $TESTING_URL $TESTING_DOMAIN
 
   
 cleanup-failed-full-deployment:
