@@ -45,9 +45,13 @@ dotenv_file_path = os.getenv(DOTENV_FILE_PATH_VARNAME, DOTENV_FILE_PATH_DEFAULT)
 
 settings = ApiserverSettings(_env_file=dotenv_file_path)
 
-if settings.encryption_key is not None:
+if settings.encryption_key is not None and settings.encryption_key:
     log.debug("Using encrypted secrets backend.")
-    adapter = EncryptedJsonFileStorageAdapter(settings)
+    try:
+        adapter = EncryptedJsonFileStorageAdapter(settings)
+    except:
+        log.error("Using encrypetd secrets backend failed. Fallback to unencrypted.")
+        adapter = JsonFileStorageAdapter(settings)
 else:
     adapter = JsonFileStorageAdapter(settings)
 

@@ -46,6 +46,7 @@ services:
             VIRTUAL_HOST: datacatalog.fz-juelich.de
             LETSENCRYPT_HOST: datacatalog.fz-juelich.de
             VIRTUAL_PORT: 8000
+            DATACATALOG_APISERVER_ENCRYPTION_KEY: ${SECRETS_ENCRYPTION_KEY}
         networks: 
             - "net"
 volumes:
