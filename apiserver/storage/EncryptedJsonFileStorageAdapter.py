@@ -21,10 +21,7 @@ class EncryptedJsonFileStorageAdapter(JsonFileStorageAdapter):
     def get_secret_values(self, n_type: LocationDataType, oid:str, usr: str):
         """ get all available secrets (key + value) for this object"""
         encrypted_dict = super().get_secret_values(n_type, oid, usr)
-        decrypted_dict = {}
-        for key in encrypted_dict:
-            decrypted_dict[key] = self.decrypt(encrypted_dict[key])
-        return decrypted_dict
+        return {k: self.decrypt(v) for k,v in encrypted_dict.items()}
 
     def add_update_secret(self, n_type: LocationDataType, oid:str, key: str, value: str, usr: str):
         """ add new secrets to an existing object"""
