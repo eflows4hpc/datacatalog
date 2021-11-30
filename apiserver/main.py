@@ -48,11 +48,9 @@ settings = ApiserverSettings(_env_file=dotenv_file_path)
 
 if settings.encryption_key is not None and settings.encryption_key:
     log.debug("Using encrypted secrets backend.")
-    try:
-        adapter = EncryptedJsonFileStorageAdapter(settings)
-    except:
-        log.error("Using encrypetd secrets backend failed. Fallback to unencrypted.")
-        adapter = JsonFileStorageAdapter(settings)
+    # let the error break the server (clearly an encrypted backed is requested, 
+    # fallback to non encrypted is not good)
+    adapter = EncryptedJsonFileStorageAdapter(settings)
 else:
     adapter = JsonFileStorageAdapter(settings)
 
@@ -70,7 +68,6 @@ def my_auth(form_data: OAuth2PasswordRequestForm = Depends()):
 def secrets_required(func):
     @wraps(func)
     async def wrapper(*args, **kwargs):
-        print(f"And kwargs {kwargs}")
         user = kwargs.get('user', None)
         if user is None or not user.has_secrets_access:
             raise HTTPException(403)

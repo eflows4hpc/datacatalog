@@ -1,4 +1,4 @@
-from .JsonFileStorageAdapter import JsonFileStorageAdapter, verify_oid
+from .JsonFileStorageAdapter import JsonFileStorageAdapter
 
 from .LocationStorage import LocationDataType, LocationData, AbstractLocationDataStorageAdapter
 

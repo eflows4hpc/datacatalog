@@ -29,17 +29,6 @@ def get_unique_id(path: str) -> str:
     return oid
 
 
-def verify_oid(oid: str, version=4):
-    """ Ensure thatthe oid is formatted as a valid oid (i.e. UUID v4).
-    If it isn't, the corresponding request could theoretically be
-    an attempted path traversal attack (or a regular typo).
-    """
-    try:
-        uuid_obj = uuid.UUID(oid, version=version)
-        return str(uuid_obj) == oid
-    except:
-        return False
-
 class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
     """ This stores LocationData via the StoredData Object as json files
 
@@ -85,12 +74,12 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
     def __load_secrets(self, path: str) -> Dict[str, str]:
         if not os.path.isfile(path):
             return {}
-        with open(path, "r") as file:
-            return json.load(file)
+        with open(path, "r") as f:
+            return json.load(f)
 
     def __store_secrets(self, path: str, secrets: Dict[str, str]):
-        with open(path, "w") as file:
-            json.dump(secrets, file)
+        with open(path, "w") as f:
+            json.dump(secrets, f)
 
     def get_list(self, n_type: LocationDataType) -> List:
         local_path = self.__setup_path(n_type.value)
@@ -137,10 +126,10 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         secrets_path = self.__get_secrets_path(n_type.value, oid)
         log.debug("Deleted object %s/%s by user '%s'.", n_type, oid, usr)
         os.remove(full_path)
-        if (os.path.isfile(secrets_path)):
+        if os.path.isfile(secrets_path):
             log.debug("Deleted secrets from object %s/%s by user '%s", n_type, oid, usr)
             os.remove(secrets_path)
-            
+
     def list_secrets(self, n_type: LocationDataType, oid:str, usr: str):
         """ list all available secrets for this object"""
         secrets_path = self.__get_secrets_path(value=n_type.value, oid=oid)
@@ -157,14 +146,14 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         secrets_path = self.__get_secrets_path(value=n_type.value, oid=oid)
         secrets = self.__load_secrets(secrets_path)
         secrets[key] = value
-        # TODO log
+        log.debug('User %s is updating secretes for %s', usr, oid)
         self.__store_secrets(secrets_path, secrets)
 
     def get_secret(self, n_type: LocationDataType, oid:str, key: str, usr: str):
         """ return the value of the requested secret for the given object"""
         secrets_path = self.__get_secrets_path(value=n_type.value, oid=oid)
         secrets = self.__load_secrets(secrets_path)
-        # TODO log
+        log.debug('User %s is retrieving secrets for %s', usr, oid)
         try:
             return secrets[key]
         except KeyError:
@@ -177,6 +166,6 @@ class JsonFileStorageAdapter(AbstractLocationDataStorageAdapter):
         val = secrets.pop(key, None)
         if not val:
             raise HTTPException(404, f"Secret with key {key} does not exist for the object {n_type.value}/{oid}")
-        # TODO log
+        log.debug('User %s delete secret for %s', usr, oid)
         self.__store_secrets(secrets_path, secrets)
-        return val 
+        return val

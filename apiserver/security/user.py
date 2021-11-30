@@ -47,19 +47,19 @@ class Secret(BaseModel):
 
 class AbstractDBInterface(metaclass=abc.ABCMeta): # pragma: no cover
     @abc.abstractclassmethod
-    def list(self) -> List:
+    def list(cls) -> List:
         raise NotImplementedError()
 
     @abc.abstractclassmethod
-    def get(self, username: str):
+    def get(cls, username: str):
         raise NotImplementedError()
 
     @abc.abstractclassmethod
-    def add(self, user: UserInDB):
+    def add(cls, user: UserInDB):
         raise NotImplementedError()
 
     @abc.abstractclassmethod
-    def delete(self, username: str):
+    def delete(cls, username: str):
         raise NotImplementedError()
 
 

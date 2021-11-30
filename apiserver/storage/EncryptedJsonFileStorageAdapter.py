@@ -1,8 +1,7 @@
-from fastapi.exceptions import HTTPException
-from .JsonFileStorageAdapter import JsonFileStorageAdapter, LocationDataType
 from cryptography.fernet import Fernet
 
 from apiserver.config.settings import ApiserverSettings
+from .JsonFileStorageAdapter import JsonFileStorageAdapter, LocationDataType
 
 class EncryptedJsonFileStorageAdapter(JsonFileStorageAdapter):
 
@@ -13,12 +12,12 @@ class EncryptedJsonFileStorageAdapter(JsonFileStorageAdapter):
     def decrypt(self, string: str):
         f = Fernet(self.encryption_key)
         return f.decrypt(string.encode()).decode("utf-8")
-    
+
     def __init__(self, settings: ApiserverSettings) -> None:
         self.encryption_key = settings.encryption_key
         super().__init__(settings)
-    
-    
+
+
     def get_secret_values(self, n_type: LocationDataType, oid:str, usr: str):
         """ get all available secrets (key + value) for this object"""
         encrypted_dict = super().get_secret_values(n_type, oid, usr)
