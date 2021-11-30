@@ -180,17 +180,6 @@ async def list_dataset_secrets(location_data_type: LocationDataType,
     log.debug("Authenticed User: '%s' listed the secrets of /%s/%s", user.username, location_data_type.value, dataset_id)
     return adapter.list_secrets(location_data_type, dataset_id, user)
 
-@app.get("/{location_data_type}/{dataset_id}/secrets_values")
-async def list_dataset_secrets(location_data_type: LocationDataType,
-                                  dataset_id: UUID4,
-                                  user: User = Depends(my_user)):
-    """list the secrets of a specific dataset"""
-    if user.has_secrets_access:
-        log.debug("Authenticed User: '%s' listed the secrets (key and value) of /%s/%s", user.username, location_data_type.value, dataset_id)
-        return adapter.get_secret_values(location_data_type, dataset_id, user)
-    else:
-        raise HTTPException(403)
-
 @app.get("/{location_data_type}/{dataset_id}/secrets/{key}")
 @secrets_required
 async def get_dataset_secret(location_data_type: LocationDataType,
