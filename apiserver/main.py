@@ -187,6 +187,15 @@ async def get_dataset_secret(location_data_type: LocationDataType,
     log.debug("Authenticed User: '%s' listed the secret %s of /%s/%s", user.username, key, location_data_type.value, dataset_id)
     return adapter.get_secret(location_data_type, dataset_id, key, user)
 
+# differs from .../secrets by also returning the values in a dict
+@app.get("/{location_data_type}/{dataset_id}/secrets_values")
+@secrets_required
+async def list_dataset_secrets(location_data_type: LocationDataType, dataset_id: UUID4, user: User = Depends(my_user)):
+    """list the secrets and valuesof a specific dataset"""
+    log.debug("Authenticed User: '%s' listed the secrets (key and value) of /%s/%s", user.username, location_data_type.value, dataset_id)
+    return adapter.get_secret_values(location_data_type, dataset_id, user)
+
+
 @app.post("/{location_data_type}/{dataset_id}/secrets")
 @secrets_required
 async def add_update_dataset_secret(location_data_type: LocationDataType,
