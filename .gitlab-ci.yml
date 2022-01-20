@@ -58,7 +58,7 @@ light-deploy-testing:
   <<: *ssh_setup
   environment: Testing
   script:
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "cd /home/apiserver/datacatalog && sudo git stash && sudo git pull --all && sudo git checkout -f $CI_COMMIT_TAG && sudo git stash clear"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "cd /home/apiserver/datacatalog && sudo git stash && sudo git checkout master && sudo git pull --all && sudo git checkout -f $CI_COMMIT_TAG && sudo git stash clear"
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $TESTING_URL $TESTING_DOMAIN"
 
 light-deploy-production:
@@ -72,7 +72,7 @@ light-deploy-production:
   <<: *ssh_setup
   environment: Production
   script:
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "cd /home/apiserver/datacatalog && sudo git stash && sudo git pull --all && sudo git checkout -f $CI_COMMIT_TAG && sudo git stash clear"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "cd /home/apiserver/datacatalog && sudo git stash && sudo git checkout master && sudo git pull --all && sudo git checkout -f $CI_COMMIT_TAG && sudo git stash clear"
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo SECRETS_ENCRYPTION_KEY=$SECRETS_ENCRYPTION_KEY, /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN"
 
 full-deploy-production:
@@ -246,9 +246,9 @@ publishgit-do:
     - apt-get install -y git
     - (git remote -v | grep gith) || git remote add gith "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/eflows4hpc/datacatalog.git"
     - git remote -v
-    - git fetch --unshallow origin
-    - git push gith +HEAD:refs/heads/main
-
+    - git show-ref
+    - export
+    - git push gith $CI_COMMIT_REF_NAME
 
 
 # This is an automatic push of the docker image into gitLab container repository
