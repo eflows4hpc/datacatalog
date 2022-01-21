@@ -246,9 +246,9 @@ publishgit-do:
     - apt-get install -y git
     - (git remote -v | grep gith) || git remote add gith "https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/eflows4hpc/datacatalog.git"
     - git remote -v
-    - git show-ref
-    - export
-    - git push gith $CI_COMMIT_REF_NAME
+    - git fetch --unshallow origin
+    - git push gith +HEAD:refs/heads/master
+
 
 
 # This is an automatic push of the docker image into gitLab container repository
