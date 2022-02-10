@@ -5,13 +5,13 @@
   bottom: 0;
   width: 100%;
   height: auto;
-  background-image: url('../img/Barra-gris-footer.png');
+  background-image: url('../img/grey-bar-footer.png');
   background-repeat: no-repeat; 
   background-size: cover;
 }
 
 div.eflows-line {
-  background-image: url('../img/barra-3-color-8.png') !important;
+  background-image: url('../img/colourful-bar.png') !important;
   height: 15px; 
   width: 100%;
   background-repeat: no-repeat; 
