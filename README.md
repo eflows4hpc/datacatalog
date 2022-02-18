@@ -4,6 +4,10 @@ This is Data Catalog for eFlows4HPC project
 
 This work has been supported by the eFlows4HPC project, contract #955558. This project has received funding from the European High-Performance Computing Joint Undertaking (JU) under grant agreement No 955558. The JU receives support from the European Union’s Horizon 2020 research and innovation programme and Spain, Germany, France, Italy, Poland, Switzerland, Norway.
 
+The project has recieved funding from German Federal Ministry of Education and Research agreement no. 16GPC016K.
+
+<img src="frontend/img/BMBF_gefoerdert_2017_en.jpg" width="200">
+
 
 Find architecture in [arch](arch/arch.adoc) folder. 
 

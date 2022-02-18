@@ -37,6 +37,15 @@ users:
     ssh_authorized_keys:
       - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDUNFmYnaZ1raXQm04/mfdoBfn4i6xYknic2nhGDOrkhp5r6kv4F1m7wgtuL/pddRKuEoQpiXjRWciEMljFmxvVc7+9VitsAn5zBsnzY9+Sq9+si5aKe93RK8JGLX/WsfZGnPMdKPkK2GO9LFJN4TyL9hTpFdFQfxtO82NIa3WikG4RI+WQuKeQ4qr8FHNymr+gHTw/+YaM9331xnM5YqkmOC27CvVtiQx96MNMAyMQ8RJcHy1GL8donTBL+knVZdIwGt4SUy9dIF8iwTXGFkLe8V7/DIEB7RW9gvk2sG3YPo2eq56HsQKAB3yre+5QFhmH/uqUnTKVFgZLqlDUC0duFOwALCRmlEgtOeZqOzRBa6a0RveTIfccMb48ac4FpeeJdo4KId1QO1JaEZ8fYKgRVw3xRuOjDMpxCFuxELpSvx/hd1jgrK9lRizH9DXNf5/5Go2O16hj8LPufBbhX2EiChjWJEJkoRWBhQ3UHmstbqRiuNU/MsHq0FPSHMHV6BU= maria@jsc-strela
 
+  - name: jj
+    gecos: Jedrzej Rybicki
+    groups: sudo
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCxPi4EYQLBxFOECG3m8/yv4Qq0iByEirxoVBM/BkR3nbVrCLCB7L+gKKgLL36jOnkZKHyXRcRA94or8sUHrIRKH3o4ubnCKK/j2MEojGOj90QJiV5VaZ0jaHpo8IxKuYBZQR95B+l5Jpfn02nIEq0C7pdDmuV73Igl07eakmn07EFezWKzMDFcTfU5KLx/OyTYgNfVBTUqwc0nUEKqSe/b0WmY34nHnIXDPjg+eXNDMQrAl6j8cVUeJs57lZFdDNTacoZCune3z1UZ4N3X+rQvdvZ04GjAJPAlYaaJ21eeIrAyt65A1H3bT8OFfU5vK9Fi+2uA0yqFgCooDrUQFsdF
+
 
   - name: apiserver
     gecos: Common user for running the apiserver
