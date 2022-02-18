@@ -41,7 +41,7 @@ services:
         image: "registry.jsc.fz-juelich.de/rybicki1/datacatalog:master"
         container_name: "datacatalog-apiserver"
         volumes:
-            - "/app/mnt:/app/mnt"
+            - "/app/mnt:/home/apiserver/mnt/"
         environment:
             VIRTUAL_HOST: datacatalog.fz-juelich.de
             LETSENCRYPT_HOST: datacatalog.fz-juelich.de
