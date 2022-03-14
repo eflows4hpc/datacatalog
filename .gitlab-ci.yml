@@ -9,7 +9,7 @@ variables:
   OS_REGION_NAME: "HDFCloud"
   OS_INTERFACE: public
   PRODUCTION_URL: https://datacatalog.fz-juelich.de/
-  PRODUCTION_DOMAIN: datacatalog.fz-juelich.de
+  PRODUCTION_DOMAIN: datacatalog.fz-juelich.de,datacatalogue.eflows4hpc.eu
   VOLUME_ID: 07a93071-5be7-4cc0-8ff3-cb34e7ed2b80
   PRODUCTION_IP: 134.94.199.59
   OLD_PROD_NAME: old-production
@@ -41,8 +41,8 @@ stages:
 test:
   stage: test
   script: 
-   - pip install -r testing_requirements.txt
-   - nosetests --with-coverage --cover-package=apiserver --cover-xml
+    - pip install -r testing_requirements.txt
+    - nosetests --with-coverage --cover-package=apiserver --cover-xml
   artifacts:
     reports:
       cobertura: coverage.xml

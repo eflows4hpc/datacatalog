@@ -1,4 +1,13 @@
 location ~ \.(html|css|js|ico|jpg|jpeg|png|webp)$ {
+    if ($request_method = OPTIONS) {
+        return 204;
+    }
+
+    add_header Access-Control-Allow-Origin *;
+    add_header Access-Control-Max-Age 3600;
+    add_header Access-Control-Expose-Headers Content-Length;
+    add_header Access-Control-Allow-Headers Range;
+
     root /var/www/html/static/;
 
     error_page 404 404.html;
