@@ -1,12 +1,12 @@
-if ($http_origin ~* (.*\.kfa-juelich.de|.*\.fz-juelich.de|.*\.eflows4hpc.eu)) {
-    add_header 'Access-Control-Allow-Origin' "$http_origin";
-    add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT';
-    add_header 'Access-Control-Allow-Credentials' 'true';
-    add_header 'Access-Control-Allow-Headers' 'User-Agent,Keep-Alive,Content-Type';
-}
-if ($request_method = OPTIONS) {
-    return 204;
-}
+#if ($http_origin ~* (.*\.kfa-juelich.de|.*\.fz-juelich.de|.*\.eflows4hpc.eu)) {
+#    add_header 'Access-Control-Allow-Origin' "$http_origin";
+#    add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, DELETE, PUT';
+#    add_header 'Access-Control-Allow-Credentials' 'true';
+#    add_header 'Access-Control-Allow-Headers' 'User-Agent,Keep-Alive,Content-Type';
+#}
+#if ($request_method = OPTIONS) {
+#    return 204;
+#}
 
 location ~ \.(html|css|js|ico|jpg|jpeg|png|webp)$ {
     if ($request_method = OPTIONS) {
