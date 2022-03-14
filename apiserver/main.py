@@ -12,6 +12,7 @@ from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.param_functions import Depends
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.middleware.cors import CORSMiddleware
 
 from pydantic import UUID4
 from starlette.responses import RedirectResponse
@@ -38,6 +39,24 @@ DOTENV_FILE_PATH_DEFAULT = "apiserver/config.env"
 
 app = FastAPI(
     title="API-Server for the Data Catalog"
+)
+
+origins = [
+    "https://datacatalog.fz-juelich.de",
+    "https://datacatalogue.eflows4hpc.eu",
+    "https://zam10059.zam.kfa-juelich.de",
+    "https://zam10036.zam.kfa-juelich.de",
+    "http://datacatalog.fz-juelich.de",
+    "http://datacatalogue.eflows4hpc.eu",
+    "http://zam10059.zam.kfa-juelich.de",
+    "http://zam10036.zam.kfa-juelich.de"
+]
+
+app.add_middleware(CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
 )
 
 # if env variable is set, get config .env filepath from it, else use default
