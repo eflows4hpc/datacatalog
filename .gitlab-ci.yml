@@ -10,6 +10,7 @@ variables:
   OS_INTERFACE: public
   PRODUCTION_URL: https://datacatalog.fz-juelich.de/
   PRODUCTION_DOMAIN: datacatalog.fz-juelich.de,datacatalogue.eflows4hpc.eu
+  PRODUCITON_HOST: datacatalog.fz-juelich.de
   VOLUME_ID: 07a93071-5be7-4cc0-8ff3-cb34e7ed2b80
   PRODUCTION_IP: 134.94.199.59
   OLD_PROD_NAME: old-production
@@ -72,8 +73,8 @@ light-deploy-production:
   <<: *ssh_setup
   environment: Production
   script:
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "cd /home/apiserver/datacatalog && sudo git stash && sudo git checkout master && sudo git pull --all && sudo git checkout -f $CI_COMMIT_TAG && sudo git stash clear"
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo SECRETS_ENCRYPTION_KEY=$SECRETS_ENCRYPTION_KEY, /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCITON_HOST "cd /home/apiserver/datacatalog && sudo git stash && sudo git checkout master && sudo git pull --all && sudo git checkout -f $CI_COMMIT_TAG && sudo git stash clear"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCITON_HOST "sudo SECRETS_ENCRYPTION_KEY=$SECRETS_ENCRYPTION_KEY, /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN"
 
 full-deploy-production:
   stage: deploy
@@ -97,10 +98,10 @@ full-deploy-production:
     # TODO move local zip of certificate-docker-volume to server once startup is complete
     - openstack server add volume $INSTANCE_ID $VOLUME_ID
     - sleep 20 # apparently it may take some time until the volume is available to the OS
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo mkdir -p /app/mnt"
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo mount /dev/vdb1 /app/mnt"
-    - until ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN ls /finished_cloudinit >/dev/null 2>&1; do sleep 30; done # wait until cloudinit script is complete
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo SECRETS_ENCRYPTION_KEY=$SECRETS_ENCRYPTION_KEY, /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCITON_HOST "sudo mkdir -p /app/mnt"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCITON_HOST "sudo mount /dev/vdb1 /app/mnt"
+    - until ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCITON_HOST ls /finished_cloudinit >/dev/null 2>&1; do sleep 30; done # wait until cloudinit script is complete
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCITON_HOST "sudo SECRETS_ENCRYPTION_KEY=$SECRETS_ENCRYPTION_KEY, /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN"
 
 full-deploy-testing:
   stage: deploy 
@@ -124,7 +125,7 @@ full-deploy-testing:
     - sleep 10 # ensure that next command reaches the new server, prevents host key problems
     # TODO move local zip of certificate-docker-volume to server once startup is complete
     - until ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN ls /finished_cloudinit >/dev/null 2>&1; do sleep 30; done # wait until cloudinit script is complete
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $TESTING_URL $TESTING_DOMAIN"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCITON_HOST "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $TESTING_URL $TESTING_DOMAIN"
 
   
 cleanup-failed-full-deployment:
@@ -161,7 +162,7 @@ cleanup-failed-full-deployment:
       openstack server remove volume $REMOVE_ID $VOLUME_ID || echo "No Volume was removed.";
       openstack server delete $REMOVE_ID && echo "Deleted faulty production server." || echo "No faulty production was deleted.";
       openstack server add volume $OLD_PROD_ID $VOLUME_ID;
-      ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo mount /dev/vdb1 /app/mnt";
+      ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCITON_HOST "sudo mount /dev/vdb1 /app/mnt";
       fi
     # gitlab should automatically alert the devs about this failure
 
@@ -213,8 +214,8 @@ cleanup-failed-light-production-deployment:
     - echo "if this job is reached, some earlier job had to have failed, this will return to a previous commit"
     - echo "A successfull cleanup can not be guaranteed, depending on the failure reason"
     - COMMIT_TAG="$ROLLBACK_COMMIT_TAG" # some stable base version here, update from time to time
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "cd /home/apiserver/datacatalog && sudo git pull --all && sudo git checkout -f $COMMIT_TAG"
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_DOMAIN "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCITON_HOST "cd /home/apiserver/datacatalog && sudo git pull --all && sudo git checkout -f $COMMIT_TAG"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCITON_HOST "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN"
   
 test-testing:
   cache: {}
