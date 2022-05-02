@@ -9,6 +9,7 @@ class LocationDataType(Enum):
     DATASET = 'dataset'
     STORAGETARGET = 'storage_target'
     AIRFLOW_CONNECTIONS = 'airflow_connections'
+    TEMPLATE = 'template'
 
 
 class LocationData(BaseModel):

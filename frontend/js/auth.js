@@ -122,7 +122,7 @@ function showElementsDependingOnLoginStatus(loggedIn = true) {
         $('#loginForm').show();
         $('#loginOutText').text("Log In");
         $('#modifyDatasetButtonGroup').hide();
-        $('#addNewDatasetButton').hide();
+        $('#addNewDatasetForm').hide();
         $('.dynamic-metadata-button').hide();
     }
 }

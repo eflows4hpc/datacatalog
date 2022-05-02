@@ -1,5 +1,6 @@
 // This file contains the api calls, as well as transform the data into html-text
 var apiUrl = "{{API_URL}}";
+var templateDatatype = "template";
 var allowedTypesList = [];
 
 // get data from url query variables
@@ -33,8 +34,8 @@ function getId() {
     return id;
 }
 
-function escapeHtml(unsafe) {
-    return unsafe
+function escapeHtml(unsafe_html) {
+    return unsafe_html
          .replace(/&/g, "&amp;")
          .replace(/</g, "&lt;")
          .replace(/>/g, "&gt;")
@@ -112,6 +113,10 @@ function addMetadataRow(table, key, value, readonly=true) {
 * else everything is readonly
 */
 function fillDatasetTable(table, dataset, readonly=true, id=getId()) {
+    if (typeof(dataset) == "string") {
+        dataset = JSON.parse(dataset)
+    }
+    console.log("pre filling table with data: " + dataset + " | type is " + typeof(dataset))
     // now append name and url to the view
     table.append(getPropertyHTMLString('Name', dataset.name, readonly));
     table.append(getPropertyHTMLString('OID', id));
@@ -246,11 +251,116 @@ function listDatasets(datatype) {
 // get details about given dataset, put them in the view element (via listener)
 function showDataset(datatype, dataset_id) {
     var fullUrl = apiUrl + datatype + "/" + dataset_id;
-    console.log("Sending GET request to  " + fullUrl + " for showing dataset.")
+    console.log("Sending GET request to  " + fullUrl + " for showing dataset.");
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.addEventListener("loadend", setDatasetView);
     xmlhttp.open("GET", fullUrl);
     xmlhttp.send();
+}
+
+// return template for templateOid
+async function getTemplateContent(templateOid) {
+    var fullUrl = apiUrl + templateDatatype + "/" + templateOid;
+    return await new Promise(
+        function (resolve, reject) {
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("GET", fullUrl);
+
+            xmlhttp.onload = function () {
+                if (this.status >= 200 && this.status < 300) {
+                    resolve(xmlhttp.response);
+                } else {
+                    reject({
+                        status: this.status,
+                        statusText: xmlhttp.statusText
+                    });
+                }
+            };
+            xmlhttp.onerror = function () {
+                reject({
+                    status: this.status, 
+                    statusText: xmlhttp.statusText
+                })
+            };
+            xmlhttp.send();
+        }
+    );
+}
+
+// return the template oid from the url
+function getTemplateOid() {
+    return getUrlVars()["template"];
+}
+
+
+// return the template from the template oid in the url
+async function getTemplate() {
+    var templateOid = getTemplateOid();
+    if (templateOid && templateOid != "None") {
+        console.log("using template with oid " + templateOid);
+        return await getTemplateContent(templateOid);
+    }
+    else {
+        console.log("No template selected");
+        return {"name" : "", "url" : "", "metadata" : {}}; // the default empty template, return this if templateOid does not exist 
+    }
+}
+
+// return an OID : name map for all templates
+async function getTemplatesMap() {
+    var fullUrl = apiUrl + templateDatatype;
+    list_in_list = JSON.parse(
+        await new Promise(
+            function (resolve, reject) {
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.open("GET", fullUrl);
+
+                xmlhttp.onload = function () {
+                    if (this.status >= 200 && this.status < 300) {
+                        resolve(xmlhttp.response);
+                    } else {
+                        reject({
+                            status: this.status,
+                            statusText: xmlhttp.statusText
+                        });
+                    }
+                };
+                xmlhttp.onerror = function () {
+                    reject({
+                        status: this.status, 
+                        statusText: xmlhttp.statusText
+                    })
+                };
+                xmlhttp.send();
+            }
+        )
+    );
+    var map = new Map();
+    for (const [name, oid] of list_in_list) {
+        map.set(oid, name);
+    }
+
+    return map;
+}
+
+// fill the template select with entries
+async function fillTemplateSelect() {
+    var map = await getTemplatesMap()
+    var optionstr = '';
+    
+    for (const [oid, name] of map.entries()) {
+        optionstr = '<option value="' + oid + '">' + name + '</option> ';
+        $('#templateSelector').append(optionstr);
+      }
+}
+
+async function updateTemplateParam() {
+    if ($('#templateSelector').val() != "None") {
+        $('#addNewDatasetButton').attr("href", "?type=" + getType() + "&oid=new" + "&template=" + $('#templateSelector').val());
+    }
+    else {
+        $('#addNewDatasetButton').attr("href", "?type=" + getType() + "&oid=new");
+    }
 }
 
 //either enable the dataset listing or enable the single dataset view
@@ -269,7 +379,7 @@ async function showListingOrSingleDataset() {
     }
     if (!getId()) { // no id given, so list all elements
         if (window.sessionStorage.auth_token) {
-            $('#addNewDatasetButton').show();
+            $('#addNewDatasetForm').show();
         }
         listDatasets(getType());
     } else if (getId() == "new") {
@@ -280,8 +390,10 @@ async function showListingOrSingleDataset() {
         $('#modifyDatasetButtonGroup').hide();
         $('#addMetadataButton').hide();
         $('.dynamic-metadata-button').hide();
+
+        template = await getTemplate()
     
-        fillDatasetTable($('#datasetViewTableBody'), {"name" : "", "url" : "", "metadata" : {}}, false, "");
+        fillDatasetTable($('#datasetViewTableBody'), template, false, "");
         if (window.sessionStorage.auth_token) {
             $('#modifyDatasetButtonGroup').show();
             $('#addMetadataButton').show();
