@@ -16,7 +16,7 @@ class NonAuthTests(unittest.TestCase):
         rsp = self.client.get('/')
         self.assertEqual(rsp.status_code, 200, 'Should return 200')
         self.assertEqual(
-            rsp.json(), [{'dataset': '/dataset'}, {'storage_target': '/storage_target'}, {'airflow_connections' : '/airflow_connections'}])
+            rsp.json(), [{'dataset': '/dataset'}, {'storage_target': '/storage_target'}, {'airflow_connections' : '/airflow_connections'}, {'template' : '/template'}])
 
     def test_types(self):
         for location_type in storage.LocationDataType:
