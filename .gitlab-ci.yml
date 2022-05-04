@@ -98,10 +98,10 @@ full-deploy-production:
     # TODO move local zip of certificate-docker-volume to server once startup is complete
     - openstack server add volume $INSTANCE_ID $VOLUME_ID
     - sleep 20 # apparently it may take some time until the volume is available to the OS
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCITON_HOST "sudo mkdir -p /app/mnt"
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCITON_HOST "sudo mount /dev/vdb1 /app/mnt"
-    - until ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCITON_HOST ls /finished_cloudinit >/dev/null 2>&1; do sleep 30; done # wait until cloudinit script is complete
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCITON_HOST "sudo SECRETS_ENCRYPTION_KEY=$SECRETS_ENCRYPTION_KEY, /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_IP "sudo mkdir -p /app/mnt"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_IP "sudo mount /dev/vdb1 /app/mnt"
+    - until ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_IP ls /finished_cloudinit >/dev/null 2>&1; do sleep 30; done # wait until cloudinit script is complete
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_IP "sudo SECRETS_ENCRYPTION_KEY=$SECRETS_ENCRYPTION_KEY, /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN"
 
 full-deploy-testing:
   stage: deploy 
