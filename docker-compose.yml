@@ -38,7 +38,7 @@ services:
         networks: 
             - "net"
     datacatalog-apiserver:
-        image: "registry.jsc.fz-juelich.de/rybicki1/datacatalog:master"
+        image: "registry.jsc.fz-juelich.de/eflows4hpc-wp2/datacatalog:master"
         container_name: "datacatalog-apiserver"
         volumes:
             - "/app/mnt:/home/apiserver/mnt/"
