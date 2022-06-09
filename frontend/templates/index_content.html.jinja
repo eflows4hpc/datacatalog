@@ -6,44 +6,31 @@
   <div class="row">
     <div class="col-sm-12 mt-5 mb-5">
       <h2>Basic information about this service</h2>
-      <p>
-        The Datacatalog contains information about the datasets used in eFlows4HPC workflows. The list of datasets can be accessed <a href="storage.html?type=dataset">here</a>.
-        <br>
-        In the future, the Datacatalog may also contain information about possible storage targets for workflow results, as well as information about where and how these results are stored.
-      </p>
-      <p>
-        It is important to note that this is a <i>catalog</i> of datasets, meaning no datasets are actually stored in the Datacatalog. The Datacatalog only contains <i>information</i> about the datasets, which is provided by the project members. 
-        However, this information usually includes a URL or some other way to access the actual data.
-      </p>
+      <p>The Datacatalog contains information about the datasets used in eFlows4HPC workflows. The list of datasets can be accessed <a href="storage.html?type=dataset">here</a>. <br />The Datacatalog also contains related information, e.g. about possible storage targets for workflow results, as well as information about where and how these results are stored.</p>
+      <p>It is important to note that this is a <em>catalog</em> of datasets, meaning no datasets are actually stored in the Datacatalog. The Datacatalog only contains <em>information</em> about the datasets, which is provided by the project members. However, this information usually includes a URL or some other way to access the actual data.</p>
       <h5>For more information about the eFlows4HPC project, please see the <a href="https://eflows4hpc.eu/">project website.</a></h5>
-      <div><img src="img/Colorweb.png" alt="eFlows4HPC Logo" class="img-fluid"></div>
-
-
+      <div><img class="img-fluid" src="img/Colorweb.png" alt="eFlows4HPC Logo" /></div>
       <h2>API Documentation</h2>
-      <p>
-        The backend-API of the Datacatalog is compatible with the <a href="https://swagger.io/specification/">openAPI</a> specification. The API-documentation for the Datacatalog is available in the <a href="{% raw %}{{API_URL}}{% endraw %}openapi.json">openapi.json</a> file.
-        <br>
-        A nicer view of the documentation, which includes examples requests for every API-function, is available <a href="docs">here</a>.
-      </p>
-      <p>
-        If you only want to view the data (i.e. only require read access), the relevant information is the following:
-      </p>
-      <p>
-        Each dataset is identified by its <code>type</code> and <code>oid</code>. To access and view the dataset in your browser via the frontend, navigate to <code>./storage.html?type=DATASETTYPE&oid=DATASET_OID</code>.
-        The response will be a html document that will display the dataset.
-        <br>
-        For access via the API, navigate to <code>{% raw %}{{API_URL}}{% endraw %}DATASETTYPE/DATASET_OID</code>. The response will be a json document that contains all information about the dataset.
-      </p>
-      <p>
-        It is also possible to list all datasets of a specific type. To do this via your browser, navigate to <code>./storage.html?type=DATASETTYPE</code>. The response will be a html document that will display the list of datasets.
-        <br>
-        For access via the API, navigate to <code>{% raw %}{{API_URL}}{% endraw %}DATASETTYPE</code>. The response will be a json document that contains all datasets of the specified type.
-      </p>
-      <p>
-        If you are unsure which types are allowed, you can also list the available types. To do this via your browser, navigate to <code>./storage.html</code>. The response will be a html document that will display the list of the default type. It will also contain a button, which can be used to change the type.
-        <br>
-        For access via the API, navigate to <code>{% raw %}{{API_URL}}{% endraw %}</code>. The response will be a json document that contains all possible types.
-      </p>
+      <p>The backend-API of the Datacatalog is compatible with the <a href="https://swagger.io/specification/">openAPI</a> specification. The API-documentation for the Datacatalog is available in the <a href="{% raw %}{{API_URL}}{% endraw %}openapi.json">openapi.json</a> file. <br />A nicer view of the documentation, which includes examples requests for every API-function, is available <a href="docs">here</a>.</p>
+      <p>For readonly acces, please read the following:</p>
+      <p>Each dataset is identified by its <code>type</code> and <code>oid</code>. To access and view the dataset in your browser via the frontend, navigate to <code>./storage.html?type=DATASETTYPE&amp;oid=DATASET_OID</code>. The response will be a html document that will display the dataset. <br />For access via the API, navigate to <code>{% raw %}{{API_URL}}{% endraw %}DATASETTYPE/DATASET_OID</code>. The response will be a json document that contains all information about the dataset.</p>
+      <p>It is also possible to list all datasets of a specific type. To do this via your browser, navigate to <code>./storage.html?type=DATASETTYPE</code>. The response will be a html document that will display the list of datasets. <br />For access via the API, navigate to <code>{% raw %}{{API_URL}}{% endraw %}DATASETTYPE</code>. The response will be a json document that contains all datasets of the specified type.</p>
+      <p>If you are unsure which types are allowed, you can also list the available types. To do this via your browser, navigate to <code>./storage.html</code>. The response will be a html document that will display the list of the default type. It will also contain a button, which can be used to change the type. <br />For access via the API, navigate to <code>{% raw %}{{API_URL}}{% endraw %}</code>. The response will be a json document that contains all possible types.</p>
+      <p>&nbsp;</p>
+      <h2>Dataset Types</h2>
+      <p>There are 4 different types of dataset that are currently supported by this server: dataset, storage_target, airflow_connection and template.</p>
+      <h4>dataset</h4>
+      <p>Datasets are the basis for this service. They contain the necessary metadata for some dataset, so that it can be used by some scientific workflow. Since each individual dataset can have a different access mechanism or license, there is no enforced metadata schema, and users will have to implement access by themselves.</p>
+      <h4>storage_target</h4>
+      <p>Storage targets are intended to give some repositories to publish results. They should contain the metadata, that is needed by other eflows4HPC components to publish intermediate or final results.</p>
+      <h4>airflow_connection</h4>
+      <p>Airflow connections fulfil the metadata scheme that is required by apache airflow to easily integrate into the <a href="https://datalogistics.eflows4hpc.eu/home">data logicstics service</a> (DLS) backend for connection management. They can pre-configure certain types of access, ranging from basic http connections to more sophisticated, servcie specific connections.</p>
+      <h4>template</h4>
+      <p>Templates are example datasets, which can be used by authenticated users to create new entries in the datacatalogue. These new entries are then filled with the metadata from the template, where the user only has to overwrite the default values.</p>
+      <p>&nbsp;</p>
+      <h2>Referenced Connections</h2>
+      <p>To make it easier to use datacatalogue entries in the DLS, especially if they are on a storage system that is used by more than one entry, it is also possible to reference an <em>airflow_connection </em>in the entries metadata.</p>
+      <p>To do this, just set the <code>conn_oid</code> property to the oid of the desired <em>airflow_connection</em>, and the DLS will resolve this and use it for default values. Entry-specific metadata will overwrite conflicting properties, which means that an entry can customize the referenced connection.</p>
     </div>
   </div>
 </div>
