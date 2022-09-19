@@ -150,7 +150,7 @@ async def get_types(request: Request = None):
 
 
 @app.get("/{location_data_type}", response_model=List[List[str]])
-async def list_datasets(location_data_type: LocationDataType, name: str | None = None, url: str | None = None, has_key: List[str] | None = Query(default=None)):
+async def list_datasets(location_data_type: LocationDataType, name: str = None, url: str = None, has_key: List[str] = Query(default=None)):
     """
     list id and name of all matching registered datasets for the specified type\n
     name: has to be contained in the name of the object\n
