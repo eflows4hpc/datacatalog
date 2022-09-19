@@ -5,10 +5,10 @@ import logging
 import os
 from datetime import timedelta
 from enum import Enum
-from typing import List
+from typing import Dict, List
 from functools import wraps
 
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, HTTPException, Query, Request, status
 from fastapi.param_functions import Depends
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -149,10 +149,39 @@ async def get_types(request: Request = None):
     return default_return
 
 
-@app.get("/{location_data_type}")
-async def list_datasets(location_data_type: LocationDataType):
-    """list id and name of every registered dataset for the specified type"""
-    return adapter.get_list(location_data_type)
+@app.get("/{location_data_type}", response_model=List[List[str]])
+async def list_datasets(location_data_type: LocationDataType, name: str | None = None, url: str | None = None, has_key: List[str] | None = Query(default=None)):
+    """
+    list id and name of all matching registered datasets for the specified type\n
+    name: has to be contained in the name of the object\n
+    url: has to be contained in the url of the object\n
+    has_key: has to contain the exact key in the metadata
+    """
+    datasets = adapter.get_list(location_data_type)
+    
+    if name:
+        tmpset = []
+        for element in datasets:
+            if name in element[0]:
+                tmpset.append(element)
+        datasets = tmpset
+
+    if url:
+        tmpset = []
+        for element in datasets:
+            if url in adapter.get_details(location_data_type, element[1]).url:
+                tmpset.append(element)
+        datasets = tmpset
+    
+    if has_key:
+        tmpset = []
+        for element in datasets:
+            if set(has_key).issubset(set(adapter.get_details(location_data_type, element[1]).metadata.keys())):
+                tmpset.append(element)
+        datasets = tmpset
+
+    return sorted(datasets, key=lambda x: (x[0], x[1]))
+    
 
 
 @app.get("/{location_data_type}/{dataset_id}", response_model=LocationData)
