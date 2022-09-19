@@ -57,7 +57,7 @@ users:
 
 runcmd:
   - mkdir -p /app/mnt/data
-  - 'git clone https://gitlab.jsc.fz-juelich.de/rybicki1/datacatalog.git /home/apiserver/datacatalog'
+  - 'git clone https://gitlab.jsc.fz-juelich.de/eflows4hpc-wp2/datacatalog.git /home/apiserver/datacatalog'
   - docker network create net
   # general startup takes long enough that no delay should bee needed - 5 to 6 minutes until these commands are executed
   - touch /finished_cloudinit
