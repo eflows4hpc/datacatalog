@@ -162,14 +162,14 @@ async def list_datasets(location_data_type: LocationDataType, name: str = None, 
     if name:
         tmpset = []
         for element in datasets:
-            if name in element[0]:
+            if name.lower() in element[0].lower():
                 tmpset.append(element)
         datasets = tmpset
 
     if url:
         tmpset = []
         for element in datasets:
-            if url in adapter.get_details(location_data_type, element[1]).url:
+            if url.lower() in adapter.get_details(location_data_type, element[1]).url.lower():
                 tmpset.append(element)
         datasets = tmpset
     
