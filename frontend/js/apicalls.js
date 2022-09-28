@@ -23,6 +23,24 @@ function getType() {
     return type
 }
 
+// return the filterName attribute
+function getFilterName() {
+    var url = new URL(window.location.href);
+    return url.searchParams.get("filterName");
+}
+
+// return the filterUrl attribute
+function getFilterUrl() {
+    var url =  new URL(window.location.href);
+    return url.searchParams.get("filterUrl");
+}
+
+// return the filterKeys attribute
+function getFilterKeys() {
+    var url = new URL(window.location.href);
+    return url.searchParams.getAll("filterKey");
+}
+
 // set the text of the typetext element 
 function setTypeText() {
     $('#typetext').text(getType())
@@ -239,9 +257,20 @@ function getTypes() {
 }
 
 // get listing of datasets of the given type, put them in the list element (via listener)
-function listDatasets(datatype) {
-    var fullUrl = apiUrl + datatype;
-    console.log("Sending GET request to  " + fullUrl + " for listing datasets.")
+function listDatasets(datatype, filterName = null, filterUrl = null, filterKeys = []) {
+    var fullUrl = apiUrl + datatype + "?";
+    if (filterName != null) {
+        fullUrl = fullUrl + "name=" + filterName + "&";
+    }
+    if (filterUrl != null) {
+        fullUrl = fullUrl + "url=" + filterUrl + "&";
+    }
+    if (filterKeys.length > 0) {
+        for (key in filterKeys) {
+            fullUrl = fullUrl + "has_key=" + key + "&";
+        }
+    }
+    console.log("Sending GET request to  " + fullUrl + " for listing datasets.");
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.addEventListener("loadend", setDatasetList);
     xmlhttp.open("GET", fullUrl);
@@ -381,7 +410,7 @@ async function showListingOrSingleDataset() {
         if (window.sessionStorage.auth_token) {
             $('#addNewDatasetForm').show();
         }
-        listDatasets(getType());
+        listDatasets(getType(), getFilterName, getFilterUrl, getFilterKeys);
     } else if (getId() == "new") {
         $('#datasetListTable').hide();
         $('#storageTypeChooser').hide();
@@ -513,6 +542,53 @@ function saveButtonPressed() {
         updateDataset(id, datatype, name, url, metadata);
     }
     // success is handled by the xmlhttp event listener
+}
+
+function filterButtonPressed() {
+    // redirect to same page with filter queries set
+    var type = getType();
+    var filterName = $('#filterFormName').val()
+    var filterUrl = $('#filterFormUrl').val()
+    var filterKeys = $('#filterFormKeys').val()
+
+    var filterKeyArray = filterKeys.split(',')
+    var filterKeyString = ''
+    for (key in filterKeyArray) {
+        filterKeyString = filterKeyString + "filterKey=" + encodeURIComponent(filterKeyArray[key]) + "&"
+    }
+
+    var new_location = window.location.href.split('?')[0] + "?type=" + type
+
+    if (filterName.length > 0) {
+        new_location = new_location + '&filterName=' + encodeURIComponent(filterName);
+    }
+
+    if (filterUrl.length > 0) {
+        new_location = new_location + '&filterUrl=' + encodeURIComponent(filterUrl);
+    }
+
+    if (filterKeys.length > 0) {
+        new_location = new_location + '&' + filterKeyString;
+    }
+    
+
+    window.location.href = new_location
+}
+
+function prefillFilterForm() {
+    // fill the filter input elements with values from query
+
+    var name = getFilterName();
+    var url = getFilterUrl();
+    var keys = getFilterKeys();
+    
+    console.log('name = ' + name);
+    console.log('url = ' + url);
+    console.log('keys = ' + keys);
+
+    if (name != null) $('#filterFormName').val(name);
+    if (url != null) $('#filterFormUrl').val(url);
+    if (keys.length > 0) $('#filterFormKeys').val(keys.join());
 }
 
 function enableButtons(save, edit, del) {
