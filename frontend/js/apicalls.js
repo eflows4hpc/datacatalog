@@ -410,7 +410,7 @@ async function showListingOrSingleDataset() {
         if (window.sessionStorage.auth_token) {
             $('#addNewDatasetForm').show();
         }
-        listDatasets(getType(), getFilterName, getFilterUrl, getFilterKeys);
+        listDatasets(getType(), getFilterName(), getFilterUrl(), getFilterKeys());
     } else if (getId() == "new") {
         $('#datasetListTable').hide();
         $('#storageTypeChooser').hide();
