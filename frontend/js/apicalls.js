@@ -267,7 +267,7 @@ function listDatasets(datatype, filterName = null, filterUrl = null, filterKeys 
     }
     if (filterKeys.length > 0) {
         for (key in filterKeys) {
-            fullUrl = fullUrl + "has_key=" + key + "&";
+            fullUrl = fullUrl + "has_key=" + filterKeys[key] + "&";
         }
     }
     console.log("Sending GET request to  " + fullUrl + " for listing datasets.");
