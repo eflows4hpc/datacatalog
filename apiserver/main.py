@@ -150,15 +150,16 @@ async def get_types(request: Request = None):
 
 
 @app.get("/{location_data_type}", response_model=List[List[str]])
-async def list_datasets(location_data_type: LocationDataType, name: str = None, url: str = None, has_key: List[str] = Query(default=None)):
+async def list_datasets(location_data_type: LocationDataType, search: str = None, name: str = None, url: str = None, has_key: List[str] = Query(default=None)):
     """
     list id and name of all matching registered datasets for the specified type\n
     name: has to be contained in the name of the object\n
     url: has to be contained in the url of the object\n
-    has_key: has to contain the exact key in the metadata
+    has_key: has to contain the exact key in the metadata\n
+    search: has to contain this term in any field of the object (name, url, metadata key or metadata value)
     """
     datasets = adapter.get_list(location_data_type)
-    
+
     if name:
         tmpset = []
         for element in datasets:
@@ -179,6 +180,29 @@ async def list_datasets(location_data_type: LocationDataType, name: str = None, 
             if set(has_key).issubset(set(adapter.get_details(location_data_type, element[1]).metadata.keys())):
                 tmpset.append(element)
         datasets = tmpset
+
+    if search:
+        tmpset = []
+        for element in datasets:
+            if search.lower() in element[0].lower():
+                tmpset.append(element)
+                continue
+            details = adapter.get_details(location_data_type, element[1])
+            if search.lower() in details.url.lower():
+                tmpset.append(element)
+                continue
+            metadata_match = False
+            for key, value  in details.metadata.items():
+                if search.casefold() in key.casefold() or search.casefold() in value.casefold():
+                    metadata_match = True
+                    break
+            if metadata_match:
+                tmpset.append(element)
+                continue
+
+            
+        datasets = tmpset
+
 
     return sorted(datasets, key=lambda x: (x[0], x[1]))
     
