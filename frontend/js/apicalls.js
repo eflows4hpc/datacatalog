@@ -41,6 +41,12 @@ function getFilterKeys() {
     return url.searchParams.getAll("filterKey");
 }
 
+// return the filterSearch attribute
+function getFilterSearch() {
+    var url = new URL(window.location.href);
+    return url.searchParams.get("filterSearch");
+}
+
 // set the text of the typetext element 
 function setTypeText() {
     $('#typetext').text(getType())
@@ -257,8 +263,11 @@ function getTypes() {
 }
 
 // get listing of datasets of the given type, put them in the list element (via listener)
-function listDatasets(datatype, filterName = null, filterUrl = null, filterKeys = []) {
+function listDatasets(datatype, filterSearch = null, filterName = null, filterUrl = null, filterKeys = []) {
     var fullUrl = apiUrl + datatype + "?";
+    if (filterSearch != null) {
+        fullUrl = fullUrl + "search=" + filterSearch + "&";
+    }
     if (filterName != null) {
         fullUrl = fullUrl + "name=" + filterName + "&";
     }
@@ -411,7 +420,7 @@ async function showListingOrSingleDataset() {
             $('#addNewDatasetForm').show();
             $('#filterForm').show();
         }
-        listDatasets(getType(), getFilterName(), getFilterUrl(), getFilterKeys());
+        listDatasets(getType(), getFilterSearch(), getFilterName(), getFilterUrl(), getFilterKeys());
     } else if (getId() == "new") {
         $('#datasetListTable').hide();
         $('#storageTypeChooser').hide();
@@ -553,7 +562,7 @@ function filterButtonPressed() {
     var filterName = $('#filterFormName').val()
     var filterUrl = $('#filterFormUrl').val()
     var filterKeys = $('#filterFormKeys').val()
-    var queryTerm = $('#filterFormSearch').val()
+    var filterSearch = $('#filterFormSearch').val()
 
     var filterKeyArray = filterKeys.split(',')
     var filterKeyString = ''
@@ -563,8 +572,8 @@ function filterButtonPressed() {
 
     var new_location = window.location.href.split('?')[0] + "?type=" + type;
     
-    if (queryTerm.length > 0) {
-        new_location = new_location + '&search=' + encodeURIComponent(queryTerm);
+    if (filterSearch.length > 0) {
+        new_location = new_location + '&filterSearch=' + encodeURIComponent(filterSearch);
     }
 
     if (filterName.length > 0) {
@@ -589,14 +598,17 @@ function prefillFilterForm() {
     var name = getFilterName();
     var url = getFilterUrl();
     var keys = getFilterKeys();
+    var search = getFilterSearch();
     
     console.log('name = ' + name);
     console.log('url = ' + url);
     console.log('keys = ' + keys);
+    console.log('search = ' + search)
 
     if (name != null) $('#filterFormName').val(name);
     if (url != null) $('#filterFormUrl').val(url);
     if (keys.length > 0) $('#filterFormKeys').val(keys.join());
+    if (search != null) $('filterFormSearch').val(search);
 }
 
 function enableButtons(save, edit, del) {
