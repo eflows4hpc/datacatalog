@@ -409,12 +409,14 @@ async function showListingOrSingleDataset() {
     if (!getId()) { // no id given, so list all elements
         if (window.sessionStorage.auth_token) {
             $('#addNewDatasetForm').show();
+            $('#filterForm').show();
         }
         listDatasets(getType(), getFilterName(), getFilterUrl(), getFilterKeys());
     } else if (getId() == "new") {
         $('#datasetListTable').hide();
         $('#storageTypeChooser').hide();
         $('#datasetViewTable').show();
+        $('#filterForm').hide();
 
         $('#modifyDatasetButtonGroup').hide();
         $('#addMetadataButton').hide();
@@ -430,6 +432,7 @@ async function showListingOrSingleDataset() {
         }
         enableButtons(true, false, true);
     } else { // an id is given, show the dataset, error message if invalid
+        $('#filterForm').hide();
         showDataset(getType(), getId());
     }
 }
@@ -550,6 +553,7 @@ function filterButtonPressed() {
     var filterName = $('#filterFormName').val()
     var filterUrl = $('#filterFormUrl').val()
     var filterKeys = $('#filterFormKeys').val()
+    var queryTerm = $('#filterFormSearch').val()
 
     var filterKeyArray = filterKeys.split(',')
     var filterKeyString = ''
@@ -557,7 +561,11 @@ function filterButtonPressed() {
         filterKeyString = filterKeyString + "filterKey=" + encodeURIComponent(filterKeyArray[key]) + "&"
     }
 
-    var new_location = window.location.href.split('?')[0] + "?type=" + type
+    var new_location = window.location.href.split('?')[0] + "?type=" + type;
+    
+    if (queryTerm.length > 0) {
+        new_location = new_location + '&search=' + encodeURIComponent(queryTerm);
+    }
 
     if (filterName.length > 0) {
         new_location = new_location + '&filterName=' + encodeURIComponent(filterName);
