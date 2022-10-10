@@ -246,6 +246,7 @@ async function setDatasetView() {
     $('#storageTypeChooser').hide();
     $('#datasetViewTable').show();
     $('#modifyDatasetButtonGroup').hide();
+    $('#filterForm').hide();
     if (window.sessionStorage.auth_token) {
         $('#modifyDatasetButtonGroup').show();
     }
@@ -441,7 +442,6 @@ async function showListingOrSingleDataset() {
         }
         enableButtons(true, false, true);
     } else { // an id is given, show the dataset, error message if invalid
-        $('#filterForm').hide();
         showDataset(getType(), getId());
     }
 }
