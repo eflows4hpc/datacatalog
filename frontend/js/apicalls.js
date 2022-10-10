@@ -608,7 +608,7 @@ function prefillFilterForm() {
     if (name != null) $('#filterFormName').val(name);
     if (url != null) $('#filterFormUrl').val(url);
     if (keys.length > 0) $('#filterFormKeys').val(keys.join());
-    if (search != null) $('filterFormSearch').val(search);
+    if (search != null) $('#filterFormSearch').val(search);
 }
 
 function enableButtons(save, edit, del) {
