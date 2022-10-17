@@ -118,7 +118,7 @@ async def login_for_access_token(user=Depends(my_auth)):
 
 
 @app.get("/", response_model=List[dict[str, str]])
-async def get_types(request: Request = None, element_numbers: bool = FALSE):
+async def get_types(request: Request = None, element_numbers: bool = False):
     """
     list types of data locations, currently datasets
     (will be provided by the pillars) and targets (possible storage
