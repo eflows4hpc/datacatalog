@@ -47,6 +47,19 @@ function getFilterSearch() {
     return url.searchParams.get("filterSearch");
 }
 
+// return the page attribute
+function getPage() {
+    var url = new URL(window.location.href);
+    if (url == null) {
+        return 1;
+    }
+    var page =  url.searchParams.get("page");
+    if (page == null) {
+        return 1;
+    }
+    return page;
+}
+
 // set the text of the typetext element 
 function setTypeText() {
     $('#typetext').text(getType())
@@ -247,6 +260,7 @@ async function setDatasetView() {
     $('#datasetViewTable').show();
     $('#modifyDatasetButtonGroup').hide();
     $('#filterForm').hide();
+    $('#pageNumbers').hide();
     if (window.sessionStorage.auth_token) {
         $('#modifyDatasetButtonGroup').show();
     }
@@ -264,7 +278,7 @@ function getTypes() {
 }
 
 // get listing of datasets of the given type, put them in the list element (via listener)
-function listDatasets(datatype, filterSearch = null, filterName = null, filterUrl = null, filterKeys = []) {
+function listDatasets(datatype, filterSearch = null, filterName = null, filterUrl = null, filterKeys = [], page = null) {
     var fullUrl = apiUrl + datatype + "?";
     if (filterSearch != null) {
         fullUrl = fullUrl + "search=" + filterSearch + "&";
@@ -279,6 +293,9 @@ function listDatasets(datatype, filterSearch = null, filterName = null, filterUr
         for (key in filterKeys) {
             fullUrl = fullUrl + "has_key=" + filterKeys[key] + "&";
         }
+    }
+    if (page != null) {
+        fullUrl = fullUrl + "page=" + page;
     }
     console.log("Sending GET request to  " + fullUrl + " for listing datasets.");
     var xmlhttp = new XMLHttpRequest();
@@ -420,10 +437,12 @@ async function showListingOrSingleDataset() {
         if (window.sessionStorage.auth_token) {
             $('#addNewDatasetForm').show();
             $('#filterForm').show();
+            $('#pageNumbers').show();
         }
-        listDatasets(getType(), getFilterSearch(), getFilterName(), getFilterUrl(), getFilterKeys());
+        listDatasets(getType(), getFilterSearch(), getFilterName(), getFilterUrl(), getFilterKeys(), getPage());
     } else if (getId() == "new") {
         $('#datasetListTable').hide();
+        $('#pageNumbers').hide();
         $('#storageTypeChooser').hide();
         $('#datasetViewTable').show();
         $('#filterForm').hide();
@@ -609,6 +628,107 @@ function prefillFilterForm() {
     if (url != null) $('#filterFormUrl').val(url);
     if (keys.length > 0) $('#filterFormKeys').val(keys.join());
     if (search != null) $('#filterFormSearch').val(search);
+}
+
+// XMLHttpRequest EVENTLISTENER: update paging hrefs
+async function updatePagingHrefs() {
+    console.log("Response to dataset number GET: " + this.responseText);
+    var resp = JSON.parse(this.responseText);
+    // build baseurl without page
+    basehref = "?type=" + getType();
+    var filterSearch = getFilterSearch();
+    var filterName = getFilterName();
+    var filterUrl = getFilterUrl();
+    var filterKeys = getFilterKeys();
+    if (filterSearch != null) {
+        basehref = basehref + "&filterSearch=" + filterSearch;
+    }
+    if (filterName != null) {
+        basehref = basehref + "&filterName=" + filterName;
+    }
+    if (filterUrl != null) {
+        basehref = basehref + "&filterUrl=" + filterUrl;
+    }
+    if (filterKeys.length > 0) {
+        for (key in filterKeys) {
+            basehref = basehref + "&filterKey=" + filterKeys[key];
+        }
+    }
+    if (this.status >= 300) {
+        var alertHTML = '<div class="alert alert-danger" role="alert">Somethign went wrong while loading this page. Redirecting to page 1.<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div></div>';
+        $('#storageTypeChooser').before(alertHTML);
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        window.location.href = "?type=" + getType();
+        return;
+    }
+    // this response should come as a [["datatype", "number"]] list element
+    max_number = resp[0][1];
+    max_page = Math.ceil(max_number/25);
+    current_page = Number(getPage());
+    console.log("last page is " + max_page);
+    console.log("current page is " + current_page);
+    $('#page1').attr("href", basehref + "&page=1");
+    $('#page_prev_2').attr("href", basehref + "&page=" + Math.max(1, current_page - 2));
+    $('#page_prev_1').attr("href", basehref + "&page=" + Math.max(1, current_page - 1));
+    $('#page_next_1').attr("href", basehref + "&page=" + Math.min(max_page, current_page + 1));
+    $('#page_mext_2').attr("href", basehref + "&page=" + Math.min(max_page, current_page + 2));
+    $('#page_last').attr("href", basehref + "&page=" + max_page);
+    $('#pageInput').attr("max", max_page);
+}
+
+function gotoButtonPressed() {
+    newPage = $('#pageInput').val();
+    basehref = "?type=" + getType();
+    var filterSearch = getFilterSearch();
+    var filterName = getFilterName();
+    var filterUrl = getFilterUrl();
+    var filterKeys = getFilterKeys();
+    if (filterSearch != null) {
+        basehref = basehref + "&filterSearch=" + filterSearch;
+    }
+    if (filterName != null) {
+        basehref = basehref + "&filterName=" + filterName;
+    }
+    if (filterUrl != null) {
+        basehref = basehref + "&filterUrl=" + filterUrl;
+    }
+    if (filterKeys.length > 0) {
+        for (key in filterKeys) {
+            basehref = basehref + "&filterKey=" + filterKeys[key];
+        }
+    }
+    basehref = basehref + "&page=" + newPage;
+    window.location.href = basehref;
+}
+
+function setPageNumbers() {
+    // set the correct hrefs and values for the page numbers below the table
+    // this needs to happen async, since the max page number ist only known after a request to the backend
+    var fullUrl = apiUrl + getType() + "?element_numbers=true&";
+    var filterSearch = getFilterSearch();
+    var filterName = getFilterName();
+    var filterUrl = getFilterUrl();
+    var filterKeys = getFilterKeys();
+    if (filterSearch != null) {
+        fullUrl = fullUrl + "search=" + filterSearch + "&";
+    }
+    if (filterName != null) {
+        fullUrl = fullUrl + "name=" + filterName + "&";
+    }
+    if (filterUrl != null) {
+        fullUrl = fullUrl + "url=" + filterUrl + "&";
+    }
+    if (filterKeys.length > 0) {
+        for (key in filterKeys) {
+            fullUrl = fullUrl + "has_key=" + filterKeys[key] + "&";
+        }
+    }
+
+    console.log("Sending GET request to  " + fullUrl + " for getting amount of datasets.");
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.addEventListener("loadend", updatePagingHrefs);
+    xmlhttp.open("GET", fullUrl);
+    xmlhttp.send();
 }
 
 function enableButtons(save, edit, del) {
