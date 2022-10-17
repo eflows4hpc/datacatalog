@@ -260,7 +260,7 @@ async function setDatasetView() {
     $('#datasetViewTable').show();
     $('#modifyDatasetButtonGroup').hide();
     $('#filterForm').hide();
-    $('#pageNumbers').hide();
+    $('#pagingBar').hide();
     if (window.sessionStorage.auth_token) {
         $('#modifyDatasetButtonGroup').show();
     }
@@ -437,12 +437,12 @@ async function showListingOrSingleDataset() {
         if (window.sessionStorage.auth_token) {
             $('#addNewDatasetForm').show();
             $('#filterForm').show();
-            $('#pageNumbers').show();
+            $('#pagingBar').show();
         }
         listDatasets(getType(), getFilterSearch(), getFilterName(), getFilterUrl(), getFilterKeys(), getPage());
     } else if (getId() == "new") {
         $('#datasetListTable').hide();
-        $('#pageNumbers').hide();
+        $('#pagingBar').hide();
         $('#storageTypeChooser').hide();
         $('#datasetViewTable').show();
         $('#filterForm').hide();
@@ -671,9 +671,17 @@ async function updatePagingHrefs() {
     $('#page_prev_2').attr("href", basehref + "&page=" + Math.max(1, current_page - 2));
     $('#page_prev_1').attr("href", basehref + "&page=" + Math.max(1, current_page - 1));
     $('#page_next_1').attr("href", basehref + "&page=" + Math.min(max_page, current_page + 1));
-    $('#page_mext_2').attr("href", basehref + "&page=" + Math.min(max_page, current_page + 2));
+    $('#page_next_2').attr("href", basehref + "&page=" + Math.min(max_page, current_page + 2));
     $('#page_last').attr("href", basehref + "&page=" + max_page);
     $('#pageInput').attr("max", max_page);
+
+    $('#pageInput').attr("placeholder", current_page);
+    $('#pageInput').val(current_page);
+    $('#page_prev_2').text("<< (" + Math.max(1, current_page - 2) + ")");
+    $('#page_prev_1').text("Previous (" + Math.max(1, current_page - 1) + ")");
+    $('#page_next_1').text("Next (" + Math.min(max_page, current_page + 1) + ")");
+    $('#page_next_2').text(">> (" + Math.min(max_page, current_page + 2) + ")");
+    $('#page_last').text("Last (" + max_page + ")");
 }
 
 function gotoButtonPressed() {
