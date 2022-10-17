@@ -118,7 +118,7 @@ async def login_for_access_token(user=Depends(my_auth)):
 
 
 @app.get("/", response_model=List[dict[str, str]])
-async def get_types(request: Request = None):
+async def get_types(request: Request = None, element_numbers: bool = FALSE):
     """
     list types of data locations, currently datasets
     (will be provided by the pillars) and targets (possible storage
@@ -131,7 +131,11 @@ async def get_types(request: Request = None):
     accept_json = "application/json"
     accept_html = "text/html"
     default_return = [{element.value: "/" + element.value} for element in LocationDataType]
+    element_number_return = [{element.value : len(adapter.get_list(element))} for element in LocationDataType]
     redirect_return = RedirectResponse(url='/index.html')
+
+    if (element_numbers):
+        return element_number_return
 
     # uses first of json and html that is in the accept header; returns json if neither is found
     json_pos = accept_header.find(accept_json)
@@ -150,13 +154,16 @@ async def get_types(request: Request = None):
 
 
 @app.get("/{location_data_type}", response_model=List[List[str]])
-async def list_datasets(location_data_type: LocationDataType, search: str = None, name: str = None, url: str = None, has_key: List[str] = Query(default=None)):
+async def list_datasets(location_data_type: LocationDataType, search: str = None, name: str = None, url: str = None, has_key: List[str] = Query(default=None), page: int = None, page_size: int = 25, element_numbers: bool = False):
     """
     list id and name of all matching registered datasets for the specified type\n
     name: has to be contained in the name of the object\n
     url: has to be contained in the url of the object\n
     has_key: has to contain the exact key in the metadata\n
-    search: has to contain this term in any field of the object (name, url, metadata key or metadata value)
+    search: has to contain this term in any field of the object (name, url, metadata key or metadata value)\n
+    page: \n
+    page_size: \n
+    element_numbers: \n
     """
     datasets = adapter.get_list(location_data_type)
 
@@ -203,8 +210,22 @@ async def list_datasets(location_data_type: LocationDataType, search: str = None
             
         datasets = tmpset
 
+    if (element_numbers):
+        return [[location_data_type.value, str(len(datasets))]]
 
-    return sorted(datasets, key=lambda x: (x[0], x[1]))
+    sorted_datasets = sorted(datasets, key=lambda x: (x[0], x[1]))
+
+    if (page):
+        # get page_size elements at index (page-1) * page_size
+        index = (page - 1) * page_size
+        if index >= len(sorted_datasets):
+            return List()
+        elif index + page_size > len(sorted_datasets):
+            return sorted_datasets[index:]
+        else:
+            return sorted_datasets[index:index+page_size]
+    else:
+        return sorted_datasets
     
 
 
