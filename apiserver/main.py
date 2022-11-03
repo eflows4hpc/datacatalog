@@ -219,7 +219,7 @@ async def list_datasets(location_data_type: LocationDataType, search: str = None
         # get page_size elements at index (page-1) * page_size
         index = (page - 1) * page_size
         if index >= len(sorted_datasets):
-            return List()
+            return []
         elif index + page_size > len(sorted_datasets):
             return sorted_datasets[index:]
         else:
