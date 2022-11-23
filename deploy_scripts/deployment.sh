@@ -11,9 +11,9 @@ echo "DEBUG_1 $0 $1 $2 $3 $4 <secret> $6"
 if [ -z ${1+x} ]; then NEW_DIR=`pwd`; else NEW_DIR=$1; fi
 if [ -z ${2+x} ]; then API_URL=https://datacatalog.fz-juelich.de/; else API_URL=$2; fi
 if [ -z ${3+x} ]; then SERVER_DOMAIN=datacatalog.fz-juelich.de; else SERVER_DOMAIN=$3; fi
-DATACATALOG_APISERVER_CLIENT_ID="$4"
-DATACATALOG_APISERVER_CLIENT_SECRET="$5"
-DATACATALOG_APISERVER_SERVER_METADATA_URL="$6"
+export DATACATALOG_APISERVER_CLIENT_ID="$4"
+export DATACATALOG_APISERVER_CLIENT_SECRET="$5"
+export DATACATALOG_APISERVER_SERVER_METADATA_URL="$6"
 
 cd $NEW_DIR
 
