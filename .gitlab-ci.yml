@@ -20,7 +20,7 @@ variables:
   TESTING_IP: 134.94.199.36
   OLD_TEST_NAME: old-testing
   TESTING_NAME: datacatalog-testing
-  ROLLBACK_COMMIT_TAG: aa1f8345d322f2532977643043df18eb4aff3bcf # stable version on master, also tagged as 0.18
+  ROLLBACK_COMMIT_TAG: aa1f8345d322f2532977643043df18eb4aff3bcf # stable version on master, also tagged as 0.18 | TODO update regularily
 
 # before script copied from gitlab docs
 .before_script_template: &ssh_setup
