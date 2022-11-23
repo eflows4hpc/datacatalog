@@ -2,7 +2,7 @@
 
 ## USAGE:
 #
-# deployment.sh <git_directory> [API_URL] [SERVER_DOMAIN]
+# deployment.sh <git_directory> [API_URL] [SERVER_DOMAIN] [CLIENT_ID] [CLIENT_SECRET] [METADATA_URL]
 
 OLD_DIR=`pwd`
 
@@ -11,6 +11,9 @@ echo "DEBUG_1 $0 $1 $2 $3"
 if [ -z ${1+x} ]; then NEW_DIR=`pwd`; else NEW_DIR=$1; fi
 if [ -z ${2+x} ]; then API_URL=https://datacatalog.fz-juelich.de/; else API_URL=$2; fi
 if [ -z ${3+x} ]; then SERVER_DOMAIN=datacatalog.fz-juelich.de; else SERVER_DOMAIN=$3; fi
+if [ -z ${4+x} ]; then DATACATALOG_APISERVER_CLIENT_ID=""datacatalog.fz-juelich.de""; else DATACATALOG_APISERVER_CLIENT_ID=$4; fi
+if [ -z ${5+x} ]; then DATACATALOG_APISERVER_CLIENT_SECRET=""; else DATACATALOG_APISERVER_CLIENT_SECRET=$5; fi
+if [ -z ${6+x} ]; then DATACATALOG_APISERVER_SERVER_METADATA_URL=""; else DATACATALOG_APISERVER_SERVER_METADATA_URL=$6; fi
 
 echo "DEBUG_2 $0 $1 $2 $3"
 

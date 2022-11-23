@@ -62,7 +62,7 @@ light-deploy-testing:
   environment: Testing
   script:
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "cd /home/apiserver/datacatalog && sudo git stash && sudo git checkout master && sudo git pull --all && sudo git checkout -f $CI_COMMIT_TAG && sudo git stash clear"
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $TESTING_URL $TESTING_DOMAIN"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $TESTING_URL $TESTING_DOMAIN $TEST_CLIENT_ID $TEST_CLIENT_SECRET $METADATA_URL"
 
 light-deploy-production:
   stage: deploy
@@ -76,7 +76,7 @@ light-deploy-production:
   environment: Production
   script:
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCITON_HOST "cd /home/apiserver/datacatalog && sudo git stash && sudo git checkout master && sudo git pull --all && sudo git checkout -f $CI_COMMIT_TAG && sudo git stash clear"
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCITON_HOST "sudo SECRETS_ENCRYPTION_KEY=$SECRETS_ENCRYPTION_KEY, /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCITON_HOST "sudo SECRETS_ENCRYPTION_KEY=$SECRETS_ENCRYPTION_KEY /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN $CLIENT_ID $CLIENT_SECRET $METADATA_URL"
 
 full-deploy-production:
   stage: deploy
@@ -103,7 +103,7 @@ full-deploy-production:
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_IP "sudo mkdir -p /app/mnt"
     - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_IP "sudo mount /dev/vdb1 /app/mnt"
     - until ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_IP ls /finished_cloudinit >/dev/null 2>&1; do sleep 30; done # wait until cloudinit script is complete
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_IP "sudo SECRETS_ENCRYPTION_KEY=$SECRETS_ENCRYPTION_KEY, /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$PRODUCTION_IP "sudo SECRETS_ENCRYPTION_KEY=$SECRETS_ENCRYPTION_KEY, /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $PRODUCTION_URL $PRODUCTION_DOMAIN  $CLIENT_ID $CLIENT_SECRET $METADATA_URL"
 
 full-deploy-testing:
   stage: deploy 
@@ -127,7 +127,7 @@ full-deploy-testing:
     - sleep 10 # ensure that next command reaches the new server, prevents host key problems
     # TODO move local zip of certificate-docker-volume to server once startup is complete
     - until ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN ls /finished_cloudinit >/dev/null 2>&1; do sleep 30; done # wait until cloudinit script is complete
-    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $TESTING_URL $TESTING_DOMAIN"
+    - ssh -oStrictHostKeyChecking=accept-new apiserver@$TESTING_DOMAIN "sudo /home/apiserver/datacatalog/deploy_scripts/deployment.sh /home/apiserver/datacatalog $TESTING_URL $TESTING_DOMAIN  $TEST_CLIENT_ID $TEST_CLIENT_SECRET $METADATA_URL"
 
   
 cleanup-failed-full-deployment:
