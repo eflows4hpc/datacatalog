@@ -44,7 +44,7 @@ DOTENV_FILE_PATH_DEFAULT = "apiserver/config.env"
 app = FastAPI(
     title="API-Server for the Data Catalogue"
 )
-app.add_middleware(SessionMiddleware, secret_key="secret-string")
+app.add_middleware(SessionMiddleware, secret_key="secret-string") #  TODO generate secret string during startup
 
 origins = [
     "https://datacatalog.fz-juelich.de",
