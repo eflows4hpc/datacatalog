@@ -62,6 +62,10 @@ class AbstractDBInterface(metaclass=abc.ABCMeta): # pragma: no cover
     def delete(cls, username: str):
         raise NotImplementedError()
 
+    @abc.abstractclassmethod
+    def add_external_auth_user(cls, username: str, email: str):
+        raise NotImplementedError()
+
 
 class JsonDBInterface(AbstractDBInterface):
 
@@ -111,6 +115,9 @@ class JsonDBInterface(AbstractDBInterface):
 
         self.__save_all(data)
         log.debug("Deleted user %s from userdb.", username)
+
+    def add_external_auth_user(cls, username: str, email: str):
+        cls.add(UserInDB(username=username, email=email))
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

@@ -3,19 +3,23 @@ Main module of data catalog api
 """
 import logging
 import os
-from datetime import timedelta
+from datetime import timedelta, datetime
 from enum import Enum
 from typing import Dict, List
 from functools import wraps
 
-from fastapi import FastAPI, HTTPException, Query, Request, status
+from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.param_functions import Depends
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 
+from authlib.integrations.starlette_client import OAuth
+
 from pydantic import UUID4
 from starlette.responses import RedirectResponse
+from starlette.middleware.sessions import SessionMiddleware
+from starlette.requests import Request
 
 from apiserver.security.user import Secret
 
@@ -38,8 +42,9 @@ DOTENV_FILE_PATH_VARNAME = "DATACATALOG_API_DOTENV_FILE_PATH"
 DOTENV_FILE_PATH_DEFAULT = "apiserver/config.env"
 
 app = FastAPI(
-    title="API-Server for the Data Catalog"
+    title="API-Server for the Data Catalogue"
 )
+app.add_middleware(SessionMiddleware, secret_key="secret-string")
 
 origins = [
     "https://datacatalog.fz-juelich.de",
@@ -55,7 +60,7 @@ origins = [
 app.add_middleware(CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"]
 )
 
@@ -76,6 +81,17 @@ else:
 userdb = JsonDBInterface(settings)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=ReservedPaths.TOKEN)
 
+oauth = OAuth()
+oauth.register(
+    name='keycloak',
+    client_id=settings.client_id,
+    server_metadata_url=settings.server_metadata_url,
+    client_secret=settings.client_secret,
+    client_kwargs={
+        'scope' : 'openid email profile'
+    }
+)
+
 log.info("Loaded the following settings: data directory = %s | userdb location = %s", settings.json_storage_path, settings.userdb_path)
 
 def my_user(token=Depends(oauth2_scheme)):
@@ -92,6 +108,44 @@ def secrets_required(func):
             raise HTTPException(403)
         return await func(*args, **kwargs)
     return wrapper
+
+@app.get("/keycloak_login")
+async def keycloak_login(request: Request):
+    """redirect to keycloak for login, obtain keycloak token via cookie"""
+    redirect_url = request.url_for('keycloak_token')
+    log.debug("redirect_uri " + redirect_url)
+    return await oauth.keycloak.authorize_redirect(request, redirect_url)
+
+@app.get("/keycloak_token")
+async def keycloak_token(request: Request):
+    """obtain keycloak token via cookie, generate custom token and return it"""
+    token = await oauth.keycloak.authorize_access_token(request)
+    user = token['userinfo']
+    # now we have an authenticated user
+    # check if the user is in the database, if not:
+    # check for the roles that are in the IdP and create accordingly (may result in no new user creation and a return of a 403)
+    # generate a datacat auth token for the user that identical to a token received from /token
+    # store it in the session cookie, return it via a redirect to the user frontend
+    username = user['preferred_username']
+    email = user['email']
+    if userdb.get(username) is None:
+        # add user to db
+        userdb.add_external_auth_user(username, email)
+    datacat_user = userdb.get(username)
+
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRES_MINUTES)
+    access_token = create_access_token(
+        data={"sub": datacat_user.username}, expires_delta=access_token_expires
+    )
+    log.debug("Externally authenticed User: '%s' requested /keycloak_token", datacat_user.username)
+
+    # set token in cookie, this can then be extractet via the frontend javascript
+    response = RedirectResponse("http://localhost:9000/login.html?external_auth=True")
+    response.set_cookie(
+        key="datacat_auth_token", value=access_token, secure=True, domain=".localhost", expires=datetime.utcnow()+timedelta(minutes=5) # TODO get domain from settings
+    ) 
+
+    return response
 
 @app.get("/me", response_model=User)
 async def read_users_me(user=Depends(my_user)):
