@@ -4,6 +4,42 @@
  * Event Listeners for XMLHttpRequests
  ************************************************/
 
+// set cookie value
+function setCookie(cname, cvalue, exdays) {
+    const d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    let expires = "expires="+ d.toUTCString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+// get a cookie value
+function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for(var i = 0; i <ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
+}
+
+// check if datacat_auth_token cookie is set, if yes, store token in sessionStorage and refresh
+function checkExternalLogin() {
+    var token = getCookie("datacat_auth_token");
+    if (token != "" && token != window.sessionStorage.auth_token) {
+        console.log("Reloading with external authentication data.");
+        window.sessionStorage.auth_token = token;
+        getInfo(true);
+        location.reload();
+    }
+}
+
 // XMLHttpRequest EVENTLISTENER: if the call was successful, store the token locally and reload login page
 function setLoginToken() {
     console.log("Response to login POST: " + this.responseText);
@@ -74,6 +110,7 @@ function logout() {
     delete window.sessionStorage.auth_token;
     delete window.sessionStorage.username;
     delete window.sessionStorage.email;
+    setCookie("datacat_auth_token", "", 0)
     location.reload();
 }
 
