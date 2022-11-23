@@ -142,7 +142,7 @@ async def keycloak_token(request: Request):
     # set token in cookie, this can then be extractet via the frontend javascript
     response = RedirectResponse("/login.html?external_auth=True")
     response.set_cookie(
-        key="datacat_auth_token", value=access_token, secure=True, domain=".localhost", expires=datetime.utcnow()+timedelta(minutes=5) # TODO get domain from settings
+        key="datacat_auth_token", value=access_token, secure=True, expires=datetime.utcnow()+timedelta(minutes=5) # TODO get domain from settings
     ) 
 
     return response
