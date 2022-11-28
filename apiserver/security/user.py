@@ -116,8 +116,8 @@ class JsonDBInterface(AbstractDBInterface):
         self.__save_all(data)
         log.debug("Deleted user %s from userdb.", username)
 
-    def add_external_auth_user(cls, username: str, email: str):
-        cls.add(UserInDB(username=username, email=email))
+    def add_external_auth_user(cls, username: str, email: str, secrets: bool = False):
+        cls.add(UserInDB(username=username, email=email, has_secrets_access=secrets))
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

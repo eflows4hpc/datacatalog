@@ -128,9 +128,18 @@ async def keycloak_token(request: Request):
     # store it in the session cookie, return it via a redirect to the user frontend
     username = user['preferred_username']
     email = user['email']
+    groups = user['groups']
+
     if userdb.get(username) is None:
-        # add user to db
-        userdb.add_external_auth_user(username, email)
+        # check if user should be added, and with or without secrets
+        access_group = "datacat_write"
+        secrets_group = "datacat_secrets"
+        if access_group not in groups:
+            raise HTTPException(403, "User is not authorized for write access to the datacatalogue.")
+        if secrets_group not in groups:
+            userdb.add_external_auth_user(username, email)
+        else:
+            userdb.add_external_auth_user(username, email, True)
     datacat_user = userdb.get(username)
 
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRES_MINUTES)
@@ -142,7 +151,7 @@ async def keycloak_token(request: Request):
     # set token in cookie, this can then be extractet via the frontend javascript
     response = RedirectResponse("/login.html?external_auth=True")
     response.set_cookie(
-        key="datacat_auth_token", value=access_token, secure=True, expires=datetime.utcnow()+timedelta(minutes=5) # TODO get domain from settings
+        key="datacat_auth_token", value=access_token, secure=True, expires=datetime.utcnow()+timedelta(minutes=5)
     ) 
 
     return response
