@@ -82,8 +82,7 @@ full-deploy-production:
   stage: deploy
   # only run when stable tag is assigned and the pipeline is triggered in the web UI
   only:
-    variables:
-      - ($CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_TAG =~ /stable/)
+    - web
   <<: *ssh_setup
   environment: Production
   script:
