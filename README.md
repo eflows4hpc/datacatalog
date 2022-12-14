@@ -46,11 +46,14 @@ These settings can be set either via environment variables, changed in the `apis
 
 At the moment, the settings are considered at launch, and can not be updated while the server is running.
 
-| Variable Name                           | Default Value          | Description                                            |
-|-----------------------------------------|------------------------|--------------------------------------------------------|
-| DATACATALOG_API_DOTENV_FILE_PATH        | `apiserver/config.env` | Location of the `.env` file considered at launch       |
-| DATACATALOG_APISERVER_JSON_STORAGE_PATH | `./app/data`           | Directory where the data (i.e. dataset info) is stored |
-| DATACATALOG_APISERVER_USERDB_PATH       | `./app/userdb.json`    | Location of the `.json` file containing the accounts   |
+| Variable Name                             | Default Value          | Description                                            |
+|-------------------------------------------|------------------------|--------------------------------------------------------|
+| DATACATALOG_API_DOTENV_FILE_PATH          | `apiserver/config.env` | Location of the `.env` file considered at launch       |
+| DATACATALOG_APISERVER_JSON_STORAGE_PATH   | `./app/data`           | Directory where the data (i.e. dataset info) is stored |
+| DATACATALOG_APISERVER_USERDB_PATH         | `./app/userdb.json`    | Location of the `.json` file containing the accounts   |
+| DATACATALOG_APISERVER_CLIENT_ID           |                        | Client ID for a configured OIDC server                 |
+| DATACATALOG_APISERVER_CLIENT_SECRET       |                        | Client Secret for a configured OIDC server             |
+| DATACATALOG_APISERVER_SERVER_METADATA_URL |                        | Metadata URL for a configured OIDC server              |
 
 There is also the logging configuration to consider:
 
