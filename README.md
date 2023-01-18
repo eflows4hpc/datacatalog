@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/376782280.svg)](https://zenodo.org/badge/latestdoi/376782280)
+
 # Datacatalogue
 
 This is Data Catalogue for eFlows4HPC project
