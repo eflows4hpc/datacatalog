@@ -83,6 +83,7 @@ full-deploy-production:
   # only run when stable tag is assigned and the pipeline is triggered in the web UI
   only:
     - web
+    - tags
   <<: *ssh_setup
   environment: Production
   script:
