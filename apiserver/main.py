@@ -88,7 +88,7 @@ oauth.register(
     server_metadata_url=settings.server_metadata_url,
     client_secret=settings.client_secret,
     client_kwargs={
-        'scope' : 'openid email profile'
+        'scope' : 'openid email profile eflows'
     }
 )
 
@@ -120,27 +120,27 @@ async def keycloak_login(request: Request):
 async def keycloak_token(request: Request):
     """obtain keycloak token via cookie, generate custom token and return it"""
     token = await oauth.keycloak.authorize_access_token(request)
-    user = token['userinfo']
+
+    user = await oauth.keycloak.userinfo(token=token)
+
+    persistent_identifier = token["userinfo"]["sub"]
+    log.debug(str(user))
+
     # now we have an authenticated user
     # check if the user is in the database, if not:
     # check for the roles that are in the IdP and create accordingly (may result in no new user creation and a return of a 403)
     # generate a datacat auth token for the user that identical to a token received from /token
     # store it in the session cookie, return it via a redirect to the user frontend
-    username = user['preferred_username']
     email = user['email']
-    groups = user['groups']
 
-    if userdb.get(username) is None:
+
+    if userdb.get(persistent_identifier) is None:
         # check if user should be added, and with or without secrets
         access_group = "datacat_write"
-        secrets_group = "datacat_secrets"
-        if access_group not in groups:
-            raise HTTPException(403, "User is not authorized for write access to the datacatalogue.")
-        if secrets_group not in groups:
-            userdb.add_external_auth_user(username, email)
-        else:
-            userdb.add_external_auth_user(username, email, True)
-    datacat_user = userdb.get(username)
+        userdb.add_external_auth_user(persistent_identifier, email)
+
+            
+    datacat_user = userdb.get(persistent_identifier)
 
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRES_MINUTES)
     access_token = create_access_token(
