@@ -53,11 +53,8 @@ test:
 light-deploy-testing:
   stage: deploy
   # only run when master is updated, unless the pipeline was triggered via the web UI
-  only:
-    - master
-  except:
-    - tags
-    - web
+  rules:
+    - if: ($CI_COMMIT_BRANCH == "master" && $MANUAL_FULL_DEPLOY !~ /true/ )
   <<: *ssh_setup
   environment: Testing
   script:
@@ -67,10 +64,8 @@ light-deploy-testing:
 light-deploy-production:
   stage: deploy
   # only run when stable tag is updated, unless the pipeline was triggered via the web UI
-  only:
-    - tags
-  except:
-    - web
+  rules:
+    - if: ($CI_COMMIT_TAG =~ /stable/ && $MANUAL_FULL_DEPLOY !~ /true/)
   tags: [stable]
   <<: *ssh_setup
   environment: Production
@@ -81,9 +76,8 @@ light-deploy-production:
 full-deploy-production:
   stage: deploy
   # only run when stable tag is assigned and the pipeline is triggered in the web UI
-  only:
-    - web
-    - tags
+  rules:
+     - if: ($CI_COMMIT_TAG =~ /stable/ && $MANUAL_FULL_DEPLOY == "true")
   <<: *ssh_setup
   environment: Production
   script:
@@ -108,9 +102,8 @@ full-deploy-production:
 full-deploy-testing:
   stage: deploy 
   # only run when master is updated and the pipeline is triggered in the web UI
-  only:
-    variables:
-      - ($CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_REF_NAME == "master")
+  rules:
+    - if: ($CI_COMMIT_BRANCH == "master" && $MANUAL_FULL_DEPLOY == "true")
   <<: *ssh_setup
   environment: Testing
   script:
@@ -136,8 +129,8 @@ cleanup-failed-full-deployment:
   # this does not guarantee a successful rollback, but unless the old instance was faulty, this should work
   stage: cleanup
   when: on_failure
-  only:
-    - web
+  rules:
+     - if: $MANUAL_FULL_DEPLOY == "true"
   <<: *ssh_setup
   script:
     - echo "This is the cleanup for the full-redeployment of the testing or production servers"
@@ -172,8 +165,8 @@ cleanup-successful-full-deployment:
   # check if there is an old prod or test instance, and delete it if present
   stage: cleanup
   when: on_success
-  only:
-    - web
+  rules:
+     - if: $MANUAL_FULL_DEPLOY == "true"
   <<: *ssh_setup
   script:
     - echo "This is the cleanup for the full-redeployment of the testing or production servers"
@@ -186,11 +179,8 @@ cleanup-failed-light-test-deployment:
   # if there is a failure with the light deployments, this tries to git checkout an earlier version and rollback to that.
   stage: cleanup
   when: on_failure
-  only:
-    - master
-  except:
-    - tags
-    - web
+  rules:
+    - if: ($CI_COMMIT_BRANCH == "master" && $MANUAL_FULL_DEPLOY !~ /true/ )
   <<: *ssh_setup
   script:
     - echo "This is the cleanup for the light-redeployment of the testing servers"
@@ -205,10 +195,8 @@ cleanup-failed-light-production-deployment:
   # if there is a failure with the light deployments, this tries to git checkout an earlier version and rollback to that.
   stage: cleanup
   when: on_failure
-  only:
-    - tags
-  except:
-    - web
+  rules:
+    - if: ($CI_COMMIT_TAG =~ /stable/ && $MANUAL_FULL_DEPLOY !~ /true/)
   tags: [stable]
   <<: *ssh_setup
   script:
@@ -222,10 +210,9 @@ cleanup-failed-light-production-deployment:
 test-testing:
   cache: {}
   stage: test-deployment 
-  only:
-    - master
-  except:
-    - tags
+  when: on_failure
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
   script:
     - apt update && apt -y install curl
     - echo "For now, this will be a basic health check i.e. GET / and check for 2xx code."
@@ -235,8 +222,8 @@ test-testing:
 test-production:
   cache: {}
   stage: test-deployment
-  only:
-    - tags
+  rules:
+    - if: $CI_COMMIT_TAG =~ /stable/
   tags: [stable]
   script:
     - apt update && apt -y install curl

@@ -158,3 +158,11 @@ docker rm <container name>
 ```
 
 For more information about docker, please see the [docker docs](https://docs.docker.com)
+
+
+## CI/CD
+The gitlab repository is set up to automatically build the datacat image and deploy to the production and testing environment. The pipeline and jobs for this are defined in the [.gitlab-ci.yml](.gitlab-ci.yml) file.
+In general, pushes to the master branch update the testing deployment, and tags containing "stable" update the production deployment.
+
+To avoid unneeded downtime, the VMs hosting the deployments are usuallly not re-created, and instead only the updated docker image, as well as updated config is uploaded to the VM. After this, the docker containers are restarted.
+If a "full-deployment" is required (i.e. the VMs shuld be newly created), the pipeline has to be started with a variable ```MANUAL_FULL_DEPLOY=true```. This can be done while starting the pipeline via the web interface.
