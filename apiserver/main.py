@@ -42,8 +42,10 @@ DOTENV_FILE_PATH_VARNAME = "DATACATALOG_API_DOTENV_FILE_PATH"
 DOTENV_FILE_PATH_DEFAULT = "apiserver/config.env"
 
 app = FastAPI(
-    title="API-Server for the Data Catalogue"
+    title="API-Server for the Data Catalogue",
+    root_path= os.getenv("DATACAT_ROOT_PATH", "")
 )
+
 app.add_middleware(SessionMiddleware, secret_key="secret-string") #  TODO generate secret string during startup
 
 origins = [
