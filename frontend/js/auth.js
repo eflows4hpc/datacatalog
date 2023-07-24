@@ -153,7 +153,7 @@ function showElementsDependingOnLoginStatus(loggedIn = true) {
     if (loggedIn) {
         $('#loginForm').hide();
         $('#userinfoViewer').show();
-        $('#loginOutText').html('Logged In (<b>' + window.sessionStorage.username + '</b>)');
+        $('#loginOutText').html('Logged In (<b>' + window.sessionStorage.email + '</b>)');
     } else {
         $('#userinfoViewer').hide();
         $('#loginForm').show();
