@@ -151,7 +151,7 @@ async def sso_token(request: Request):
     log.debug("Externally authenticed User: '%s' requested /sso_token", datacat_user.username)
 
     # set token in cookie, this can then be extractet via the frontend javascript
-    response = RedirectResponse("/login.html?external_auth=True")
+    response = RedirectResponse("./login.html?external_auth=True")
     response.set_cookie(
         key="datacat_auth_token", value=access_token, secure=True, expires=datetime.utcnow()+timedelta(minutes=5)
     ) 
