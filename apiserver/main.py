@@ -111,15 +111,15 @@ def secrets_required(func):
         return await func(*args, **kwargs)
     return wrapper
 
-@app.get("/keycloak_login")
-async def keycloak_login(request: Request):
+@app.get("/sso_login")
+async def sso_login(request: Request):
     """redirect to keycloak for login, obtain keycloak token via cookie"""
-    redirect_url = request.url_for('keycloak_token')
+    redirect_url = request.url_for('sso_token')
     log.debug("redirect_uri " + redirect_url)
     return await oauth.keycloak.authorize_redirect(request, redirect_url)
 
-@app.get("/keycloak_token")
-async def keycloak_token(request: Request):
+@app.get("/sso_token")
+async def sso_token(request: Request):
     """obtain keycloak token via cookie, generate custom token and return it"""
     token = await oauth.keycloak.authorize_access_token(request)
 
@@ -137,7 +137,7 @@ async def keycloak_token(request: Request):
 
 
     if userdb.get(persistent_identifier) is None:
-        # check if user should be added, and with or without secrets
+        # check if user should be added
         access_group = "datacat_write"
         userdb.add_external_auth_user(persistent_identifier, email)
 
@@ -148,7 +148,7 @@ async def keycloak_token(request: Request):
     access_token = create_access_token(
         data={"sub": datacat_user.username}, expires_delta=access_token_expires
     )
-    log.debug("Externally authenticed User: '%s' requested /keycloak_token", datacat_user.username)
+    log.debug("Externally authenticed User: '%s' requested /sso_token", datacat_user.username)
 
     # set token in cookie, this can then be extractet via the frontend javascript
     response = RedirectResponse("/login.html?external_auth=True")
