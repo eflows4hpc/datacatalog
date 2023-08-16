@@ -88,7 +88,7 @@ function getTypeHTMLString(name) {
 // get tableentry-html for a dataset
 function getDatasetHTMLString(dataset) {
     var safename = escapeHtml(dataset[0]);
-    return '<tr><th scope="row">'+ safename + '</th><td><a href="?type=' + getType() + "&oid=" + dataset[1] + '">' + dataset[1] + '</a></td><input class="form-check-input bulk-delete-checkboxes" type="checkbox" value="" id="' + dataset[1] + '"><td></td></tr>' // TODO add a checkbx that "knows" the oid somehow
+    return '<tr><th scope="row">'+ safename + '</th><td><a href="?type=' + getType() + "&oid=" + dataset[1] + '">' + dataset[1] + '</a></td><td><input class="form-check-input bulk-delete-checkboxes" type="checkbox" value="" id="' + dataset[1] + '"></td></tr>' // TODO add a checkbx that "knows" the oid somehow
 }
 
 /*
