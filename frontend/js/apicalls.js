@@ -127,7 +127,7 @@ function getMetadataPropertyHTMLString(property, value, readonly=true) {
 
 function collectDeleteOIDs() {
     var oids = [];
-    $('.dynamic-metadata').each( function() {
+    $('.bulk-delete-checkboxes').each( function() {
         var oid = this.id;
         oids.push(oid)
     });
@@ -139,7 +139,7 @@ function collectDeleteOIDs() {
 */
 function collectMetadata() {
     var metadata = {};
-    $('.bulk-delete-checkboxes').each( function() {
+    $('.dynamic-metadata').each( function() {
         var id = this.id;
         var key = $(this).val();
         var selector = '#' + id + 'Input';
