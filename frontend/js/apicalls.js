@@ -139,7 +139,7 @@ function collectMetadata() {
 
 function collectDeleteOIDs() {
     var metadata = {};
-    $('.bulk-delete-checkboxes-metadata').each( function() {
+    $('.bulk-delete-checkboxes').each( function() {
         var id = this.id;
         var key = $(this).val();
         var selector = '#' + id + 'Input';
