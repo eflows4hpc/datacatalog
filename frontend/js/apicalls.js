@@ -88,7 +88,7 @@ function getTypeHTMLString(name) {
 // get tableentry-html for a dataset
 function getDatasetHTMLString(dataset) {
     var safename = escapeHtml(dataset[0]);
-    return '<tr><th scope="row">'+ safename + '</th><td><a href="?type=' + getType() + "&oid=" + dataset[1] + '">' + dataset[1] + '</a></td></tr>'
+    return '<tr><th scope="row">'+ safename + '</th><td><a href="?type=' + getType() + "&oid=" + dataset[1] + '">' + dataset[1] + '</a></td><input class="form-check-input bulk-delete-checkboxes" type="checkbox" value="" id="' + dataset[1] + '"><td></td></tr>' // TODO add a checkbx that "knows" the oid somehow
 }
 
 /*
@@ -129,8 +129,17 @@ function getMetadataPropertyHTMLString(property, value, readonly=true) {
  * collect metadata from any present metadata inputs. If none are there, return an empty dict.
  */
 function collectMetadata() {
-    var metadata = {};
+    var oids = [];
     $('.dynamic-metadata').each( function() {
+        var oid = this.id;
+        oids.push(oid)
+    });
+    return oids;
+}
+
+function collectDeleteOIDs() {
+    var metadata = {};
+    $('.bulk-delete-checkboxes-metadata').each( function() {
         var id = this.id;
         var key = $(this).val();
         var selector = '#' + id + 'Input';
@@ -201,7 +210,7 @@ function showNewDatasetID() {
     if (this.status >= 400) {
         // some error occured while getting the data
         // show an alert and don't do anything else
-        var alertHTML = '<div class="alert alert-danger" role="alert">Invalid response from server! Either the API server is down, or the dataset creation failed. Response code: ' + this.status + '<hr>Please try agagin later, and if the error persists, contact the server administrator.</div>';
+        var alertHTML = '<div class="alert alert-danger" role="alert">Invalid response from server! Either the API server is down, or the dataset creation failed. Response code: ' + this.status + '<hr>Please try again later, and if the error persists, contact the server administrator.</div>';
         $('#storageTypeChooser').after(alertHTML);
         return;
     }
@@ -218,7 +227,7 @@ function showSuccessfullyChangedDataset() {
     if (this.status >= 400) {
         // some error occured while getting the data
         // show an alert and don't do anything else
-        var alertHTML = '<div class="alert alert-danger" role="alert">Invalid response from server! Either the API server is down, or the dataset modification failed. Response code: ' + this.status + '<hr>Please try agagin later, and if the error persists, contact the server administrator.</div>';
+        var alertHTML = '<div class="alert alert-danger" role="alert">Invalid response from server! Either the API server is down, or the dataset modification failed. Response code: ' + this.status + '<hr>Please try again later, and if the error persists, contact the server administrator.</div>';
         $('#storageTypeChooser').after(alertHTML);
         return;
     }
@@ -228,18 +237,21 @@ function showSuccessfullyChangedDataset() {
 }
 
 // XMLHttpRequest EVENTLISTENER: show banner with success message for deletion
-function showSuccessfullyDeletedDataset() {
+function successfullyDeletedDataset() {
     console.log("Response to DELETE dataset: " + this.responseText);
     if (this.status >= 400) {
         // some error occured while getting the data
         // show an alert and don't do anything else
-        var alertHTML = '<div class="alert alert-danger" role="alert">Invalid response from server! Either the API server is down, or the dataset deletion failed. Response code: ' + this.status + '<hr>Please try agagin later, and if the error persists, contact the server administrator.</div>';
+        var alertHTML = '<div class="alert alert-danger" role="alert">Invalid response from server! Either the API server is down, or the dataset deletion failed. Response code: ' + this.status + '<hr>Please try again later, and if the error persists, contact the server administrator.</div>';
         $('#storageTypeChooser').after(alertHTML);
         return;
     }
     var alertHTML = '<div class="alert alert-danger" role="alert">Dataset was successfully deleted!</div>';
     $('#storageTypeChooser').after(alertHTML);
     $('#spinner').remove();
+
+    // redirect to storage
+    window.location.replace("?type=" + datatype);
 }
 
 // XMLHttpRequest EVENTLISTENER: show dataset in table
@@ -504,11 +516,24 @@ function deleteDataset(oid, datatype) {
     var fullUrl = apiUrl + datatype + "/" + oid;
     console.log("Sending DELETE request to  " + fullUrl + " for deleting dataset.")
     var xmlhttp = new XMLHttpRequest();
-    xmlhttp.addEventListener("loadend", showSuccessfullyDeletedDataset);
+    xmlhttp.addEventListener("loadend", successfullyDeletedDataset);
     xmlhttp.open("DELETE", fullUrl);
     xmlhttp.setRequestHeader('Authorization', 'Bearer ' + window.sessionStorage.auth_token);
     xmlhttp.send();
     enableButtons(false, false, false);
+    $('#button-delete').prepend('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>');
+    disableMetadataButtons();
+}
+
+// DELETE multiple existing datasets
+function deleteMultipleDatasets(oids, datatype) {
+    var fullUrl = apiUrl + datatype;
+    console.log("Sending DELETE request to  " + fullUrl + " for deleting datasets.")
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.addEventListener("loadend", successfullyDeletedDataset);
+    xmlhttp.open("DELETE", fullUrl);
+    xmlhttp.setRequestHeader('Authorization', 'Bearer ' + window.sessionStorage.auth_token);
+    xmlhttp.send(JSON.stringify(oids));
     $('#button-delete').prepend('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>');
     disableMetadataButtons();
 }
