@@ -316,6 +316,26 @@ async def update_specific_dataset(location_data_type: LocationDataType,
     log.debug("Authenticed User: '%s' modified /%s/%s", user.username, location_data_type.value, dataset_id)
     return adapter.update_details(location_data_type, str(dataset_id), dataset, user.username)
 
+@app.delete("/{location_data_type}")
+
+async def delete_multiple_datasets(location_data_type: LocationDataType,
+                                  dataset_ids: List[UUID4],
+                                  user: User = Depends(my_user)
+                                  ):
+    """
+    Attempts deletion of every sent dataset. If it fails for any of the sent datasets (for example due to a not found error), the attempts for the other datasets will still be made. 
+    This may result in an incomplete delete and may return error codes. 
+    """
+    log.debug("Authenticed User: '%s' deleted multiple %s objects: %s", user.username, location_data_type.value, str(dataset_ids))
+    other_error = False
+    for oid in dataset_ids:
+        try:
+            adapter.delete(location_data_type, str(oid), user.username)
+        except:
+            other_error = True
+    if other_error:
+        raise HTTPException(500, "Some error occured during the bulk deletion. Some, None or all elements may have been deleted") # TODO better error identification and message
+    return JSONResponse({'message':'Bulk deletion successful.'})
 
 @app.delete("/{location_data_type}/{dataset_id}")
 async def delete_specific_dataset(location_data_type: LocationDataType,
