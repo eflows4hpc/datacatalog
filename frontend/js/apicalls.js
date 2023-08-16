@@ -125,10 +125,7 @@ function getMetadataPropertyHTMLString(property, value, readonly=true) {
     return '<tr id="' + randID + 'Row"><th scope="row"><input class="form-control dynamic-metadata" type="text" id="' + randID + '" value="' + safekey + (readonly ? '" readonly' : '"') + '></th><td><input class="form-control" type="text" id="' + randID + 'Input" value="' + safeval + (readonly ? '" readonly' : '"') + '></td><th><button type="button" class="btn btn-danger dynamic-metadata-button" onclick="removeMetadataRow(\'' + randID + '\')" id="' + randID + 'Button">-</button></th></tr>';
 }
 
-/**
- * collect metadata from any present metadata inputs. If none are there, return an empty dict.
- */
-function collectMetadata() {
+function collectDeleteOIDs() {
     var oids = [];
     $('.dynamic-metadata').each( function() {
         var oid = this.id;
@@ -137,7 +134,10 @@ function collectMetadata() {
     return oids;
 }
 
-function collectDeleteOIDs() {
+/**
+* collect metadata from any present metadata inputs. If none are there, return an empty dict.
+*/
+function collectMetadata() {
     var metadata = {};
     $('.bulk-delete-checkboxes').each( function() {
         var id = this.id;
