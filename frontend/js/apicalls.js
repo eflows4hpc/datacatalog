@@ -273,6 +273,7 @@ async function setDatasetView() {
     $('#modifyDatasetButtonGroup').hide();
     $('#filterForm').hide();
     $('#pagingBar').hide();
+    $('#deleteButtonDiv').hide();
     if (window.sessionStorage.auth_token) {
         $('#modifyDatasetButtonGroup').show();
     }
@@ -450,11 +451,13 @@ async function showListingOrSingleDataset() {
             $('#addNewDatasetForm').show();
             $('#filterForm').show();
             $('#pagingBar').show();
+            $('#deleteButtonDiv').show();
         }
         listDatasets(getType(), getFilterSearch(), getFilterName(), getFilterUrl(), getFilterKeys(), getPage());
     } else if (getId() == "new") {
         $('#datasetListTable').hide();
         $('#pagingBar').hide();
+        $('#deleteButtonDiv').hide();
         $('#storageTypeChooser').hide();
         $('#datasetViewTable').show();
         $('#filterForm').hide();
@@ -536,6 +539,16 @@ function deleteMultipleDatasets(oids, datatype) {
     xmlhttp.send(JSON.stringify(oids));
     $('#button-delete').prepend('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>');
     disableMetadataButtons();
+}
+
+function deleteMultipleButtonPressed() {
+    // collect list of oids
+    oids = collectDeleteOIDs();
+    datatype = getType()
+    // query if user is sure to delete X datasets
+    if (confirm("Delete " + oids.length +  " elements of the type " + datatype + "?")) {
+        deleteMultipleDatasets(oids, datatype);
+    }
 }
 
 function editButtonPressed() {
