@@ -448,11 +448,15 @@ async function showListingOrSingleDataset() {
         window.location.href = "?type=" + allowedTypesList[0];
     }
     if (!getId()) { // no id given, so list all elements
+        $('#deleteButtonDiv').hide();
+        $('.bulk-delete-checkboxes').hide();
         if (window.sessionStorage.auth_token) {
             $('#addNewDatasetForm').show();
             $('#filterForm').show();
             $('#pagingBar').show();
             $('#deleteButtonDiv').show();
+            $('#deleteButtonDiv').show();
+            $('.bulk-delete-checkboxes').show();
         }
         listDatasets(getType(), getFilterSearch(), getFilterName(), getFilterUrl(), getFilterKeys(), getPage());
     } else if (getId() == "new") {
@@ -462,6 +466,8 @@ async function showListingOrSingleDataset() {
         $('#storageTypeChooser').hide();
         $('#datasetViewTable').show();
         $('#filterForm').hide();
+        $('#deleteButtonDiv').hide();
+        $('.bulk-delete-checkboxes').hide();
 
         $('#modifyDatasetButtonGroup').hide();
         $('#addMetadataButton').hide();
@@ -477,6 +483,8 @@ async function showListingOrSingleDataset() {
         }
         enableButtons(true, false, true);
     } else { // an id is given, show the dataset, error message if invalid
+        $('#deleteButtonDiv').hide();
+        $('.bulk-delete-checkboxes').hide();
         showDataset(getType(), getId());
     }
 }
