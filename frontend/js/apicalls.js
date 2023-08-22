@@ -545,6 +545,7 @@ function deleteMultipleDatasets(oids, datatype) {
     xmlhttp.addEventListener("loadend", successfullyDeletedDataset);
     xmlhttp.open("DELETE", fullUrl);
     xmlhttp.setRequestHeader('Authorization', 'Bearer ' + window.sessionStorage.auth_token);
+    xmlhttp.setRequestHeader("Content-Type", "application/json"); // needs to be set explicitly, as the array is not recognized properly otherwise
     xmlhttp.send(JSON.stringify(oids));
     $('#button-delete').prepend('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="spinner"></span>');
     disableMetadataButtons();
