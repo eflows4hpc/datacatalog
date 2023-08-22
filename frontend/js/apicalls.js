@@ -128,8 +128,9 @@ function getMetadataPropertyHTMLString(property, value, readonly=true) {
 function collectDeleteOIDs() {
     var oids = [];
     $('.bulk-delete-checkboxes').each( function() {
-        var oid = this.id;
-        oids.push(oid)
+        if (this.checked) {
+            oids[oids.length] = this.id
+        }
     });
     return oids;
 }
